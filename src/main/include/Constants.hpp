@@ -54,6 +54,14 @@ constexpr int kLeftEncoderB = 3;
 constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
 
+/*
+ * Climber
+ */
+constexpr int kClimberArmPort = 0;
+constexpr int kClampForwardPort = 1;
+constexpr int kClampReversePort = 2;
+constexpr int kWinchID = 0;
+
 // Solenoid Ports
 constexpr int kShifterPort = 3;
 

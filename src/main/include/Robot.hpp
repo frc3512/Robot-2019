@@ -6,6 +6,7 @@
 #include <frc/TimedRobot.h>
 
 #include "Constants.hpp"
+#include "subsystems/Climber.hpp"
 #include "subsystems/Drivetrain.hpp"
 
 class Robot : public frc::TimedRobot {
@@ -23,7 +24,9 @@ public:
     void TeleopPeriodic() override;
 
     static Drivetrain robotDrive;
+    static Climber climber;
 
     static frc::Joystick driveStick1;
     static frc::Joystick driveStick2;
+    static frc::Joystick appendageStick;
 };
