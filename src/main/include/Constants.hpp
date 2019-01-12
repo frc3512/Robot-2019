@@ -44,8 +44,22 @@ constexpr double kJoystickDeadband = 0.02;
 /*
  * DriveTrain
  */
+// Motor IDs
+constexpr int kLeftDriveMasterID = 0;
+constexpr int kRightDriveMasterID = 1;
 
+// Encoder IDs
 constexpr int kLeftEncoderA = 6;
 constexpr int kLeftEncoderB = 5;
 constexpr int kRightEncoderA = 8;
 constexpr int kRightEncoderB = 7;
+
+// Solenoid Ports
+constexpr int kShifterPort = 5;
+
+// CheesyDrive constants
+constexpr double kLowGearSensitive = 0.75;
+constexpr double kTurnNonLinearity = 1.0;
+constexpr double kInertiaDampen = 2.5;
+constexpr double kInertiaHighTurn = 3.0;
+constexpr double kInertiaLowTurn = 3.0;

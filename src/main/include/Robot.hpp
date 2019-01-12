@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <frc/Joystick.h>
+#include <frc/TimedRobot.h>
+
 #include "Constants.hpp"
 #include "Subsystems/Drivetrain.hpp"
 
@@ -20,4 +23,7 @@ public:
     void TeleopPeriodic() override;
 
     static Drivetrain robotDrive;
+
+    static frc::Joystick driveStick1;
+    static frc::Joystick driveStick2;
 };
