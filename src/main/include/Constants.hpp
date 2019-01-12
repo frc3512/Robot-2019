@@ -71,3 +71,14 @@ constexpr double kTurnNonLinearity = 1.0;
 constexpr double kInertiaDampen = 2.5;
 constexpr double kInertiaHighTurn = 3.0;
 constexpr double kInertiaLowTurn = 3.0;
+
+/*
+ * Elevator
+ */
+
+// Spark ID
+constexpr int kElevatorMasterID = 0;
+
+// Encoder
+constexpr int kEncoderA = 1;
+constexpr int kEncoderB = 2;

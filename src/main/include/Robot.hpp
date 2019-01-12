@@ -8,6 +8,7 @@
 #include "Constants.hpp"
 #include "subsystems/Climber.hpp"
 #include "subsystems/Drivetrain.hpp"
+#include "subsystems/Elevator.hpp"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -23,8 +24,9 @@ public:
     void AutonomousPeriodic() override;
     void TeleopPeriodic() override;
 
-    static Drivetrain robotDrive;
     static Climber climber;
+    static Drivetrain drivetrain;
+    static Elevator elevator;
 
     static frc::Joystick driveStick1;
     static frc::Joystick driveStick2;
