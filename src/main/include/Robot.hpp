@@ -6,7 +6,7 @@
 #include <frc/TimedRobot.h>
 
 #include "Constants.hpp"
-#include "Subsystems/Drivetrain.hpp"
+#include "subsystems/Drivetrain.hpp"
 
 class Robot : public frc::TimedRobot {
 public:

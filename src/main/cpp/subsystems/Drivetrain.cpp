@@ -1,6 +1,6 @@
 // Copyright (c) 2016-2019 FRC Team 3512. All Rights Reserved.
 
-#include "Subsystems/Drivetrain.hpp"
+#include "subsystems/Drivetrain.hpp"
 
 #include <cmath>
 #include <iostream>
