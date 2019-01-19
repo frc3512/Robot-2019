@@ -1,3 +1,6 @@
 .gradle/
+.project
+.settings/
+.vscode/
 build/
 *.swp
