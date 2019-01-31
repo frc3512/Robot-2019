@@ -81,18 +81,19 @@ void Elevator::Reset() {
 }
 
 void Elevator::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
-        message.pressed) {
-        SetGoal(1.32);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
-        message.pressed) {
-        SetGoal(0.0);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
-        message.pressed) {
-        SetGoal(0.5);
-    }
+    /*
+      if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
+          message.pressed) {
+          SetGoal(1.32);
+      }
+      if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+          message.pressed) {
+          SetGoal(0.0);
+      }
+      if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
+          message.pressed) {
+          SetGoal(0.5);
+      }*/
 }
 
 void Elevator::ProcessMessage(const CommandPacket& message) {

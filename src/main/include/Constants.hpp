@@ -21,8 +21,8 @@ namespace frc3512 {
  * Math and Conversions
  */
 
-constexpr double kPi = 3.1415926535897932;
 constexpr double kGravity = 9.80665;
+constexpr double kPi = 3.14159265358979323846;
 
 /**
  * Converts degrees to radians
@@ -84,6 +84,7 @@ constexpr double kRobotLength = 0.9398;     // 37.0;  // Approximate
 constexpr double kRobotWidth = 0.8382;      // 33.0;   // Approximate
 constexpr double kWheelRadius = 0.0746125;  // 2.9375;  // 2.947
 constexpr double kDriveGearRatio = 1.0 / 1.0;
+constexpr double kRobotVoltage = 12.0;
 
 // Solenoid Ports
 constexpr int kShifterPort = 1;
@@ -111,12 +112,23 @@ constexpr int kClimberLiftPort = 9;
 constexpr int kFourBarLiftPort = 3;
 
 // Sensors
-constexpr int kFourBarEncoderA = 6;
-constexpr int kFourBarEncoderB = 7;
-constexpr int kFourBarLimitPort = 15;
+constexpr int kFourBarLiftEncoderA = 6;
+constexpr int kFourBarLiftEncoderB = 7;
+constexpr int kFourBarLiftLimitPort = 15;
+
+constexpr auto kFourBarLiftMaxV = 1_mps;
+constexpr auto kFourBarLiftMaxA = 6_mps_sq;
+constexpr double kFourBarLiftGearRatio = 200 / 1;
+constexpr double kFourBarLiftMax = 1;  // TODO dont know this yet
+constexpr double kFourBarLiftMin =
+    0.1;  // Offset slightly so it doesnt go to its absolute max every time
+constexpr double kFourBarLiftStallTorque = 0.71;
+constexpr double kFourBarLiftStallCurrent = 134.0;
+constexpr double kFourBarLiftLength = 0.508;   // Approx 20.0 IN
+constexpr double kFourBarLiftMass = 6.803886;  // Approx 15 lbs.
 
 // Distance per pulse (converts ticks to radians)
-constexpr double kFourBarDpP = 2 * kPi / 2048 / 10;
+constexpr double kFourBarLiftDpP = 2 * kPi / 2048 / 10;
 
 /*
  * Intake
@@ -179,4 +191,5 @@ constexpr double kCargoShip = 2.0193;
 
 // CSV Logging File
 constexpr const char* kCSVFile = "/home/lvuser/CSVFile.csv";
+
 }  // namespace frc3512
