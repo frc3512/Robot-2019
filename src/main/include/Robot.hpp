@@ -9,6 +9,10 @@
 #include <frc/livewindow/LiveWindow.h>
 
 #include "Constants.hpp"
+#include "communications/ButtonPacket.hpp"
+#include "communications/CommandPacket.hpp"
+#include "communications/POVPacket.hpp"
+#include "communications/PublishNode.hpp"
 #include "logging/LogFileSink.hpp"
 #include "logging/Logger.hpp"
 #include "subsystems/Climber.hpp"
@@ -16,6 +20,7 @@
 #include "subsystems/Elevator.hpp"
 #include "subsystems/FourBarLift.hpp"
 #include "subsystems/Intake.hpp"
+#include "subsystems/Vision.hpp"
 
 namespace frc3512 {
 
@@ -42,6 +47,7 @@ private:
     Logger m_logger;
     Intake m_intake;
     FourBarLift m_fourBarLift;
+    Vision m_vision;
 
     frc::Joystick m_driveStick1{kDriveStick1Port};
     frc::Joystick m_driveStick2{kDriveStick2Port};
