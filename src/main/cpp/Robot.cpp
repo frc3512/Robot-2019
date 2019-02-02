@@ -8,6 +8,7 @@
 using namespace frc3512;
 
 Climber Robot::climber;
+CsvLogger Robot::csvLogger{kCSVFile, "Time"};
 Drivetrain Robot::drivetrain;
 Elevator Robot::elevator;
 Logger Robot::logger;
@@ -28,13 +29,20 @@ Robot::Robot() : PublishNode("Robot") {
 void Robot::DisabledInit() {
     CommandPacket message{"DisabledInit", false};
     Publish(message);
+    elevator.Reset();
+    elevator.Disable();
 }
 
-void Robot::AutonomousInit() {}
+void Robot::AutonomousInit() {
+    elevator.Reset();
+    elevator.Enable();
+}
 
 void Robot::TeleopInit() {
     CommandPacket message{"TeleopInit", false};
     Publish(message);
+    elevator.Reset();
+    elevator.Enable();
 }
 
 void Robot::TestInit() {}
@@ -58,12 +66,15 @@ void Robot::RobotPeriodic() {
         POVPacket message{"AppendagePOV", 0};
     } else if (appendageStick.GetPOV() == 180) {
         POVPacket message{"AppendagePOV", 180};
+        // TODO: integrate this into Publish/Subscribe system
     } else {
         POVPacket message{"AppendagePOV", -1};
     }
 }
 
-void Robot::DisabledPeriodic() {}
+void Robot::DisabledPeriodic() {
+    std::cout << elevator.GetHeight() << std::endl;
+}
 
 void Robot::AutonomousPeriodic() {}
 

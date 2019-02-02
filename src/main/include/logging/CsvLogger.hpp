@@ -15,7 +15,7 @@ namespace frc3512 {
  */
 class CsvLogger {
 public:
-    explicit CsvLogger(const std::string& filename);
+    explicit CsvLogger(const std::string& filename, std::string valueNames);
 
     template <class... doubles>
     void Log(double value, doubles... values);

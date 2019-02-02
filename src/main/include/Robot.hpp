@@ -10,6 +10,7 @@
 #include "communications/CommandPacket.hpp"
 #include "communications/POVPacket.hpp"
 #include "communications/PublishNode.hpp"
+#include "logging/CsvLogger.hpp"
 #include "logging/LogFileSink.hpp"
 #include "logging/Logger.hpp"
 #include "subsystems/Climber.hpp"
@@ -43,6 +44,7 @@ public:
 
 private:
     LogFileSink fileSink{"/home/lvuser/Robot.log"};
+    static CsvLogger csvLogger;
 };
 
 }  // namespace frc3512

@@ -10,3 +10,5 @@ build/
 !Packet.hpp
 PacketType.cpp
 PacketType.hpp
+*Coeffs.cpp
+*Coeffs.hpp

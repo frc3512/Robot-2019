@@ -39,11 +39,11 @@ void Climber::Climb() {
 }
 
 void Climber::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
+    if (message.topic == "Robot/AppendageStick" && message.button == 3 &&
         message.pressed) {
         Ascend();
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
+    if (message.topic == "Robot/AppendageStick" && message.button == 5 &&
         message.pressed) {
         Descend();
     }

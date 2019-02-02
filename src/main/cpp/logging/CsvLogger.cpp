@@ -6,13 +6,20 @@
 
 using namespace frc3512;
 
-CsvLogger::CsvLogger(const std::string& filename) : m_logfile(filename) {
+CsvLogger::CsvLogger(const std::string& filename, std::string valueNames)
+    : m_logfile(filename) {
     m_startTime = hal::fpga_clock::now();
+    if (!m_logfile.is_open()) {
+        std::cout << filename << " has failed to open." << std::endl;
+    }
+    m_logfile << valueNames << '\n';
+    m_logfile.flush();
 }
 
 void CsvLogger::LogImpl(double value) {
-    std::cout << std::endl;
     m_logfile << value << '\n';
+    std::cout << "Flushing" << std::endl;
+    m_logfile.flush();
 }
 
 double CsvLogger::Timestamp() {

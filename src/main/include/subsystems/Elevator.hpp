@@ -4,11 +4,13 @@
 
 #include <frc/DigitalInput.h>
 #include <frc/Encoder.h>
+#include <frc/Notifier.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
+#include "control/ElevatorController.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {
@@ -16,6 +18,7 @@ namespace frc3512 {
 class Elevator : public SubsystemBase, public PublishNode {
 public:
     Elevator();
+    Elevator& operator=(const Elevator&) = delete;
 
     /**
      * Sets the velocity of the elevator.
@@ -23,7 +26,7 @@ public:
      * @param velocity in [-1..1]
      */
     // todo: rename to be more accurate
-    void SetVelocity(double velocity);
+    void SetVoltage(double voltage);
 
     /**
      * Resets the encoder.
@@ -37,13 +40,33 @@ public:
      */
     double GetHeight();
 
+    double GetVelocity();
+
+    bool GetMagneticSwitch();
+
+    void Enable();
+    void Disable();
+
+    void SetGoal(double position);
+
+    bool AtReference() const;
+
+    void Iterate();
+
+    double ControllerVoltage() const;
+
+    void Reset();
+
     void SubsystemPeriodic() override;
+
+    void ProcessMessage(const ButtonPacket& message) override;
 
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
     frc::Spark m_grbx{kElevatorPort};
 
+    ElevatorController m_controller;
     frc::Encoder m_encoder{kEncoderA, kEncoderB};
 
     frc::DigitalInput m_topLimitSwitch{kTopLimitSwitchPort};
@@ -51,6 +74,7 @@ private:
     frc::DigitalInput m_bottomLimitSwitch{kBottomLimitSwitchPort};
 
     bool m_limitPressedState = false;
+    frc::Notifier m_thread{&Elevator::Iterate, this};
 };
 
 }  // namespace frc3512
