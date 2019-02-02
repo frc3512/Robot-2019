@@ -12,6 +12,7 @@ cppSrcFileInclude {
 modifiableFileExclude {
   gradle/
   python/
+  format.py
 }
 
 includeOtherLibs {
