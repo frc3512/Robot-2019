@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include <frc/DoubleSolenoid.h>
+#include <frc/PowerDistributionPanel.h>
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/Timer.h>
 
 #include "Constants.hpp"
 
-enum class State { kInit, kStartClimb, kClimbUp, kIdle };
+enum class State { kInit, kAscend, kDriveForward, kIdle };
 
 /**
  * Provides an interface for this year's climber.
@@ -19,46 +19,45 @@ public:
     Climber();
 
     /**
-     * Puts arm down.
+     * Pushes the back end of the robot up
      */
-    void DescendArm();
-    /**
-     * Pulls arm back.
-     */
-    void AscendArm();
+    void Ascend();
 
     /**
-     * Releases clamps from platform.
+     * Allows the back end of the robot down
      */
-    void OpenClamps();
-    /**
-     * Presses clamps onto platform.
-     */
-    void CloseClamps();
+    void Descend();
 
     /**
-     * Pulls arm into robot.
+     * Drives the robot forward onto platform
      */
-    void WinchIn();
-    /**
-     * Releases arm onto platform.
-     */
-    void WinchOut();
+    void Forward();
 
     /**
-     * Stops the winch from recieving voltage.
+     * Drives the robot backward
      */
-    void WinchStop();
+    void Reverse();
 
     /**
-     * Runs the Switch-Case statment that makes the Robot climb.
+     * Runs a state machine to climb onto platform
+     *
+     * The beginning state is the robot on platform level one, up against the
+     * level 3 platform. The end state should be the robot on top of the level 3
+     * platform with the lift retracted.
+     *
+     * TODO: Implement the four-bar into the state machine after message queue
+     * is finished
      */
     void Climb();
 
 private:
     State m_state = State::kInit;
-    frc::Solenoid m_climberArm{kClimberArmPort};
-    frc::DoubleSolenoid m_clamp{kClampForwardPort, kClampReversePort};
-    frc::Spark m_winch{kWinchID};
+
     frc::Timer m_timer;
+
+    frc::Solenoid m_lift{kClimberLiftPort};
+
+    // frc::Spark m_lift{kClimberLiftPort};
+    frc::Spark m_drive{kClimberDrivePort};
+    frc::PowerDistributionPanel m_pdpDrive{0};
 };

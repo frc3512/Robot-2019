@@ -43,22 +43,11 @@ void Robot::TeleopPeriodic() {
     }
 
     // Climber code
-    if (appendageStick.GetRawButtonPressed(12)) {
+    if (appendageStick.GetRawButtonPressed(3)) {
         climber.Climb();
     }
-    if (appendageStick.GetRawButtonPressed(11)) {
-        climber.AscendArm();
-    }
-    if (appendageStick.GetRawButtonPressed(10)) {
-        climber.OpenClamps();
-    }
-    if (appendageStick.GetPOV() == 0) {
-        climber.WinchOut();
-    } else if (appendageStick.GetPOV() == 180) {
-        climber.WinchIn();
-    } else {
-        climber.WinchStop();
-    }
+
+    // Elevator code
     elevator.SetVelocity(appendageStick.GetY());
 }
 

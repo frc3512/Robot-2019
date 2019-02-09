@@ -33,7 +33,7 @@ constexpr T rad2deg(const T& value) {
  * Joystick and buttons
  */
 
-// Joystick ports
+// Joystick Ports
 constexpr int kDriveStick1Port = 0;
 constexpr int kDriveStick2Port = 1;
 constexpr int kAppendageStickPort = 2;
@@ -44,23 +44,16 @@ constexpr double kJoystickDeadband = 0.02;
 /*
  * DriveTrain
  */
-// Motor IDs
+
+// Motor Ports
 constexpr int kLeftDriveMasterID = 1;
 constexpr int kRightDriveMasterID = 7;
 
-// Encoder IDs
+// Encoder Ports
 constexpr int kLeftEncoderA = 2;
 constexpr int kLeftEncoderB = 3;
 constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
-
-/*
- * Climber
- */
-constexpr int kClimberArmPort = 0;
-constexpr int kClampForwardPort = 1;
-constexpr int kClampReversePort = 2;
-constexpr int kWinchID = 0;
 
 // Solenoid Ports
 constexpr int kShifterPort = 3;
@@ -73,14 +66,26 @@ constexpr double kInertiaHighTurn = 3.0;
 constexpr double kInertiaLowTurn = 3.0;
 
 /*
+ * Climber
+ */
+
+// Motor Ports
+constexpr int kClimberDrivePort = 0;
+
+// Solenoid Ports
+constexpr int kClimberLiftPort = 0;
+
+/*
  * Elevator
  */
 
-// Motor IDs
+// Motor Ports
 constexpr int kElevatorPort = 4;
 
 // Sensors
 constexpr int kBottomLimitSwitchPort = 9;
 constexpr int kTopLimitSwitchPort = 8;
+
+// Encoder Ports
 constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
