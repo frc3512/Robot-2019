@@ -45,8 +45,8 @@ constexpr double kJoystickDeadband = 0.02;
  * DriveTrain
  */
 // Motor IDs
-constexpr int kLeftDriveMasterID = 3;
-constexpr int kRightDriveMasterID = 0;
+constexpr int kLeftDriveMasterID = 1;
+constexpr int kRightDriveMasterID = 7;
 
 // Encoder IDs
 constexpr int kLeftEncoderA = 2;
@@ -76,9 +76,10 @@ constexpr double kInertiaLowTurn = 3.0;
  * Elevator
  */
 
-// Spark ID
-constexpr int kElevatorMasterID = 0;
+// Motor IDs
+constexpr int kElevatorMasterID = 4;
+constexpr int kElevatorSlaveID = 5;
 
 // Encoder
-constexpr int kEncoderA = 1;
-constexpr int kEncoderB = 2;
+constexpr int kEncoderA = 4;
+constexpr int kEncoderB = 5;

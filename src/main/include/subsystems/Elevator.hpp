@@ -4,6 +4,7 @@
 
 #include <frc/Encoder.h>
 #include <frc/Spark.h>
+#include <frc/SpeedControllerGroup.h>
 
 #include "Constants.hpp"
 
@@ -18,7 +19,9 @@ public:
     double GetHeight();
 
 private:
-    frc::Spark m_grbx{kElevatorMasterID};
+    frc::Spark m_master{kElevatorMasterID};
+    frc::Spark m_slave{kElevatorSlaveID};
+    frc::SpeedControllerGroup m_grbx{m_master, m_slave};
 
     frc::Encoder m_encoder{kEncoderA, kEncoderB};
 };

@@ -32,7 +32,13 @@ public:
     void SetLeftManual(double value);
     void SetRightManual(double value);
 
-    // Shifts between gears
+    // Shifts to high gear
+    void ShiftUp();
+
+    // Shifts to low gear
+    void ShiftDown();
+
+    // Toggles to the other gear
     void Shift();
 
     // Return gyro's angle
