@@ -1,0 +1,9 @@
+State:
+  double state
+
+Button:
+  int button
+  bool pressed
+
+POV:
+  int direction

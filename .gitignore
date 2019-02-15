@@ -4,3 +4,9 @@
 .vscode/
 build/
 *.swp
+*Packet.cpp
+*Packet.hpp
+!Packet.cpp
+!Packet.hpp
+PacketType.cpp
+PacketType.hpp

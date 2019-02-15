@@ -10,13 +10,15 @@
 #include <frc/drive/DifferentialDrive.h>
 
 #include "Constants.hpp"
+#include "communications/PublishNode.hpp"
+#include "subsystems/SubsystemBase.hpp"
 
 class CANTalonGroup;
 
 /**
  * Provides an interface for this year's drive train.
  */
-class Drivetrain {
+class Drivetrain : public SubsystemBase, public PublishNode {
 public:
     Drivetrain();
     Drivetrain(const Drivetrain&) = delete;
@@ -99,6 +101,10 @@ public:
      * @return displacement
      */
     double GetRightDisplacement();
+
+    void SubsystemPeriodic() override;
+
+    void ProcessMessage(const ButtonPacket& message) override;
 
 private:
     // Left gearbox used in position PID

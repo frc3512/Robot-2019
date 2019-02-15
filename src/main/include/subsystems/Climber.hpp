@@ -8,13 +8,12 @@
 #include <frc/Timer.h>
 
 #include "Constants.hpp"
+#include "communications/PublishNode.hpp"
+#include "subsystems/SubsystemBase.hpp"
 
 enum class State { kInit, kAscend, kDriveForward, kIdle };
 
-/**
- * Provides an interface for this year's climber.
- */
-class Climber {
+class Climber : public SubsystemBase, public PublishNode {
 public:
     Climber();
 
@@ -49,6 +48,9 @@ public:
      * is finished
      */
     void Climb();
+
+    void ProcessMessage(const ButtonPacket& message) override;
+    void ProcessMessage(const POVPacket& message) override;
 
 private:
     State m_state = State::kInit;

@@ -89,3 +89,6 @@ constexpr int kTopLimitSwitchPort = 8;
 // Encoder Ports
 constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
+
+// PublishNode constants
+constexpr int kNodeQueueSize = 1024;

@@ -7,10 +7,8 @@
 Climber::Climber() { m_timer.Start(); }
 
 void Climber::Ascend() { m_lift.Set(true); }
-// void Climber::Ascend() { m_lift.Set(1.0); }
 
 void Climber::Descend() { m_lift.Set(false); }
-// void Climber::Descend() { m_lift.Set(-1.0); }
 
 void Climber::Forward() { m_drive.Set(1.0); }
 
@@ -28,7 +26,6 @@ void Climber::Climb() {
                 m_state = State::kDriveForward;
             }
         case State::kDriveForward:
-            // TODO: Replace HasPeriodPassed with a current check
             if (m_pdpDrive.GetCurrent(kClimberDrivePort) >= 4) {
                 Descend();
                 m_state = State::kIdle;
@@ -36,5 +33,28 @@ void Climber::Climb() {
             break;
         case State::kIdle:
             break;
+    }
+}
+
+void Climber::ProcessMessage(const ButtonPacket& message) {
+    if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
+        message.pressed) {
+        Ascend();
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
+        message.pressed) {
+        Descend();
+    }
+}
+
+void Climber::ProcessMessage(const POVPacket& message) {
+    if (message.topic == "Robot/AppendagePOV" && message.direction == 0) {
+        Forward();
+    }
+    if (message.topic == "Robot/AppendagePOV" && message.direction == 180) {
+        Reverse();
+    }
+    if (message.topic == "Robot/AppendagePOV" && message.direction == -1) {
+        m_drive.Set(0.0);
     }
 }

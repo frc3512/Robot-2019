@@ -4,6 +4,11 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2019.3.2"
 }
 
+task pythonTask(type: Exec) {
+    workingDir 'python'
+    commandLine 'python3', 'generate_src.py'
+}
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project EmbeddedTools.
 deploy {
@@ -52,8 +57,13 @@ model {
             }
 
             binaries.all {
-                if (!(toolChain instanceof VisualCpp))
+                binary ->
+                binary.getTasks().withType(AbstractNativeSourceCompileTask) {
+                    it.dependsOn pythonTask
+                }
+                if (!(toolChain instanceof VisualCpp)) {
                     cppCompiler.args << '-O2' << '-Wno-deprecated-declarations'
+                }
             }
 
             sources.cpp {

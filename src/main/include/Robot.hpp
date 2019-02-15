@@ -6,11 +6,16 @@
 #include <frc/TimedRobot.h>
 
 #include "Constants.hpp"
+#include "communications/ButtonPacket.hpp"
+#include "communications/POVPacket.hpp"
+#include "communications/PublishNode.hpp"
+#include "logging/LogFileSink.hpp"
+#include "logging/Logger.hpp"
 #include "subsystems/Climber.hpp"
 #include "subsystems/Drivetrain.hpp"
 #include "subsystems/Elevator.hpp"
 
-class Robot : public frc::TimedRobot {
+class Robot : public frc::TimedRobot, public PublishNode {
 public:
     Robot();
 
@@ -27,8 +32,12 @@ public:
     static Climber climber;
     static Drivetrain drivetrain;
     static Elevator elevator;
+    static Logger logger;
 
     static frc::Joystick driveStick1;
     static frc::Joystick driveStick2;
     static frc::Joystick appendageStick;
+
+private:
+    LogFileSink fileSink{"/home/lvuser/Robot.log"};
 };

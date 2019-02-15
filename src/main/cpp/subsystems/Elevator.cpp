@@ -6,7 +6,7 @@
 
 #include "Robot.hpp"
 
-Elevator::Elevator() {}
+Elevator::Elevator() : PublishNode("Elevator") {}
 
 void Elevator::SetVelocity(double velocity) {
     if (velocity > 0 && m_topLimitSwitch.Get() == m_limitPressedState) {
@@ -26,4 +26,9 @@ void Elevator::HallSensor() {
     if (m_bottomLimitSwitch.Get()) {
         m_encoder.Reset();
     }
+}
+
+void Elevator::SubsystemPeriodic() {
+    SetVelocity(Robot::appendageStick.GetY());
+    HallSensor();
 }

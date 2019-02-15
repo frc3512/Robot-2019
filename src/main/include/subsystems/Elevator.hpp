@@ -8,11 +8,10 @@
 #include <frc/SpeedControllerGroup.h>
 
 #include "Constants.hpp"
+#include "communications/PublishNode.hpp"
+#include "subsystems/SubsystemBase.hpp"
 
-/**
- * Provides an interface for this year's elevator.
- */
-class Elevator {
+class Elevator : public SubsystemBase, public PublishNode {
 public:
     Elevator();
 
@@ -37,6 +36,8 @@ public:
     double GetHeight();
 
     void HallSensor();
+
+    void SubsystemPeriodic() override;
 
 private:
     frc::Spark m_grbx{kElevatorPort};

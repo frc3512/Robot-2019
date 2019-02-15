@@ -9,7 +9,7 @@
 
 #include "Robot.hpp"
 
-Drivetrain::Drivetrain() {
+Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
     m_drive.SetDeadband(kJoystickDeadband);
 
     m_leftGrbx.Set(0.0);
@@ -44,3 +44,20 @@ void Drivetrain::Debug() {}
 double Drivetrain::GetLeftDisplacement() { return m_leftEncoder.Get(); }
 
 double Drivetrain::GetRightDisplacement() { return m_rightEncoder.Get(); }
+
+void Drivetrain::SubsystemPeriodic() {
+    if (Robot::driveStick1.GetRawButton(1)) {
+        Drive(-Robot::driveStick1.GetY() * 0.5, Robot::driveStick2.GetX() * 0.5,
+              Robot::driveStick2.GetRawButton(2));
+    } else {
+        Drive(-Robot::driveStick1.GetY(), Robot::driveStick2.GetX(),
+              Robot::driveStick2.GetRawButton(2));
+    }
+}
+
+void Drivetrain::ProcessMessage(const ButtonPacket& message) {
+    if (message.topic == "Robot/DriveStick2" && message.button == 1 &&
+        message.pressed) {
+        Shift();
+    }
+}
