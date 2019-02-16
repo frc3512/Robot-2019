@@ -8,14 +8,31 @@
 
 #include "Constants.hpp"
 
+/**
+ * Provides an interface for this year's elevator.
+ */
 class Elevator {
 public:
     Elevator();
 
+    /**
+     * Sets the velocity of the elevator.
+     *
+     * @param velocity in [-1..1]
+     */
+    // todo: rename to be more accurate
     void SetVelocity(double velocity);
 
+    /**
+     * Resets the encoder.
+     */
     void ResetEncoder();
 
+    /**
+     * Returns height of the elevator.
+     *
+     * @return height in inches
+     */
     double GetHeight();
 
 private:

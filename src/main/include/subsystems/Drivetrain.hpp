@@ -14,7 +14,7 @@
 class CANTalonGroup;
 
 /**
- * Provides an interface for this year's drive train
+ * Provides an interface for this year's drive train.
  */
 class Drivetrain {
 public:
@@ -28,36 +28,76 @@ public:
      */
     void Drive(double throttle, double turn, bool isQuickTurn = false);
 
-    // Directly set wheel speeds [0..1] (see GearBox::SetManual(double))
+    /**
+     * Directly set wheel speeds (see GearBox::SetManual(double)).
+     *
+     * @param value speeds [0..1]
+     */
     void SetLeftManual(double value);
+
+    /**
+     * Directly set wheel speeds (see GearBox::SetManual(double)).
+     *
+     * @param value speeds [0..1]
+     */
     void SetRightManual(double value);
 
-    // Shifts to high gear
+    /**
+     * Shifts gear ratio up.
+     */
     void ShiftUp();
 
-    // Shifts to low gear
+    /**
+     * Shifts gear ratio down.
+     */
     void ShiftDown();
 
-    // Toggles to the other gear
+    /*
+     * Toggles the gear ratio.
+     */
     void Shift();
 
-    // Return gyro's angle
+    /**
+     * Returns gyro angle.
+     *
+     * @return angle in degrees
+     */
     double GetAngle();
 
-    // Return gyro's rate
+    /**
+     * Returns gyro angular rate.
+     *
+     * @return angular rate in degrees per second
+     */
     double GetAngularRate() const;
 
-    // Resets gyro
+    /**
+     * Resets gyro.
+     */
     void ResetGyro();
 
-    // Calibrates gyro
+    /**
+     * Calibrates gyro.
+     */
     void CalibrateGyro();
 
-    // Sends print statements for debugging purposes
+    /**
+     * Sends print statements for debugging purposes.
+     */
     void Debug();
 
-    // Returns encoder values
+    /**
+     * Returns left encoder displacement.
+     *
+     * @return displacement
+     */
     double GetLeftDisplacement();
+
+    /**
+     * Returns right encoder displacement.
+     *
+     * @return displacement
+     */
     double GetRightDisplacement();
 
 private:

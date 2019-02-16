@@ -11,29 +11,48 @@
 
 enum class State { kInit, kStartClimb, kClimbUp, kIdle };
 
+/**
+ * Provides an interface for this year's climber.
+ */
 class Climber {
 public:
     Climber();
 
-    // Releases arm onto platfrom
+    /**
+     * Puts arm down.
+     */
     void DescendArm();
-    // Pulls arm back to robot
+    /**
+     * Pulls arm back.
+     */
     void AscendArm();
 
-    // Releases clamps from platform
+    /**
+     * Releases clamps from platform.
+     */
     void OpenClamps();
-    // Presses clamps onto platform
+    /**
+     * Presses clamps onto platform.
+     */
     void CloseClamps();
 
-    // Pulls arm into robot
+    /**
+     * Pulls arm into robot.
+     */
     void WinchIn();
-    // Releases arm onto platform
+    /**
+     * Releases arm onto platform.
+     */
     void WinchOut();
 
-    // Stops the whinch from recieving voltage
+    /**
+     * Stops the winch from recieving voltage.
+     */
     void WinchStop();
 
-    // Runs the Switch-Case statment that makes the Robot climb
+    /**
+     * Runs the Switch-Case statment that makes the Robot climb.
+     */
     void Climb();
 
 private:
