@@ -35,5 +35,3 @@ Extensive Data And Driver UI Reporting
 Mentors: Tyler Veness, William Ward
 
 Students: Charlie Parkinson (Lead), Luke Rowe, William Jin, Kyle Quinlan, Matthew Santana, Gabriel Castellanos
-
-

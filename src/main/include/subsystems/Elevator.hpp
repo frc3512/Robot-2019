@@ -39,9 +39,7 @@ public:
     void HallSensor();
 
 private:
-    frc::Spark m_master{kElevatorMasterID};
-    frc::Spark m_slave{kElevatorSlaveID};
-    frc::SpeedControllerGroup m_grbx{m_master, m_slave};
+    frc::Spark m_grbx{kElevatorPort};
 
     frc::Encoder m_encoder{kEncoderA, kEncoderB};
 

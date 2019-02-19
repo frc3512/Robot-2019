@@ -77,11 +77,10 @@ constexpr double kInertiaLowTurn = 3.0;
  */
 
 // Motor IDs
-constexpr int kElevatorMasterID = 4;
-constexpr int kElevatorSlaveID = 5;
+constexpr int kElevatorPort = 4;
 
 // Sensors
-constexpr int kBottomLimitSwitchPort = 8;
-constexpr int kTopLimitSwitchPort = 6;
+constexpr int kBottomLimitSwitchPort = 9;
+constexpr int kTopLimitSwitchPort = 8;
 constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
