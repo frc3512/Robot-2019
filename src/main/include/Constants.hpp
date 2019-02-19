@@ -46,8 +46,8 @@ constexpr double kJoystickDeadband = 0.02;
  */
 
 // Motor Ports
-constexpr int kLeftDriveMasterID = 1;
-constexpr int kRightDriveMasterID = 7;
+constexpr int kLeftDriveMasterPort = 1;
+constexpr int kRightDriveMasterPort = 7;
 
 // Encoder Ports
 constexpr int kLeftEncoderA = 2;

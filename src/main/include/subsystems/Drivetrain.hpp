@@ -102,11 +102,11 @@ public:
 
 private:
     // Left gearbox used in position PID
-    frc::Spark m_leftGrbx{kLeftDriveMasterID};
+    frc::Spark m_leftGrbx{kLeftDriveMasterPort};
     frc::Encoder m_leftEncoder{kLeftEncoderA, kLeftEncoderB};
 
     // Right gearbox used in position PID
-    frc::Spark m_rightGrbx{kRightDriveMasterID};
+    frc::Spark m_rightGrbx{kRightDriveMasterPort};
     frc::Encoder m_rightEncoder{kRightEncoderA, kRightEncoderB};
 
     frc::DifferentialDrive m_drive{m_leftGrbx, m_rightGrbx};
