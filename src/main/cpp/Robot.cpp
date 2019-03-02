@@ -21,19 +21,31 @@ Robot::Robot() : PublishNode("Robot") {
     m_logger.Subscribe(*this);
 
     m_climber.Subscribe(*this);
+    m_climber.Subscribe(m_climber);
+    m_climber.Subscribe(m_elevator);
+    m_climber.Subscribe(m_fourBarLift);
     m_drivetrain.Subscribe(*this);
     m_elevator.Subscribe(*this);
+    m_elevator.Subscribe(m_climber);
+    m_elevator.Subscribe(m_fourBarLift);
     m_intake.Subscribe(*this);
     m_fourBarLift.Subscribe(*this);
+    m_fourBarLift.Subscribe(m_elevator);
+    m_fourBarLift.Subscribe(m_climber);
 
     camera.SetResolution(160, 120);
     camera.SetFPS(15);
     server.SetSource(camera);
+
+    m_fourBarLift.Subscribe(m_climber);
 }
 
 void Robot::DisabledInit() {
     CommandPacket message{"DisabledInit", false};
     Publish(message);
+    m_elevator.Reset();
+    m_elevator.Disable();
+    m_climber.Disable();
 }
 
 void Robot::AutonomousInit() {
@@ -75,11 +87,6 @@ void Robot::TestInit() {}
 
 void Robot::RobotPeriodic() {}
 
-void Robot::DisabledPeriodic() {
-    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
-    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
-}
-
 void Robot::AutonomousPeriodic() { TeleopPeriodic(); }
 
 void Robot::TeleopPeriodic() {
@@ -106,27 +113,6 @@ void Robot::TeleopPeriodic() {
         }
     }
 
-    if (m_appendageStick.GetPOV() == 0) {
-        POVPacket message{"AppendagePOV", 0};
-        Publish(message);
-    } else if (m_appendageStick.GetPOV() == 180) {
-        POVPacket message{"AppendagePOV", 180};
-        Publish(message);
-    } else {
-        POVPacket message{"AppendagePOV", -1};
-        Publish(message);
-    }
-    if (m_driveStick2.GetPOV() == 0) {
-        POVPacket message{"Drive2POV", 0};
-        Publish(message);
-    } else if (m_driveStick2.GetPOV() == 180) {
-        POVPacket message{"Drive2POV", 180};
-        Publish(message);
-    } else {
-        POVPacket message{"Drive2POV", -1};
-        Publish(message);
-    }
-
     auto& ds = frc::DriverStation::GetInstance();
     HIDPacket message{"",
                       m_driveStick1.GetX(),
@@ -142,6 +128,12 @@ void Robot::TeleopPeriodic() {
                       m_appendageStick2.GetY(),
                       ds.GetStickButtons(3)};
     Publish(message);
+}
+
+void Robot::DisabledPeriodic() {
+    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
+    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
+    std::cout << "Climber: " << m_climber.GetHeight() << std::endl;
 }
 
 #ifndef RUNNING_FRC_TESTS

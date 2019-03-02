@@ -45,9 +45,13 @@ public:
 
     bool AtReference() const;
 
+    bool AtGoal();
+
     void Iterate();
 
     void Reset();
+
+    void SubsystemPeriodic() override;
 
     void ProcessMessage(const ButtonPacket& message) override;
 

@@ -40,6 +40,8 @@ public:
 
     bool AtReferences() const;
 
+    bool AtGoal() const;
+
     /**
      * Sets the current encoder measurement.
      *

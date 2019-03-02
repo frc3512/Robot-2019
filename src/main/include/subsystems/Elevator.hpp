@@ -51,11 +51,15 @@ public:
 
     bool AtReference() const;
 
+    bool AtGoal();
+
     void Iterate();
 
     double ControllerVoltage() const;
 
     void Reset();
+
+    void SubsystemPeriodic() override;
 
     void ProcessMessage(const ButtonPacket& message) override;
 

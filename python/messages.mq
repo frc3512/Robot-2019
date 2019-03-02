@@ -11,6 +11,18 @@ POV:
 Command:
   bool reply
 
+ElevatorStatus:
+  double distance
+  double controllerVoltage
+  bool atReference
+  bool atGoal
+
+FourBarLiftStatus:
+  double distance
+  double controllerVoltage
+  bool atReference
+  bool atGoal
+
 HID:
   double x1
   double y1
@@ -24,3 +36,4 @@ HID:
   double x4
   double y4
   int buttons4
+

@@ -47,13 +47,19 @@ void ElevatorController::SetReferences(units::meter_t position,
 
 bool ElevatorController::AtReferences() const { return m_atReferences; }
 
+bool ElevatorController::AtGoal() const {
+    return m_atReferences && m_goal == m_profiledReference;
+}
+
 void ElevatorController::SetMeasuredPosition(double measuredPosition) {
     m_Y(0, 0) = measuredPosition;
 }
 
 double ElevatorController::ControllerVoltage() const {
     if (m_controller.GetIndex() == 1) {
-        return m_controller.U(0);
+        // Feedforward compensates for unmodeled extra weight from lifting robot
+        // while climbing
+        return m_controller.U(0) - 0.5;
     } else {
         return m_controller.U(0) +
                (std::pow(kCarriageMass, 2) * kGravity * kResistance *
@@ -109,4 +115,18 @@ void ElevatorController::Reset() {
     m_controller.Reset();
     m_observer.Reset();
     m_nextR.setZero();
+}
+
+void ElevatorController::SetClimbingProfile() {
+    m_activeConstraints = climbingConstraints;
+    m_plant.SetIndex(1);
+    m_controller.SetIndex(1);
+    m_observer.SetIndex(1);
+}
+
+void ElevatorController::SetScoringProfile() {
+    m_activeConstraints = scoringConstraints;
+    m_plant.SetIndex(0);
+    m_controller.SetIndex(0);
+    m_observer.SetIndex(0);
 }

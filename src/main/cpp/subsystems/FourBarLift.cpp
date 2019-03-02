@@ -2,6 +2,7 @@
 
 #include "subsystems/FourBarLift.hpp"
 
+#include <chrono>
 #include <limits>
 
 #include <frc/DriverStation.h>
@@ -9,6 +10,7 @@
 #include "Robot.hpp"
 
 using namespace frc3512;
+using namespace std::chrono_literals;
 
 FourBarLift::FourBarLift() : PublishNode("FourBarLift") {
     m_grbx.Set(0.0);
@@ -38,6 +40,8 @@ void FourBarLift::SetGoal(double position) { m_controller.SetGoal(position); }
 
 bool FourBarLift::AtReference() const { return m_controller.AtReferences(); }
 
+bool FourBarLift::AtGoal() { return m_controller.AtGoal(); }
+
 void FourBarLift::Iterate() {
     m_controller.SetMeasuredAngle(m_encoder.GetDistance());
     m_controller.Update();
@@ -51,6 +55,13 @@ void FourBarLift::Iterate() {
 void FourBarLift::Reset() {
     ResetEncoder();
     m_controller.Reset();
+}
+
+void FourBarLift::SubsystemPeriodic() {
+    FourBarLiftStatusPacket message{
+        "", m_encoder.GetDistance(), m_controller.ControllerVoltage(),
+        m_controller.AtReferences(), m_controller.AtGoal()};
+    Publish(message);
 }
 
 void FourBarLift::ProcessMessage(const ButtonPacket& message) {
@@ -92,5 +103,13 @@ void FourBarLift::ProcessMessage(const CommandPacket& message) {
     }
     if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
+    }
+    if (message.topic == "Climber/FourBarStart") {
+        m_controller.SetClimbing(true);
+        SetGoal(-1.654);
+    }
+    if (message.topic == "Climber/Up") {
+        m_controller.SetClimbing(false);
+        SetGoal(0);
     }
 }

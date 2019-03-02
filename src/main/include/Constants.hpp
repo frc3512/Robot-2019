@@ -75,6 +75,10 @@ constexpr int kShifterPort = 1;
 constexpr int kClimberDrivePort = 2;
 constexpr int kClimberLiftPort = 9;
 
+// Climber Encoder Ports
+constexpr int kLiftEncoderA = 8;
+constexpr int kLiftEncoderB = 9;
+
 /*
  * Four-bar Lift
  */
@@ -116,6 +120,17 @@ constexpr int kRightIntakePDP = 10;
 
 // Solenoid ports
 constexpr int kIntakeClawPort = 2;
+
+// Climber Physical Constants
+constexpr auto kClimberMaxV = 0.25_mps;  // m/sec
+constexpr auto kClimberMaxA = 2.5_mps_sq;
+constexpr double kClimberGearRatio = 50 / 1;
+constexpr double kSprocketRadius = 0.0323342 / 2.0;
+constexpr double kClimberDpP = (2.0 * kPi * kSprocketRadius) / 2048.0;
+constexpr double kRobotMass = 63.503;  // kg
+
+// Climber Setpoints
+constexpr double kClimbHeight = -0.4826 - 0.0254;  // - 0.04;
 
 /*
  * Elevator

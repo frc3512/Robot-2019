@@ -2,6 +2,7 @@
 
 #include "subsystems/Elevator.hpp"
 
+#include <chrono>
 #include <limits>
 
 #include <frc/DriverStation.h>
@@ -9,6 +10,7 @@
 #include "Robot.hpp"
 
 using namespace frc3512;
+using namespace std::chrono_literals;
 
 Elevator::Elevator() : PublishNode("Elevator") {
     m_grbx.Set(0.0);
@@ -42,6 +44,8 @@ void Elevator::SetGoal(double position) { m_controller.SetGoal(position); }
 
 bool Elevator::AtReference() const { return m_controller.AtReferences(); }
 
+bool Elevator::AtGoal() { return m_controller.AtGoal(); }
+
 void Elevator::Iterate() {
     m_controller.SetMeasuredPosition(m_encoder.GetDistance());
     m_controller.Update();
@@ -59,6 +63,13 @@ double Elevator::ControllerVoltage() const {
 void Elevator::Reset() {
     ResetEncoder();
     m_controller.Reset();
+}
+
+void Elevator::SubsystemPeriodic() {
+    ElevatorStatusPacket message{
+        "", m_encoder.GetDistance(), m_controller.ControllerVoltage(),
+        m_controller.AtReferences(), m_controller.AtGoal()};
+    Publish(message);
 }
 
 void Elevator::ProcessMessage(const ButtonPacket& message) {
@@ -94,14 +105,6 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
         message.pressed) {
         SetGoal(kCargoShip);
     }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 7 &&
-        message.pressed) {
-        SetClimbingIndex();
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 8 &&
-        message.pressed) {
-        SetScoringIndex();
-    }
 }
 
 void Elevator::ProcessMessage(const CommandPacket& message) {
@@ -113,5 +116,17 @@ void Elevator::ProcessMessage(const CommandPacket& message) {
     }
     if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
+    }
+    if (message.topic == "Climber/ElevatorStart") {
+        SetGoal(0.48);
+    }
+    if (message.topic == "Climber/ClimbingProfile") {
+        m_controller.SetClimbingIndex();
+    }
+    if (message.topic == "Climber/Down") {
+        SetGoal(0);
+    }
+    if (message.topic == "Climber/ScoringProfile") {
+        m_controller.SetScoringIndex();
     }
 }

@@ -45,6 +45,8 @@ public:
 
     bool AtReferences() const;
 
+    bool AtGoal() const;
+
     /**
      * Sets the current encoder measurement.
      *
@@ -93,6 +95,10 @@ public:
      * Resets any internal state.
      */
     void Reset(void);
+
+    void SetClimbingProfile();
+
+    void SetScoringProfile();
 
 private:
     // The current sensor measurement.

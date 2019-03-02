@@ -33,6 +33,10 @@ void FourBarLiftController::SetReferences(units::meter_t angle,
 
 bool FourBarLiftController::AtReferences() const { return m_atReferences; }
 
+bool FourBarLiftController::AtGoal() const {
+    return m_atReferences && m_goal == m_profiledReference;
+}
+
 void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
     m_Y(0, 0) = measuredAngle;
 }
@@ -47,7 +51,9 @@ double FourBarLiftController::ControllerVoltage() const {
                     (kFourBarLiftStallTorque / kFourBarLiftStallCurrent)) *
                    std::cos(EstimatedAngle() + 1.5);
     } else {
-        return m_loop.U(0);
+        // Feedforward compensates for unmodeled extra weight from lifting robot
+        // while climbing
+        return m_loop.U(0) - 0.5;
     }
 }
 

@@ -45,6 +45,9 @@ public:
     public:
         units::meter_t position = 0_m;
         units::meters_per_second_t velocity = 0_mps;
+        bool operator==(const State& rhs) const {
+            return position == rhs.position && velocity == rhs.velocity;
+        }
     };
 
     /**
