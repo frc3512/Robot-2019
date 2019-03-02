@@ -16,6 +16,8 @@
 #include "dsdisplay/Packet.hpp"
 #include "dsdisplay/UdpSocket.hpp"
 
+namespace frc3512 {
+
 /**
  * This class allows you to pack data into an SFML packet and send it to an
  * application on the DriverStation that displays it in a GUI.
@@ -123,3 +125,5 @@ private:
      */
     void ReceiveFromDS();
 };
+
+}  // namespace frc3512

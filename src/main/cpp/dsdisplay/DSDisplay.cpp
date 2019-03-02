@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 
+using namespace frc3512;
 using namespace std::chrono_literals;
 
 DSDisplay::DSDisplay(int port) : m_dsPort(port) {

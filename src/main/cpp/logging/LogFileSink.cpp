@@ -2,6 +2,8 @@
 
 #include "logging/LogFileSink.hpp"
 
+using namespace frc3512;
+
 LogFileSink::LogFileSink(std::string filename) {
     m_logfile.open(filename.c_str());
 }

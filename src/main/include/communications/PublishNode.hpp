@@ -17,6 +17,8 @@
 #include "communications/PacketType.hpp"
 #include "communications/StatePacket.hpp"
 
+namespace frc3512 {
+
 /**
  * A communication layer that can pass messages between others who have
  * inherited it through a publish-subscribe architecture
@@ -122,5 +124,7 @@ private:
      */
     void DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message);
 };
+
+}  // namespace frc3512
 
 #include "PublishNode.inc"

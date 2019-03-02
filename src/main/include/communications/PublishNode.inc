@@ -4,6 +4,8 @@
 
 #include <string>
 
+namespace frc3512 {
+
 template <class P>
 void PublishNode::Publish(P p) {
     p.topic = m_nodeName + "/" + p.topic;
@@ -25,3 +27,5 @@ void PublishNode::PushMessage(P p) {
     }
     m_ready.notify_one();
 }
+
+}  // namespace frc3512

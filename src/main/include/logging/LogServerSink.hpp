@@ -8,6 +8,8 @@
 
 #include "logging/LogSinkBase.hpp"
 
+namespace frc3512 {
+
 /**
  * A file sink for the logged events.
  */
@@ -34,3 +36,5 @@ private:
     int m_listensd = -1;
     std::list<int> m_connections;
 };
+
+}  // namespace frc3512

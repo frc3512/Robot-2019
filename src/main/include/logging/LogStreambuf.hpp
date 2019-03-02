@@ -9,6 +9,8 @@
 #include "logging/LogEvent.hpp"
 #include "logging/Logger.hpp"
 
+namespace frc3512 {
+
 /**
  * An internal class used by LogStream.
  *
@@ -45,3 +47,5 @@ private:
     Logger& m_logger;
     LogEvent::VerbosityLevel m_level = LogEvent::VERBOSE_NONE;
 };
+
+}  // namespace frc3512

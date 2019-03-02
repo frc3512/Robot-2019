@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+namespace frc3512 {
+
 /**
  * Utility class to build blocks of data to transfer over the network
  */
@@ -75,3 +77,5 @@ private:
     // Checks if the packet can extract a given number of bytes
     bool CheckSize(size_t size);
 };
+
+}

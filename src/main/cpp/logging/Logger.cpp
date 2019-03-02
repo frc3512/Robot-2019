@@ -6,6 +6,8 @@
 
 #include "Robot.hpp"
 
+using namespace frc3512;
+
 Logger::Logger() : Logger::PublishNode("Logger") {
     ResetInitialTime();
     Subscribe(Robot::elevator);

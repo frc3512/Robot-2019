@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <cstring>
 
+using namespace frc3512;
+
 LogServerSink::~LogServerSink() {
     if (m_listensd >= 0) {
         close(m_listensd);

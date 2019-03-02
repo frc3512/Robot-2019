@@ -7,6 +7,8 @@
 
 #include "logging/LogSinkBase.hpp"
 
+namespace frc3512 {
+
 /**
  * A file sink for the logged events.
  */
@@ -25,3 +27,5 @@ public:
 private:
     std::ofstream m_logfile;
 };
+
+}  // namespace frc3512

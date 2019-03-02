@@ -2,6 +2,8 @@
 
 #include "logging/LogStreambuf.hpp"
 
+using namespace frc3512;
+
 LogStreambuf::LogStreambuf(Logger& logger) : m_logger(logger) {}
 
 std::streamsize LogStreambuf::xsputn(const char* s, std::streamsize n) {

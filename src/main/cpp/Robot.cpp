@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+using namespace frc3512;
+
 Climber Robot::climber;
 Drivetrain Robot::drivetrain;
 Elevator Robot::elevator;

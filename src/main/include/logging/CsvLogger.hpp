@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 
+namespace frc3512 {
+
 /*
  * Class to log values separated by commas
  */
@@ -30,5 +32,7 @@ private:
     std::time_t m_timestamp;
     hal::fpga_clock::time_point m_startTime;
 };
+
+}  // namespace frc3512
 
 #include "logging/CsvLogger.inc"

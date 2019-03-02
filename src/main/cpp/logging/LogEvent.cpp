@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <sstream>
 
+using namespace frc3512;
+
 LogEvent::LogEvent(std::string data, VerbosityLevel level) {
     m_level = level;
     m_timestamp = std::time(nullptr);

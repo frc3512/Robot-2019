@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <iostream>
 
+namespace frc3512 {
+
 template <class... doubles>
 void CsvLogger::Log(double value, doubles... values) {
     m_logfile << Timestamp() << ',';
@@ -19,3 +21,5 @@ void CsvLogger::LogImpl(double value, doubles... values) {
     std::cout << " " << sizeof...(values) << " ";
     LogImpl(values...);
 }
+
+}  // namespace frc3512

@@ -4,6 +4,8 @@
 
 #include "logging/LogSinkBase.hpp"
 
+namespace frc3512 {
+
 /**
  * A sink for writing logged events to standard output.
  */
@@ -18,3 +20,5 @@ public:
      */
     void Log(LogEvent event) override;
 };
+
+}  // namespace frc3512

@@ -15,6 +15,8 @@
 #include "subsystems/Drivetrain.hpp"
 #include "subsystems/Elevator.hpp"
 
+namespace frc3512 {
+
 class Robot : public frc::TimedRobot, public PublishNode {
 public:
     Robot();
@@ -41,3 +43,5 @@ public:
 private:
     LogFileSink fileSink{"/home/lvuser/Robot.log"};
 };
+
+}  // namespace frc3512

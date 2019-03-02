@@ -7,6 +7,8 @@
 
 #include <cstring>
 
+using namespace frc3512;
+
 void Packet::append(const void* data, size_t sizeInBytes) {
     if (data && (sizeInBytes > 0)) {
         size_t start = m_packetData.size();

@@ -7,6 +7,8 @@
 #include "logging/LogEvent.hpp"
 #include "logging/Logger.hpp"
 
+namespace frc3512 {
+
 /**
  * A subclass of std::ostream for logging messages with a Logger class.
  *
@@ -42,3 +44,5 @@ public:
 private:
     Logger& m_logger;
 };
+
+}  // namespace frc3512

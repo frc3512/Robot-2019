@@ -7,6 +7,8 @@
 #include <cstring>
 #include <iostream>
 
+using namespace frc3512;
+
 PublishNode::PublishNode(std::string nodeName) {
     m_nodeName = nodeName;
     m_thread = std::thread(&PublishNode::RunFramework, this);

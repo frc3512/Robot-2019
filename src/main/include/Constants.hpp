@@ -2,6 +2,8 @@
 
 #pragma once
 
+namespace frc3512 {
+
 // Includes definition for Talons and etc that connect to the RoboRIO
 
 /* Order of constants:
@@ -92,3 +94,5 @@ constexpr int kEncoderB = 5;
 
 // PublishNode constants
 constexpr int kNodeQueueSize = 1024;
+
+}  // namespace frc3512

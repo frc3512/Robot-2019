@@ -13,7 +13,7 @@
 #include "communications/PublishNode.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
-class CANTalonGroup;
+namespace frc3512 {
 
 /**
  * Provides an interface for this year's drive train.
@@ -123,3 +123,5 @@ private:
     // Solenoid
     frc::Solenoid m_shifter{kShifterPort};
 };
+
+}  // namespace frc3512

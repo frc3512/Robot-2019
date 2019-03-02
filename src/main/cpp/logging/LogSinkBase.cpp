@@ -2,6 +2,8 @@
 
 #include "logging/LogSinkBase.hpp"
 
+using namespace frc3512;
+
 bool LogSinkBase::operator==(const LogSinkBase& rhs) { return this == &rhs; }
 
 void LogSinkBase::SetVerbosityLevels(LogEvent::VerbosityLevel levels) {

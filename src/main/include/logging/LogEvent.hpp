@@ -5,6 +5,8 @@
 #include <ctime>
 #include <string>
 
+namespace frc3512 {
+
 /**
  * An event to be logged with Logger::LogEvent().
  *
@@ -154,3 +156,5 @@ private:
     std::string m_buffer;
     std::time_t m_initialTime;
 };
+
+}  // namespace frc3512

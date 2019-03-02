@@ -4,6 +4,8 @@
 
 #include "Robot.hpp"
 
+using namespace frc3512;
+
 Climber::Climber() { m_timer.Start(); }
 
 void Climber::Ascend() { m_lift.Set(true); }

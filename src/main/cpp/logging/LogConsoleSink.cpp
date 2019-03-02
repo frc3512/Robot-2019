@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+using namespace frc3512;
+
 void LogConsoleSink::Log(LogEvent event) {
     std::cout << event.ToFormattedString();
 }

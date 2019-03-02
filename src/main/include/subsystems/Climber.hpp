@@ -11,6 +11,8 @@
 #include "communications/PublishNode.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
+namespace frc3512 {
+
 enum class State { kInit, kAscend, kDriveForward, kIdle };
 
 class Climber : public SubsystemBase, public PublishNode {
@@ -63,3 +65,5 @@ private:
     frc::Spark m_drive{kClimberDrivePort};
     frc::PowerDistributionPanel m_pdpDrive{0};
 };
+
+}  // namespace frc3512

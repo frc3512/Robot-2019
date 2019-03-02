@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+namespace frc3512 {
+
 class Packet;
 
 /**
@@ -158,3 +160,5 @@ private:
     // Returns status corresponding to the last socket error
     static Status getErrorStatus();
 };
+
+}  // namespace frc3512

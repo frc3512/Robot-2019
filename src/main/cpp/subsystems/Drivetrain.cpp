@@ -9,6 +9,8 @@
 
 #include "Robot.hpp"
 
+using namespace frc3512;
+
 Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
     m_drive.SetDeadband(kJoystickDeadband);
 

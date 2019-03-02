@@ -4,6 +4,8 @@
 
 #include <frc/Notifier.h>
 
+namespace frc3512 {
+
 /**
  * A standardized base for subsystems
  */
@@ -25,3 +27,5 @@ public:
 private:
     frc::Notifier m_notifier{[this] { SubsystemPeriodic(); }};
 };
+
+}  // namespace frc3512

@@ -4,6 +4,8 @@
 
 #include "logging/LogEvent.hpp"
 
+namespace frc3512 {
+
 /**
  * LogSinkBase provides a base class on which to implement various log event
  * sinks.
@@ -66,3 +68,5 @@ public:
 private:
     LogEvent::VerbosityLevel m_verbosity = LogEvent::VERBOSE_ERROR;
 };
+
+}  // namespace frc3512

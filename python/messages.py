@@ -31,6 +31,8 @@ def write_msg_header(msg_name, types, arg_types, names):
 #include "communications/PacketType.hpp"
 #include "dsdisplay/Packet.hpp"
 
+namespace frc3512 {
+
 """
         )
         output.write(f"class {msg_name}Packet {{\n")
@@ -86,6 +88,8 @@ def write_msg_header(msg_name, types, arg_types, names):
         output.write("     */\n")
         output.write("    void Deserialize(Packet& packet);\n")
         output.write("};\n")
+        output.write("\n")
+        output.write("}\n")
     os.rename(
         f"{msg_name}Packet.hpp",
         f"../src/main/include/communications/{msg_name}Packet.hpp",
@@ -103,6 +107,8 @@ def write_msg_source(msg_name, arg_types, names, serial_names):
     """
     with open(f"{msg_name}Packet.cpp", "w") as output:
         output.write(f'#include "communications/{msg_name}Packet.hpp"\n')
+        output.write("\n")
+        output.write("using namespace frc3512;\n")
         output.write("\n")
         output.write(f"{msg_name}Packet::{msg_name}Packet(")
         output.write(", ".join([x[0] + " " + x[1] for x in zip(arg_types, names)]))
@@ -150,6 +156,8 @@ def write_packettype_header(msg_names):
         output.write("\n")
         output.write("#include <stdint.h>\n")
         output.write("\n")
+        output.write("namespace frc3512 {\n")
+        output.write("\n")
 
         enum_type = "enum class PacketType : int8_t"
         types = ["k" + x for x in msg_names]
@@ -161,6 +169,8 @@ def write_packettype_header(msg_names):
             output.write(f"{enum_type} {{ {singleline_types} }};\n")
         else:
             output.write(f"{enum_type} {{{multiline_types}\n}};\n")
+        output.write("\n")
+        output.write("}\n")
     os.rename("PacketType.hpp", f"../src/main/include/communications/PacketType.hpp")
 
 
@@ -174,6 +184,8 @@ def write_packettype_source(msg_names):
         output.write('#include "communications/PacketType.hpp"\n')
         output.write("\n")
         output.write("#include <wpi/SmallVector.h>\n")
+        output.write("\n")
+        output.write("using namespace frc3512;\n")
         output.write("\n")
 
         includes = []

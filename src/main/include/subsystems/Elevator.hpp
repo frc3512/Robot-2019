@@ -11,6 +11,8 @@
 #include "communications/PublishNode.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
+namespace frc3512 {
+
 class Elevator : public SubsystemBase, public PublishNode {
 public:
     Elevator();
@@ -48,3 +50,5 @@ private:
 
     bool m_limitPressedState = false;
 };
+
+}  // namespace frc3512

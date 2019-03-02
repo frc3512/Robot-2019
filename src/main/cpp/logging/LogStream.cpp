@@ -4,6 +4,8 @@
 
 #include "logging/LogStreambuf.hpp"
 
+using namespace frc3512;
+
 LogStream::LogStream(Logger& logger)
     : std::ostream(new LogStreambuf(logger)), m_logger(logger) {}
 

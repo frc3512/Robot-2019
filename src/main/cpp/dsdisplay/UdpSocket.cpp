@@ -10,6 +10,8 @@
 
 #include "dsdisplay/Packet.hpp"
 
+using namespace frc3512;
+
 UdpSocket::~UdpSocket() { close(); }
 
 UdpSocket::Status UdpSocket::bind(uint16_t port) {

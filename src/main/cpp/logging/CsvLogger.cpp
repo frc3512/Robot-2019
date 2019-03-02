@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+using namespace frc3512;
+
 CsvLogger::CsvLogger(const std::string& filename) : m_logfile(filename) {
     m_startTime = hal::fpga_clock::now();
 }

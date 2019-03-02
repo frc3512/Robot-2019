@@ -2,6 +2,8 @@
 
 #include "subsystems/SubsystemBase.hpp"
 
+using namespace frc3512;
+
 SubsystemBase::SubsystemBase() { m_notifier.StartPeriodic(0.02); }
 
 void SubsystemBase::SubsystemPeriodic() {}

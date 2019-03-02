@@ -6,6 +6,8 @@
 
 #include "Robot.hpp"
 
+using namespace frc3512;
+
 Elevator::Elevator() : PublishNode("Elevator") {}
 
 void Elevator::SetVelocity(double velocity) {

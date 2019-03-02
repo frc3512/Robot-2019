@@ -11,6 +11,8 @@
 #include "logging/LogSinkBase.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
+namespace frc3512 {
+
 /**
  * A logging engine.
  */
@@ -81,3 +83,5 @@ private:
     LogSinkBaseList m_sinkList;
     std::time_t m_initialTime;
 };
+
+}  // namespace frc3512
