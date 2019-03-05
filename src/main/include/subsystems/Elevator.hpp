@@ -35,8 +35,6 @@ public:
      */
     double GetHeight();
 
-    void HallSensor();
-
     void SubsystemPeriodic() override;
 
 private:

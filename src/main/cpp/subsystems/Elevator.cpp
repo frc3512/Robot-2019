@@ -22,13 +22,9 @@ void Elevator::ResetEncoder() { m_encoder.Reset(); }
 
 double Elevator::GetHeight() { return m_encoder.GetDistance(); }
 
-void Elevator::HallSensor() {
+void Elevator::SubsystemPeriodic() {
+    SetVelocity(Robot::appendageStick.GetY());
     if (m_bottomLimitSwitch.Get()) {
         m_encoder.Reset();
     }
-}
-
-void Elevator::SubsystemPeriodic() {
-    SetVelocity(Robot::appendageStick.GetY());
-    HallSensor();
 }
