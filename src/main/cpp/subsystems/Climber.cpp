@@ -60,3 +60,9 @@ void Climber::ProcessMessage(const POVPacket& message) {
         m_drive.Set(0.0);
     }
 }
+
+void Climber::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/TeleopInit" && !message.reply) {
+        EnablePeriodic();
+    }
+}

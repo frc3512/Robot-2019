@@ -41,6 +41,8 @@ void PublishNode::ProcessMessage(const ButtonPacket& message) {}
 
 void PublishNode::ProcessMessage(const POVPacket& message) {}
 
+void PublishNode::ProcessMessage(const CommandPacket& message) {}
+
 void PublishNode::RunFramework() {
     while (m_isRunning) {
         std::unique_lock<std::mutex> lock(m_mutex);

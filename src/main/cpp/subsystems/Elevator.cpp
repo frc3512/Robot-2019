@@ -30,3 +30,9 @@ void Elevator::SubsystemPeriodic() {
         m_encoder.Reset();
     }
 }
+
+void Elevator::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/TeleopInit" && !message.reply) {
+        EnablePeriodic();
+    }
+}

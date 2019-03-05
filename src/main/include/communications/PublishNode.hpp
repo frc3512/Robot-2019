@@ -13,6 +13,7 @@
 
 #include "Constants.hpp"
 #include "communications/ButtonPacket.hpp"
+#include "communications/CommandPacket.hpp"
 #include "communications/POVPacket.hpp"
 #include "communications/PacketType.hpp"
 #include "communications/StatePacket.hpp"
@@ -96,6 +97,17 @@ public:
      *                data.
      */
     virtual void ProcessMessage(const POVPacket& message);
+
+    /**
+     * Processes a CommandPacket.
+     *
+     * Users should override if this instance has a need to handle simple
+     * commands.
+     *
+     * @param message The message whose member variables contain deserialized
+     *                data.
+     */
+    virtual void ProcessMessage(const CommandPacket& message);
 
 private:
     std::string m_nodeName;

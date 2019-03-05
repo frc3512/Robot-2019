@@ -22,13 +22,20 @@ Robot::Robot() : PublishNode("Robot") {
     climber.Subscribe(*this);
     drivetrain.Subscribe(*this);
     logger.Subscribe(*this);
+    elevator.Subscribe(*this);
 }
 
-void Robot::DisabledInit() {}
+void Robot::DisabledInit() {
+    CommandPacket message{"DisabledInit", false};
+    Publish(message);
+}
 
 void Robot::AutonomousInit() {}
 
-void Robot::TeleopInit() {}
+void Robot::TeleopInit() {
+    CommandPacket message{"TeleopInit", false};
+    Publish(message);
+}
 
 void Robot::TestInit() {}
 

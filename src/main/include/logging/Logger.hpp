@@ -79,6 +79,8 @@ public:
 
     void ProcessMessage(const ButtonPacket& message) override;
 
+    void ProcessMessage(const CommandPacket& message) override;
+
 private:
     LogSinkBaseList m_sinkList;
     std::time_t m_initialTime;

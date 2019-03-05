@@ -53,6 +53,7 @@ public:
 
     void ProcessMessage(const ButtonPacket& message) override;
     void ProcessMessage(const POVPacket& message) override;
+    void ProcessMessage(const CommandPacket& message) override;
 
 private:
     State m_state = State::kInit;

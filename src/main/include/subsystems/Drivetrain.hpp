@@ -106,6 +106,8 @@ public:
 
     void ProcessMessage(const ButtonPacket& message) override;
 
+    void ProcessMessage(const CommandPacket& message) override;
+
 private:
     // Left gearbox used in position PID
     frc::Spark m_leftGrbx{kLeftDriveMasterPort};

@@ -59,3 +59,9 @@ void Logger::ProcessMessage(const ButtonPacket& message) {
                      LogEvent::VERBOSE_DEBUG));
     }
 }
+
+void Logger::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/TeleopInit" && !message.reply) {
+        EnablePeriodic();
+    }
+}

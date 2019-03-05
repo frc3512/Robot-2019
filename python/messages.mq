@@ -7,3 +7,6 @@ Button:
 
 POV:
   int direction
+
+Command:
+  bool reply

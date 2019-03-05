@@ -16,8 +16,18 @@ public:
      *
      * @param nodeName A name to refer to the subsystem
      */
-    SubsystemBase();
+    SubsystemBase() = default;
     virtual ~SubsystemBase() = default;
+
+    /**
+     * Enables the notifier
+     */
+    void EnablePeriodic();
+
+    /**
+     * Disables the notifier
+     */
+    void DisablePeriodic();
 
     /**
      * This function will be called asynchronously every 20 ms

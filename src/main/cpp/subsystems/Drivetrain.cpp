@@ -63,3 +63,9 @@ void Drivetrain::ProcessMessage(const ButtonPacket& message) {
         Shift();
     }
 }
+
+void Drivetrain::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/TeleopInit" && !message.reply) {
+        EnablePeriodic();
+    }
+}

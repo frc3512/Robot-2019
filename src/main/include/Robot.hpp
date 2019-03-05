@@ -7,6 +7,7 @@
 
 #include "Constants.hpp"
 #include "communications/ButtonPacket.hpp"
+#include "communications/CommandPacket.hpp"
 #include "communications/POVPacket.hpp"
 #include "communications/PublishNode.hpp"
 #include "logging/LogFileSink.hpp"

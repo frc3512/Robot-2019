@@ -39,6 +39,8 @@ public:
 
     void SubsystemPeriodic() override;
 
+    void ProcessMessage(const CommandPacket& message) override;
+
 private:
     frc::Spark m_grbx{kElevatorPort};
 
