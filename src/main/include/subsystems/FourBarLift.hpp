@@ -9,7 +9,7 @@
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
-#include "control/FourBarLiftController.hpp"
+#include "controllers/FourBarLiftController.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {

@@ -59,6 +59,30 @@ constexpr int kLeftEncoderB = 3;
 constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
 
+// Controller constants
+constexpr double kAlpha = 0.5;  // How much to trust voltage,  0 is full trust
+constexpr double kPositionTolerance = 0.05;  // meters
+constexpr double kVelocityTolerance = 2.0;   // meters/second
+constexpr double kAngleTolerance = 0.05;     // radians
+
+// Drive trapezoid profile constants
+constexpr auto kMaxV = 5.461_mps;              // m/sec
+constexpr auto kMaxA = 1.0922_mps_sq;          // 3.0;           // sec
+constexpr auto kMaxRotateRate = 4.52_mps;      // rad/sec
+constexpr auto kMaxRotateAccel = 4.52_mps_sq;  // sec
+
+// Physical Robot Constants
+constexpr auto kWheelbaseWidth = 0.6096_m;  // 24.0;
+constexpr auto kLength = 0.9398_m;          // 37.0;  // Approximate
+constexpr auto kWidth = 0.8382_m;           // 33.0;   // Approximate
+constexpr auto kWheelRadius = 0.0746125_m;  // 2.9375;  // 2.947
+constexpr double kDriveGearRatio = 1.0 / 1.0;
+constexpr auto kMaxControlVoltage = 12_V;
+
+// Distance per Pulse
+constexpr double kDpP =
+    (2.0 * kPi * kWheelRadius.to<double>()) * kDriveGearRatio / 2048.0;
+
 // Solenoid Ports
 constexpr int kShifterPort = 1;
 }  // namespace Drivetrain
@@ -140,8 +164,7 @@ constexpr auto kMaxA = 4.3_mps_sq;
 constexpr auto kClimbMaxV = 0.25_mps;
 constexpr auto kClimbMaxA = 2.5_mps_sq;
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
-constexpr double kGearRatio = 8.00;
-constexpr double kNumMotors = 2.0;
+constexpr double kNumMotors = 1.0;
 constexpr double kStallTorque = 2.41 * kNumMotors;    // N-m
 constexpr double kStallCurrent = 131.0 * kNumMotors;  // amps
 constexpr double kFreeSpeed = 5330.0;                 // no load rpm
@@ -176,6 +199,6 @@ constexpr double kHab3 = 0.42;    // 0.48
 constexpr double kHab2 = 0.0898;  // 0.1498
 }  // namespace Elevator
 
-constexpr auto kDt_s = 0.00505_s;
+constexpr auto kDt = 0.00505_s;
 }  // namespace Constants
 }  // namespace frc3512

@@ -1,0 +1,54 @@
+# Defining VERBOSE before running make (i.e., VERBOSE=1 make) will print all
+# commands ran.
+
+CC := gcc
+CPP := g++
+LD := g++
+
+# Specify defines with -D directives here
+DEFINES := -DRUNNING_FRC_TESTS
+
+OBJDIR := build/linuxx86-64
+
+# Specify Linux include paths with -I directives here
+IFLAGS := -Isrc/main/include -Isrc/test/include -Ithirdparty/include \
+	-Ibuild/generated/include -Ibuild/wpilibc-cpp-2019.4.1-headers \
+	-Ibuild/hal-cpp-2019.4.1-headers -Ibuild/cscore-cpp-2019.4.1-headers \
+	-Ibuild/wpiutil-cpp-2019.4.1-headers -Ibuild/SparkMax-cpp-1.4.1-headers
+
+# Specify Linux libs with -l directives here
+LDFLAGS := \
+	-Lbuild/wpilibc-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/wpilibc-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lwpilibc \
+	-Lbuild/cameraserver-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/cameraserver-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lcameraserver \
+	-Lbuild/cscore-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/cscore-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lcscore \
+	-Lbuild/opencv-cpp-3.4.4-5-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/opencv-cpp-3.4.4-5-linuxx86-64/linux/x86-64/shared \
+	-l:libopencv_imgproc.so.3.4 \
+	-l:libopencv_imgcodecs.so.3.4 \
+	-l:libopencv_core.so.3.4 \
+	-Lbuild/ntcore-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/ntcore-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lntcore \
+	-Lbuild/wpiutil-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/wpiutil-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lwpiutil \
+	-Lbuild/hal-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/hal-cpp-2019.4.1-linuxx86-64/linux/x86-64/shared \
+	-lwpiHal \
+	-Lbuild/SparkMax-cpp-1.4.1-linuxx86-64static/linux/x86-64/static \
+	-lSparkMax \
+	-Lbuild/SparkMax-driver-1.4.1-linuxx86-64static/linux/x86-64/static \
+	-lSparkMaxDriver \
+	-lpthread \
+	-lgtest \
+	-lgtest_main
+
+include mk/Makefile-common
+
+$(OBJDIR)/FRCUserProgram: $(OBJ_TEST_CPP) $(OBJ_TEST_CC)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Called by generate_src.py."""
+"""Called by make.py."""
 
 import argparse
 import os

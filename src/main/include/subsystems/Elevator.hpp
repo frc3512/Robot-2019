@@ -13,7 +13,7 @@
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
-#include "control/ElevatorController.hpp"
+#include "controllers/ElevatorController.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {

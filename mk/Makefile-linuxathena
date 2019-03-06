@@ -1,0 +1,59 @@
+# Defining VERBOSE before running make (i.e., VERBOSE=1 make) will print all
+# commands ran.
+
+CC := arm-frc2019-linux-gnueabi-gcc
+CPP := arm-frc2019-linux-gnueabi-g++
+LD := arm-frc2019-linux-gnueabi-g++
+
+# Specify defines with -D directives here
+DEFINES :=
+
+OBJDIR := build/linuxathena
+
+# Specify Linux include paths with -I directives here
+IFLAGS := -Isrc/main/include -Ithirdparty/include -Ibuild/generated/include \
+	-Ibuild/wpilibc-cpp-2019.4.1-headers -Ibuild/hal-cpp-2019.4.1-headers \
+	-Ibuild/cscore-cpp-2019.4.1-headers -Ibuild/wpiutil-cpp-2019.4.1-headers \
+	-Ibuild/SparkMax-cpp-1.4.1-headers -Ibuild/SparkMax-driver-1.4.1-headers
+
+# Specify Linux libs with -l directives here
+LDFLAGS := \
+	-Lbuild/wpilibc-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lwpilibc \
+	-Lbuild/cameraserver-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lcameraserver \
+	-Lbuild/cscore-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lcscore \
+	-Lbuild/opencv-cpp-3.4.4-5-linuxathena/linux/athena/shared \
+	-l:libopencv_imgproc.so.3.4 \
+	-l:libopencv_imgcodecs.so.3.4 \
+	-l:libopencv_core.so.3.4 \
+	-Wl,-rpath,build/opencv-cpp-3.4.4-5-linuxathena/linux/athena/shared \
+	-Lbuild/ntcore-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lntcore \
+	-Lbuild/wpiutil-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lwpiutil \
+	-Lbuild/hal-cpp-2019.4.1-linuxathena/linux/athena/shared \
+	-lwpiHal \
+	-Lbuild/SparkMax-cpp-1.4.1-linuxathenastatic/linux/athena/static \
+	-lSparkMax \
+	-Lbuild/SparkMax-driver-1.4.1-linuxathenastatic/linux/athena/static \
+	-lSparkMaxDriver \
+	-Lbuild/netcomm-2019.12.1-linuxathena/linux/athena/shared \
+	-l:libFRC_NetworkCommunication.so.19.0.0 \
+	-Lbuild/chipobject-2019.12.1-linuxathena/linux/athena/shared \
+	-l:libRoboRIO_FRC_ChipObject.so.19.0.0 \
+	-l:libNiFpga.so.18.0.0 \
+	-l:libNiFpgaLv.so.18.0.0 \
+	-l:libniriodevenum.so.18.0.0 \
+	-l:libniriosession.so.18.0.0 \
+	-l:libNiRioSrv.so.18.0.0 \
+	-l:libvisa.so \
+	-lpthread \
+	-flto
+
+include mk/Makefile-common
+
+.PHONY: deploy
+deploy: build
+	./tools/deploy.sh build/linuxathena

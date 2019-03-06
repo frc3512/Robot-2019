@@ -4849,7 +4849,13 @@ namespace units {
 using namespace acceleration;
 using namespace angle;
 using namespace angular_velocity;
+using namespace area;
+using namespace current;
+using namespace impedance;
 using namespace length;
+using namespace mass;
 using namespace time;
+using namespace torque;
 using namespace velocity;
+using namespace voltage;
 }  // namespace units

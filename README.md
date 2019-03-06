@@ -7,26 +7,40 @@ Source code also for the 2019 practice robot: Aether
 ## Setup
 
 Install the relevant FRC toolchain for your platform
-(see https://github.com/wpilibsuite/allwpilib/releases).
+(see https://github.com/wpilibsuite/allwpilib/releases). Make sure
+`~/frc2019/roborio/bin` is in PATH.
 
 Install the following OS packages.
 
+* gcc >= 6.3.0
 * python >= 3.6
 
 Install the following python packages via `pip3 install --user package_name`.
 
-* frccontrol
 * wpiformat (optional)
   * https://github.com/wpilibsuite/styleguide/blob/master/wpiformat/README.rst
 
 ## Build
 
-* `./gradlew build`
+* `./make.py build`
 
-Coefficients for the state-space controllers and message parsers for the
-publish-subscribe framework will be automatically generated in
-`build/generated`. `build/generated/include` is specified as an include path in
-build.gradle, so `#include` directives can start from that directory.
+This runs a roboRIO build. Message parsers for the publish-subscribe framework
+will be automatically generated in `build/generated`. `build/generated/include`
+is specified as an include path in the Makefile, so `#include` directives can
+start from that directory.
+
+## Test
+
+* `./make.py test`
+
+This runs a desktop build and executes all the unit tests in `src/test`.
+
+## Deploy
+
+* `./make.py deploy`
+
+This runs a roboRIO build if needed, copies the resulting binary to a roboRIO at
+10.35.12.2, and restarts it.
 
 ## Documentation
 
@@ -56,9 +70,9 @@ Extensive Data And Driver UI Reporting
 
 |Status|Goal|
 |------|----|
-|No|Pub Sub System|
+|yes|Pub Sub System|
 |No|Data Reporting|
-|No|State-space Controllers|
+|Yes|State-space Controllers|
 |No|Vision Processing|
 
 ## Roster

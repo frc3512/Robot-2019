@@ -4,6 +4,7 @@
 
 #include <frc/ADXRS450_Gyro.h>
 #include <frc/Encoder.h>
+#include <frc/Notifier.h>
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
@@ -11,6 +12,7 @@
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
+#include "controllers/DrivetrainController.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {
@@ -64,7 +66,7 @@ public:
      *
      * @return angle in degrees
      */
-    double GetAngle();
+    double GetAngle() const;
 
     /**
      * Returns gyro angular rate.
@@ -88,14 +90,30 @@ public:
      *
      * @return displacement
      */
-    double GetLeftDisplacement();
+    double GetLeftDisplacement() const;
 
     /**
      * Returns right encoder displacement.
      *
      * @return displacement
      */
-    double GetRightDisplacement();
+    double GetRightDisplacement() const;
+
+    double GetLeftRate() const;
+
+    double GetRightRate() const;
+
+    void ResetEncoders();
+
+    void EnableController();
+
+    void DisableController();
+
+    bool IsControllerEnabled() const;
+
+    void Reset();
+
+    void Iterate();
 
     void ProcessMessage(const ButtonPacket& message) override;
 
@@ -121,6 +139,11 @@ private:
 
     // Solenoid
     frc::Solenoid m_shifter{Constants::Drivetrain::kShifterPort};
+
+    DrivetrainController m_controller{
+        std::array<double, 5>{0.0625, 0.125, 10.0, 0.95, 0.95},
+        std::array<double, 2>{12.0, 12.0}, Constants::kDt};
+    frc::Notifier m_controllerThread{&Drivetrain::Iterate, this};
 };
 
 }  // namespace frc3512

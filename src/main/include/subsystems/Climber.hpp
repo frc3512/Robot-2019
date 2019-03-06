@@ -13,7 +13,7 @@
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
-#include "control/ClimberController.hpp"
+#include "controllers/ClimberController.hpp"
 #include "logging/CsvLogger.hpp"
 #include "subsystems/SubsystemBase.hpp"
 

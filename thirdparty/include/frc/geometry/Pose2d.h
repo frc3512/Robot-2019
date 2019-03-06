@@ -11,6 +11,10 @@
 #include "Translation2d.h"
 #include "Twist2d.h"
 
+namespace wpi {
+class json;
+}  // namespace wpi
+
 namespace frc {
 
 /**
@@ -67,6 +71,30 @@ class Pose2d {
    * @return Reference to the new mutated object.
    */
   Pose2d& operator+=(const Transform2d& other);
+
+  /**
+   * Returns the Transform2d that maps the one pose to another.
+   *
+   * @param other The initial pose of the transformation.
+   * @return The transform that maps the other pose to the current pose.
+   */
+  Transform2d operator-(const Pose2d& other) const;
+
+  /**
+   * Checks equality between this Pose2d and another object.
+   *
+   * @param other The other object.
+   * @return Whether the two objects are equal.
+   */
+  bool operator==(const Pose2d& other) const;
+
+  /**
+   * Checks inequality between this Pose2d and another object.
+   *
+   * @param other The other object.
+   * @return Whether the two objects are not equal.
+   */
+  bool operator!=(const Pose2d& other) const;
 
   /**
    * Returns the underlying translation.
@@ -129,8 +157,23 @@ class Pose2d {
    */
   Pose2d Exp(const Twist2d& twist) const;
 
+  /**
+   * Returns a Twist2d that maps this pose to the end pose. If c is the output
+   * of a.Log(b), then a.Exp(c) would yield b.
+   *
+   * @param end The end pose for the transformation.
+   *
+   * @return The twist that maps this to end.
+   */
+  Twist2d Log(const Pose2d& end) const;
+
  private:
   Translation2d m_translation;
   Rotation2d m_rotation;
 };
+
+void to_json(wpi::json& json, const Pose2d& pose);
+
+void from_json(const wpi::json& json, Pose2d& pose);
+
 }  // namespace frc
