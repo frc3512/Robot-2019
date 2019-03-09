@@ -13,6 +13,7 @@ Drivetrain Robot::drivetrain;
 Elevator Robot::elevator;
 Logger Robot::logger;
 
+frc::PowerDistributionPanel Robot::pdp;
 frc::Joystick Robot::driveStick1{kDriveStick1Port};
 frc::Joystick Robot::driveStick2{kDriveStick2Port};
 frc::Joystick Robot::appendageStick{kAppendageStickPort};

@@ -28,7 +28,7 @@ void Climber::Climb() {
                 m_state = State::kDriveForward;
             }
         case State::kDriveForward:
-            if (m_pdpDrive.GetCurrent(kClimberDrivePort) >= 4) {
+            if (Robot::pdp.GetCurrent(kClimberDrivePort) >= 4) {
                 Descend();
                 m_state = State::kIdle;
             }

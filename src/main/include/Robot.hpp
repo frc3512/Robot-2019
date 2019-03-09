@@ -41,6 +41,7 @@ public:
     static frc::Joystick driveStick1;
     static frc::Joystick driveStick2;
     static frc::Joystick appendageStick;
+    static frc::PowerDistributionPanel pdp;
 
 private:
     LogFileSink fileSink{"/home/lvuser/Robot.log"};

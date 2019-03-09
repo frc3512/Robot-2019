@@ -64,7 +64,6 @@ private:
 
     // frc::Spark m_lift{kClimberLiftPort};
     frc::Spark m_drive{kClimberDrivePort};
-    frc::PowerDistributionPanel m_pdpDrive{0};
 };
 
 }  // namespace frc3512
