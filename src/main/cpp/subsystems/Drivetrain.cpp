@@ -47,15 +47,7 @@ double Drivetrain::GetLeftDisplacement() { return m_leftEncoder.Get(); }
 
 double Drivetrain::GetRightDisplacement() { return m_rightEncoder.Get(); }
 
-void Drivetrain::SubsystemPeriodic() {
-    if (Robot::driveStick1.GetRawButton(1)) {
-        Drive(-Robot::driveStick1.GetY() * 0.5, Robot::driveStick2.GetX() * 0.5,
-              Robot::driveStick2.GetRawButton(2));
-    } else {
-        Drive(-Robot::driveStick1.GetY(), Robot::driveStick2.GetX(),
-              Robot::driveStick2.GetRawButton(2));
-    }
-}
+void Drivetrain::SubsystemPeriodic() {}
 
 void Drivetrain::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/DriveStick2" && message.button == 1 &&
@@ -67,5 +59,13 @@ void Drivetrain::ProcessMessage(const ButtonPacket& message) {
 void Drivetrain::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         EnablePeriodic();
+    }
+}
+
+void Drivetrain::ProcessMessage(const HIDPacket& message) {
+    if (GetRawButton(message, 0, 1)) {
+        Drive(-message.y1 * 0.5, message.x2 * 0.5, GetRawButton(message, 1, 2));
+    } else {
+        Drive(-message.y1, message.x2, GetRawButton(message, 1, 2));
     }
 }

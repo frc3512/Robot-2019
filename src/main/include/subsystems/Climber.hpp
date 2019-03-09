@@ -17,7 +17,8 @@ enum class State { kInit, kAscend, kDriveForward, kIdle };
 
 class Climber : public SubsystemBase, public PublishNode {
 public:
-    Climber();
+    void SetLiftVoltage(double voltage);
+    void SetDriveVoltage(double voltage);
 
     /**
      * Pushes the back end of the robot up
@@ -58,11 +59,7 @@ public:
 private:
     State m_state = State::kInit;
 
-    frc::Timer m_timer;
-
-    frc::Solenoid m_lift{kClimberLiftPort};
-
-    // frc::Spark m_lift{kClimberLiftPort};
+    frc::Spark m_lift{kClimberLiftPort};
     frc::Spark m_drive{kClimberDrivePort};
 };
 

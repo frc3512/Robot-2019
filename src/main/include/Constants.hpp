@@ -66,14 +66,6 @@ constexpr int kLeftEncoderB = 3;
 constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
 
-/*
- * Climber
- */
-constexpr int kClimberArmPort = 0;
-constexpr int kClampForwardPort = 1;
-constexpr int kClampReversePort = 2;
-constexpr int kWinchID = 0;
-
 // Controller constants
 constexpr double kB = 1.0;
 constexpr double kZeta = 1.0;
@@ -94,7 +86,7 @@ constexpr double kWheelRadius = 0.0746125;  // 2.9375;  // 2.947
 constexpr double kDriveGearRatio = 1.0 / 1.0;
 
 // Solenoid Ports
-constexpr int kShifterPort = 3;
+constexpr int kShifterPort = 1;
 
 // CheesyDrive constants
 constexpr double kLowGearSensitive = 0.75;
@@ -108,10 +100,37 @@ constexpr double kInertiaLowTurn = 3.0;
  */
 
 // Motor Ports
-constexpr int kClimberDrivePort = 0;
+constexpr int kClimberDrivePort = 2;
+constexpr int kClimberLiftPort = 9;
 
-// Solenoid Ports
-constexpr int kClimberLiftPort = 0;
+/*
+ * Four-bar Lift
+ */
+
+// Motor Ports
+constexpr int kFourBarLiftPort = 3;
+
+// Sensors
+constexpr int kFourBarEncoderA = 6;
+constexpr int kFourBarEncoderB = 7;
+constexpr int kFourBarLimitPort = 15;
+
+// Distance per pulse (converts ticks to radians)
+constexpr double kFourBarDpP = 2 * kPi / 2048 / 10;
+
+/*
+ * Intake
+ */
+
+// Motor Ports
+constexpr int kLeftIntakePort = 0;
+constexpr int kRightIntakePort = 8;
+
+constexpr int kLeftIntakePDP = 11;
+constexpr int kRightIntakePDP = 10;
+
+// Solenoid ports
+constexpr int kIntakeClawPort = 2;
 
 /*
  * Elevator
@@ -161,4 +180,3 @@ constexpr double kCargoShip = 2.0193;
 // CSV Logging File
 constexpr const char* kCSVFile = "/home/lvuser/CSVFile.csv";
 }  // namespace frc3512
-// namespace frc3512

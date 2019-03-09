@@ -14,6 +14,7 @@ using namespace frc3512;
 Elevator::Elevator() : PublishNode("Elevator") {
     m_grbx.Set(0.0);
     m_encoder.SetDistancePerPulse(kElevatorDpP);
+    EnablePeriodic();
 }
 
 void Elevator::SetVoltage(double voltage) {
@@ -68,11 +69,6 @@ void Elevator::Iterate() {
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
     m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
-
-    std::cout << m_controller.PositionReference() << " || "
-              << m_controller.EstimatedPosition() << " || "
-              << m_controller.ControllerVoltage() << " || "
-              << m_controller.EstimatedVelocity() << std::endl;
 }
 
 double Elevator::ControllerVoltage() const {
@@ -85,7 +81,6 @@ void Elevator::Reset() {
 }
 
 void Elevator::SubsystemPeriodic() {
-    // SetVoltage(Robot::appendageStick.GetY());
     if (GetMagneticSwitch()) {
         ResetEncoder();
     }
@@ -108,6 +103,12 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
 
 void Elevator::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
-        EnablePeriodic();
+        Enable();
+    }
+    if (message.topic == "Robot/AutonomousInit" && !message.reply) {
+        Enable();
+    }
+    if (message.topic == "Robot/DisabledInit" && !message.reply) {
+        Disable();
     }
 }

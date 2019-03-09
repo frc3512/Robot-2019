@@ -8,12 +8,7 @@
 
 using namespace frc3512;
 
-Logger::Logger() : Logger::PublishNode("Logger") {
-    ResetInitialTime();
-    Subscribe(Robot::elevator);
-    Subscribe(Robot::drivetrain);
-    Subscribe(Robot::climber);
-}
+Logger::Logger() : Logger::PublishNode("Logger") { ResetInitialTime(); }
 
 void Logger::Log(LogEvent event) {
     event.SetInitialTime(m_initialTime);

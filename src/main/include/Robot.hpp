@@ -10,12 +10,13 @@
 #include "communications/CommandPacket.hpp"
 #include "communications/POVPacket.hpp"
 #include "communications/PublishNode.hpp"
-#include "logging/CsvLogger.hpp"
 #include "logging/LogFileSink.hpp"
 #include "logging/Logger.hpp"
 #include "subsystems/Climber.hpp"
 #include "subsystems/Drivetrain.hpp"
 #include "subsystems/Elevator.hpp"
+#include "subsystems/FourBarLift.hpp"
+#include "subsystems/Intake.hpp"
 
 namespace frc3512 {
 
@@ -33,19 +34,21 @@ public:
     void AutonomousPeriodic() override;
     void TeleopPeriodic() override;
 
-    static Climber climber;
-    static Drivetrain drivetrain;
-    static Elevator elevator;
-    static Logger logger;
-
-    static frc::Joystick driveStick1;
-    static frc::Joystick driveStick2;
-    static frc::Joystick appendageStick;
     static frc::PowerDistributionPanel pdp;
 
 private:
+    Climber m_climber;
+    Drivetrain m_drivetrain;
+    Elevator m_elevator;
+    Logger m_logger;
+    Intake m_intake;
+    FourBarLift m_fourBarLift;
+
+    frc::Joystick m_driveStick1{kDriveStick1Port};
+    frc::Joystick m_driveStick2{kDriveStick2Port};
+    frc::Joystick m_appendageStick{kAppendageStickPort};
+
     LogFileSink fileSink{"/home/lvuser/Robot.log"};
-    static CsvLogger csvLogger;
 };
 
 }  // namespace frc3512

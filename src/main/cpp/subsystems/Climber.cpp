@@ -6,11 +6,13 @@
 
 using namespace frc3512;
 
-Climber::Climber() { m_timer.Start(); }
+void Climber::SetLiftVoltage(double voltage) { m_lift.Set(voltage); }
 
-void Climber::Ascend() { m_lift.Set(true); }
+void Climber::SetDriveVoltage(double voltage) { m_drive.Set(voltage); }
 
-void Climber::Descend() { m_lift.Set(false); }
+void Climber::Ascend() { m_lift.Set(1.0); }
+
+void Climber::Descend() { m_lift.Set(-1.0); }
 
 void Climber::Forward() { m_drive.Set(1.0); }
 
@@ -23,7 +25,8 @@ void Climber::Climb() {
             m_state = State::kAscend;
             break;
         case State::kAscend:
-            if (m_timer.HasPeriodPassed(2.5)) {
+            // TODO: Replace with controller
+            if (1) {
                 Forward();
                 m_state = State::kDriveForward;
             }

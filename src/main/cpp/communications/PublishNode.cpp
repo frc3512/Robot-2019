@@ -35,6 +35,17 @@ void PublishNode::Unsubscribe(PublishNode& publisher) {
     }
 }
 
+bool PublishNode::GetRawButton(const HIDPacket& message, int joystick,
+                               int button) {
+    if (joystick == 0) {
+        return message.buttons1 & (1 << (button - 1));
+    } else if (joystick == 1) {
+        return message.buttons2 & (1 << (button - 1));
+    } else if (joystick == 2) {
+        return message.buttons3 & (1 << (button - 1));
+    }
+}
+
 void PublishNode::ProcessMessage(const StatePacket& message) {}
 
 void PublishNode::ProcessMessage(const ButtonPacket& message) {}
@@ -42,6 +53,8 @@ void PublishNode::ProcessMessage(const ButtonPacket& message) {}
 void PublishNode::ProcessMessage(const POVPacket& message) {}
 
 void PublishNode::ProcessMessage(const CommandPacket& message) {}
+
+void PublishNode::ProcessMessage(const HIDPacket& message) {}
 
 void PublishNode::RunFramework() {
     while (m_isRunning) {

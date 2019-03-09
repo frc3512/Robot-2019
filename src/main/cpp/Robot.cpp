@@ -5,77 +5,83 @@
 #include <iostream>
 #include <string>
 
+#include <frc/DriverStation.h>
+
 using namespace frc3512;
 
-Climber Robot::climber;
-CsvLogger Robot::csvLogger{kCSVFile, "Time"};
-Drivetrain Robot::drivetrain;
-Elevator Robot::elevator;
-Logger Robot::logger;
-
 frc::PowerDistributionPanel Robot::pdp;
-frc::Joystick Robot::driveStick1{kDriveStick1Port};
-frc::Joystick Robot::driveStick2{kDriveStick2Port};
-frc::Joystick Robot::appendageStick{kAppendageStickPort};
 
 Robot::Robot() : PublishNode("Robot") {
-    logger.AddLogSink(fileSink);
+    m_logger.AddLogSink(fileSink);
+    m_logger.Subscribe(m_climber);
+    m_logger.Subscribe(m_drivetrain);
+    m_logger.Subscribe(m_elevator);
+    m_logger.Subscribe(m_intake);
+    m_logger.Subscribe(m_fourBarLift);
+    m_logger.Subscribe(*this);
 
-    climber.Subscribe(*this);
-    drivetrain.Subscribe(*this);
-    logger.Subscribe(*this);
-    elevator.Subscribe(*this);
+    m_climber.Subscribe(*this);
+    m_drivetrain.Subscribe(*this);
+    m_elevator.Subscribe(*this);
+    m_intake.Subscribe(*this);
+    m_fourBarLift.Subscribe(*this);
 }
 
 void Robot::DisabledInit() {
     CommandPacket message{"DisabledInit", false};
     Publish(message);
-    elevator.Reset();
-    elevator.Disable();
 }
 
 void Robot::AutonomousInit() {
-    elevator.Reset();
-    elevator.Enable();
+    CommandPacket message{"AutonomousInit", false};
+    Publish(message);
 }
 
 void Robot::TeleopInit() {
     CommandPacket message{"TeleopInit", false};
     Publish(message);
-    elevator.Reset();
-    elevator.Enable();
 }
 
 void Robot::TestInit() {}
 
 void Robot::RobotPeriodic() {
     for (int i = 1; i <= 12; i++) {
-        if (driveStick2.GetRawButtonPressed(i)) {
+        if (m_driveStick2.GetRawButtonPressed(i)) {
             ButtonPacket message{"DriveStick2", i, true};
             Publish(message);
         }
-        if (appendageStick.GetRawButtonPressed(i)) {
+        if (m_appendageStick.GetRawButtonPressed(i)) {
             ButtonPacket message{"AppendageStick", i, true};
             Publish(message);
         }
-        if (appendageStick.GetRawButtonReleased(i)) {
+        if (m_appendageStick.GetRawButtonReleased(i)) {
             ButtonPacket message{"AppendageStick", i, false};
             Publish(message);
         }
     }
-    if (appendageStick.GetPOV() == 0) {
+    if (m_appendageStick.GetPOV() == 0) {
         POVPacket message{"AppendagePOV", 0};
-    } else if (appendageStick.GetPOV() == 180) {
+    } else if (m_appendageStick.GetPOV() == 180) {
         POVPacket message{"AppendagePOV", 180};
         // TODO: integrate this into Publish/Subscribe system
     } else {
         POVPacket message{"AppendagePOV", -1};
     }
+    auto& ds = frc::DriverStation::GetInstance();
+    HIDPacket message{"",
+                      m_driveStick1.GetX(),
+                      m_driveStick1.GetY(),
+                      ds.GetStickButtons(0),
+                      m_driveStick2.GetX(),
+                      m_driveStick2.GetY(),
+                      ds.GetStickButtons(1),
+                      m_appendageStick.GetX(),
+                      m_appendageStick.GetY(),
+                      ds.GetStickButtons(2)};
+    Publish(message);
 }
 
-void Robot::DisabledPeriodic() {
-    std::cout << elevator.GetHeight() << std::endl;
-}
+void Robot::DisabledPeriodic() {}
 
 void Robot::AutonomousPeriodic() {}
 

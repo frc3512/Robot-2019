@@ -17,8 +17,6 @@ void CsvLogger::Log(double value, doubles... values) {
 template <class... doubles>
 void CsvLogger::LogImpl(double value, doubles... values) {
     m_logfile << value << ',';
-
-    std::cout << " " << sizeof...(values) << " ";
     LogImpl(values...);
 }
 

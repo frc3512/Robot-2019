@@ -14,6 +14,7 @@
 #include "Constants.hpp"
 #include "communications/ButtonPacket.hpp"
 #include "communications/CommandPacket.hpp"
+#include "communications/HIDPacket.hpp"
 #include "communications/POVPacket.hpp"
 #include "communications/PacketType.hpp"
 #include "communications/StatePacket.hpp"
@@ -49,6 +50,21 @@ public:
      *                  recieving event from.
      */
     void Unsubscribe(PublishNode& publisher);
+
+    /**
+     * Get the button value (starting at button 1).
+     *
+     * The buttons are returned in a single 16 bit value with one bit
+     * representing the state of each button. The appropriate button is returned
+     * as a boolean value.
+     *
+     * @param message The message whose member variables contain deserialized
+     *                data.
+     * @param joystick  The joystick number.
+     * @param button  The button number to be read (starting at 1).
+     * @return The state of the button.
+     */
+    static bool GetRawButton(const HIDPacket& msg, int joystick, int button);
 
     /**
      * Sends a packet to every subscriber.
@@ -97,6 +113,17 @@ public:
      *                data.
      */
     virtual void ProcessMessage(const POVPacket& message);
+
+    /**
+     * Processes a HIDPacket.
+     *
+     * Users should override if this instance has a need to handle joystick
+     * axis values.
+     *
+     * @param message The message whose member variables contain deserialized
+     *                data.
+     */
+    virtual void ProcessMessage(const HIDPacket& message);
 
     /**
      * Processes a CommandPacket.

@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <hal/cpp/fpga_clock.h>
-
-#include <ctime>
+#include <chrono>
 #include <fstream>
 #include <string>
 
@@ -29,8 +27,7 @@ private:
     double Timestamp();
 
     std::ofstream m_logfile;
-    std::time_t m_timestamp;
-    hal::fpga_clock::time_point m_startTime;
+    std::chrono::steady_clock::time_point m_startTime;
 };
 
 }  // namespace frc3512
