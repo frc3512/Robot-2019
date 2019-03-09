@@ -2,6 +2,7 @@
 .project
 .settings/
 .vscode/
+.wpilib/
 build/
 *.swp
 *Packet.cpp

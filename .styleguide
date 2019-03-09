@@ -18,6 +18,9 @@ modifiableFileExclude {
 includeOtherLibs {
   ctre/
   frc/
+  gtest/
+  hal/
+  wpi/
 }
 
 generatedFileExclude {

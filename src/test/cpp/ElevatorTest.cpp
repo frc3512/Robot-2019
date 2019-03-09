@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2019 FRC Team 3512. All Rights Reserved.
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
 #include "subsystems/Elevator.hpp"
 
 using namespace std::chrono_literals;
