@@ -27,8 +27,6 @@ public:
 
     bool GetTopLimit();
 
-    void SubsystemPeriodic();
-
     void ProcessMessage(const HIDPacket& message) override;
 
 private:

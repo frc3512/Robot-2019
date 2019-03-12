@@ -80,12 +80,6 @@ void Elevator::Reset() {
     m_controller.Reset();
 }
 
-void Elevator::SubsystemPeriodic() {
-    if (GetMagneticSwitch()) {
-        ResetEncoder();
-    }
-}
-
 void Elevator::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
         message.pressed) {

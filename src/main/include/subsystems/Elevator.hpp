@@ -57,8 +57,6 @@ public:
 
     void Reset();
 
-    void SubsystemPeriodic() override;
-
     void ProcessMessage(const ButtonPacket& message) override;
 
     void ProcessMessage(const CommandPacket& message) override;

@@ -20,12 +20,6 @@ bool FourBarLift::GetTopLimit() {
     return m_topLimit.Get() == m_limitPressedState;
 }
 
-void FourBarLift::SubsystemPeriodic() {
-    if (GetTopLimit()) {
-        ResetEncoder();
-    }
-}
-
 void FourBarLift::ProcessMessage(const HIDPacket& message) {
     SetVoltage(message.y3);
 }
