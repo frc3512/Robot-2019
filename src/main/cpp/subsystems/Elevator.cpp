@@ -34,6 +34,10 @@ void Elevator::Disable() {
     m_isEnabled = false;
 }
 
+void Elevator::SetScoringIndex() { m_controller.SetScoringIndex(); }
+
+void Elevator::SetClimbingIndex() { m_controller.SetClimbingIndex(); }
+
 void Elevator::SetGoal(double position) { m_controller.SetGoal(position); }
 
 bool Elevator::AtReference() const { return m_controller.AtReferences(); }
@@ -92,11 +96,11 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
     }
     if (message.topic == "Robot/AppendageStick2" && message.button == 7 &&
         message.pressed) {
-        Disable();
+        SetClimbingIndex();
     }
     if (message.topic == "Robot/AppendageStick2" && message.button == 8 &&
         message.pressed) {
-        Enable();
+        SetScoringIndex();
     }
 }
 
@@ -109,11 +113,5 @@ void Elevator::ProcessMessage(const CommandPacket& message) {
     }
     if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
-    }
-}
-
-void Elevator::ProcessMessage(const HIDPacket& message) {
-    if (!m_isEnabled) {
-        SetVoltage(message.y4 * 0.4);
     }
 }

@@ -14,12 +14,14 @@ import numpy as np
 
 
 class Elevator(frccnt.System):
-    def __init__(self, dt):
+    def __init__(self, m, dt):
         """Elevator subsystem.
 
         Keyword arguments:
+        m -- mass of the elevator carriage in kg
         dt -- time between model/controller updates
         """
+        self.m = m
         state_labels = [("Position", "m"), ("Velocity", "m/s")]
         u_labels = [("Voltage", "V")]
         self.set_plot_labels(state_labels, u_labels)
@@ -31,13 +33,13 @@ class Elevator(frccnt.System):
     def create_model(self, states):
         # Number of motors
         num_motors = 2.0
-        # Elevator carriage mass in kg
-        m = 5.0  # 6.803886
         # Radius of pulley in meters
         r = 0.0181864
         # Gear ratio
         G = 40 / 40
-        return frccnt.models.elevator(frccnt.models.MOTOR_775PRO, num_motors, m, r, G)
+        return frccnt.models.elevator(
+            frccnt.models.MOTOR_775PRO, num_motors, self.m, r, G
+        )
 
     def design_controller_observer(self):
         q = [0.02, 0.4]
@@ -53,8 +55,12 @@ class Elevator(frccnt.System):
 
 def main():
     dt = 0.00505
-    elevator = Elevator(dt)
+    m = 5.0  # 6.803886
+    elevator = Elevator(m, dt)
     elevator.export_cpp_coeffs("Elevator", "control/")
+    m = 5.4
+    elevator = Elevator(m, dt)
+    elevator.export_cpp_coeffs("ElevatorClimb", "control/")
 
     if "--save-plots" in sys.argv or "--noninteractive" not in sys.argv:
         try:

@@ -3,9 +3,12 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <frc/controller/StateSpaceLoop.h>
+#include <frc/controller/StateSpaceController.h>
+#include <frc/controller/StateSpaceObserver.h>
+#include <frc/controller/StateSpacePlant.h>
 
 #include "Constants.hpp"
+#include "control/ElevatorClimbCoeffs.hpp"
 #include "control/ElevatorCoeffs.hpp"
 #include "control/TrapezoidalMotionProfile.hpp"
 #include "logging/CsvLogger.hpp"
@@ -25,6 +28,9 @@ public:
 
     void Enable();
     void Disable();
+
+    void SetScoringIndex();
+    void SetClimbingIndex();
 
     void SetGoal(double goal);
 
@@ -93,14 +99,39 @@ private:
     Eigen::Matrix<double, 1, 1> m_Y;
     TrapezoidalMotionProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints constraints{kElevatorMaxV,
-                                                      kElevatorMaxA};
-    TrapezoidalMotionProfile m_positionProfile{constraints, {0_m, 0_mps}};
+    TrapezoidalMotionProfile::Constraints scoringConstraints{kElevatorMaxV,
+                                                             kElevatorMaxA};
+    TrapezoidalMotionProfile::Constraints climbingConstraints{kElevatorClimbV,
+                                                              kElevatorClimbA};
+    TrapezoidalMotionProfile::Constraints m_activeConstraints =
+        scoringConstraints;
+
+    TrapezoidalMotionProfile m_positionProfile{scoringConstraints,
+                                               {0_m, 0_mps}};
 
     TrapezoidalMotionProfile::State m_profiledReference;
 
-    // The control loop.
-    frc::StateSpaceLoop<2, 1, 1> m_loop{MakeElevatorLoop()};
+    frc::StateSpacePlant<2, 1, 1> m_plant = [&] {
+        frc::StateSpacePlant<2, 1, 1> plant{MakeElevatorPlantCoeffs()};
+        plant.AddCoefficients(MakeElevatorClimbPlantCoeffs());
+        return plant;
+    }();
+
+    frc::StateSpaceController<2, 1, 1> m_controller = [&] {
+        frc::StateSpaceController<2, 1, 1> controller{
+            MakeElevatorControllerCoeffs(), m_plant};
+        controller.AddCoefficients(MakeElevatorClimbControllerCoeffs());
+        return controller;
+    }();
+
+    frc::StateSpaceObserver<2, 1, 1> m_observer = [&] {
+        frc::StateSpaceObserver<2, 1, 1> observer{MakeElevatorObserverCoeffs(),
+                                                  m_plant};
+        observer.AddCoefficients(MakeElevatorClimbObserverCoeffs());
+        return observer;
+    }();
+
+    Eigen::Matrix<double, 2, 1> m_nextR;
 
     bool m_atReferences = false;
 

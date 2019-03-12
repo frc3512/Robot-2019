@@ -131,7 +131,9 @@ constexpr int kEncoderB = 5;
 // Elevator Physical Constants
 constexpr auto kElevatorMaxV = 2.7_mps;     // m/sec
 constexpr auto kElevatorMaxA = 2.5_mps_sq;  // Reduced from 12 to please Rowe
-constexpr double kCarriageMass = 7.07;      // kilograms
+constexpr auto kElevatorClimbV = 0.25_mps;  // m/sec
+constexpr auto kElevatorClimbA = 2.5_mps_sq;
+constexpr double kCarriageMass = 7.07;           // kilograms
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
 constexpr double kElevatorGearRatio = 45 / 12 * 7 / 1 * 40 / 40;
 constexpr double kNumMotors = 2.0;

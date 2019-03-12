@@ -44,6 +44,9 @@ public:
     void Enable();
     void Disable();
 
+    void SetScoringIndex();
+    void SetClimbingIndex();
+
     void SetGoal(double position);
 
     bool AtReference() const;
@@ -57,8 +60,6 @@ public:
     void ProcessMessage(const ButtonPacket& message) override;
 
     void ProcessMessage(const CommandPacket& message) override;
-
-    void ProcessMessage(const HIDPacket& message) override;
 
 private:
     frc::Spark m_grbx{kElevatorPort};
