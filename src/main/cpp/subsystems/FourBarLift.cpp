@@ -21,5 +21,5 @@ bool FourBarLift::GetTopLimit() {
 }
 
 void FourBarLift::ProcessMessage(const HIDPacket& message) {
-    SetVoltage(message.y3);
+    SetVoltage(message.y3 * 0.5);
 }

@@ -8,11 +8,11 @@ Intake::Intake() : PublishNode("Intake") {}
 
 void Intake::SetMotors(MotorState motorState) {
     if (motorState == MotorState::kIntake) {
-        m_leftMotor.Set(-1.0);
-        m_rightMotor.Set(1.0);
+        m_leftMotor.Set(-0.5);
+        m_rightMotor.Set(0.5);
     } else if (motorState == MotorState::kOuttake) {
-        m_leftMotor.Set(1.0);
-        m_rightMotor.Set(-1.0);
+        m_leftMotor.Set(0.5);
+        m_rightMotor.Set(-0.5);
     } else {
         m_leftMotor.Set(0.0);
         m_rightMotor.Set(0.0);
