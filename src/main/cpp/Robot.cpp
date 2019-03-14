@@ -6,6 +6,7 @@
 
 #include <frc/DriverStation.h>
 #include <wpi/raw_ostream.h>
+#include <frc/livewindow/LiveWindow.h>
 
 using namespace frc3512;
 
@@ -38,6 +39,8 @@ Robot::Robot() : PublishNode("Robot") {
     server.SetSource(camera);
 
     m_fourBarLift.Subscribe(m_climber);
+
+    frc::LiveWindow::GetInstance()->DisableAllTelemetry();
 }
 
 void Robot::DisabledInit() {
