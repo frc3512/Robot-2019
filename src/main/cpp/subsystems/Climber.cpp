@@ -41,31 +41,23 @@ void Climber::Climb() {
     }
 }
 
-void Climber::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 3 &&
-        message.pressed) {
-        Ascend();
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 5 &&
-        message.pressed) {
-        Descend();
+void Climber::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/TeleopInit" && !message.reply) {
+        EnablePeriodic();
     }
 }
 
 void Climber::ProcessMessage(const POVPacket& message) {
     if (message.topic == "Robot/AppendagePOV" && message.direction == 0) {
-        Forward();
-    }
-    if (message.topic == "Robot/AppendagePOV" && message.direction == 180) {
-        Reverse();
-    }
-    if (message.topic == "Robot/AppendagePOV" && message.direction == -1) {
-        m_drive.Set(0.0);
+        SetDriveVoltage(0.5);
+    } else if (message.topic == "Robot/AppendagePOV" &&
+               message.direction == 180) {
+        SetDriveVoltage(-0.5);
+    } else {
+        SetDriveVoltage(0);
     }
 }
 
-void Climber::ProcessMessage(const CommandPacket& message) {
-    if (message.topic == "Robot/TeleopInit" && !message.reply) {
-        EnablePeriodic();
-    }
+void Climber::ProcessMessage(const HIDPacket& message) {
+    SetLiftVoltage(message.y3 * 0.5);
 }

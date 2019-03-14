@@ -4,7 +4,6 @@
 
 #include <limits>
 
-#include <frc/DigitalInput.h>
 #include <frc/DriverStation.h>
 
 #include "Robot.hpp"
@@ -55,9 +54,20 @@ void FourBarLift::Reset() {
 }
 
 void FourBarLift::ProcessMessage(const ButtonPacket& message) {
+    if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+        message.pressed) {
+        SetGoal(kFourBarLiftMin);
+    }
     if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
         message.pressed) {
-        ResetEncoder();
+        SetGoal(kFourBarBottomHatch);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.pressed) {
+        if (message.button == 12 || message.button == 9 ||
+            message.button == 10 || message.button == 7 ||
+            message.button == 8 || message.button == 2) {
+            SetGoal(kFourBarLiftMax);
+        }
     }
 }
 

@@ -48,6 +48,7 @@ constexpr T rad2deg(const T& value) {
 constexpr int kDriveStick1Port = 0;
 constexpr int kDriveStick2Port = 1;
 constexpr int kAppendageStickPort = 2;
+constexpr int kAppendageStick2Port = 3;
 
 // Joystick axis deadband range
 constexpr double kJoystickDeadband = 0.02;
@@ -114,14 +115,12 @@ constexpr int kFourBarLiftPort = 3;
 // Sensors
 constexpr int kFourBarLiftEncoderA = 6;
 constexpr int kFourBarLiftEncoderB = 7;
-constexpr int kFourBarLiftLimitPort = 15;
 
-constexpr auto kFourBarLiftMaxV = 1_mps;
-constexpr auto kFourBarLiftMaxA = 6_mps_sq;
+constexpr auto kFourBarLiftMaxV = 0.5_mps;
+constexpr auto kFourBarLiftMaxA = 2_mps_sq;
 constexpr double kFourBarLiftGearRatio = 200 / 1;
-constexpr double kFourBarLiftMax = 1;  // TODO dont know this yet
-constexpr double kFourBarLiftMin =
-    0.1;  // Offset slightly so it doesnt go to its absolute max every time
+constexpr double kFourBarLiftMax = 0.0;
+constexpr double kFourBarLiftMin = -1.49;
 constexpr double kFourBarLiftStallTorque = 0.71;
 constexpr double kFourBarLiftStallCurrent = 134.0;
 constexpr double kFourBarLiftLength = 0.508;   // Approx 20.0 IN
@@ -129,6 +128,9 @@ constexpr double kFourBarLiftMass = 6.803886;  // Approx 15 lbs.
 
 // Distance per pulse (converts ticks to radians)
 constexpr double kFourBarLiftDpP = 2 * kPi / 2048 / 10;
+
+// Setpoints
+constexpr double kFourBarBottomHatch = -0.883;
 
 /*
  * Intake
@@ -151,10 +153,6 @@ constexpr int kIntakeClawPort = 2;
 // Motor Ports
 constexpr int kElevatorPort = 4;
 
-// Sensors
-constexpr int kBottomLimitSwitchPort = 9;
-constexpr int kTopLimitSwitchPort = 8;
-
 // Encoder Ports
 constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
@@ -163,11 +161,11 @@ constexpr int kEncoderB = 5;
 constexpr int kNodeQueueSize = 1024;
 
 // Elevator Physical Constants
-constexpr auto kElevatorMaxV = 2.7_mps;  // m/sec
-constexpr auto kElevatorMaxA = 12.0_mps_sq;
-constexpr double kCarriageMass = 2.0;            // kilograms
+constexpr auto kElevatorMaxV = 2.7_mps;     // m/sec
+constexpr auto kElevatorMaxA = 9.0_mps_sq;  // Reduced from 12 to please Rowe
+constexpr double kCarriageMass = 2.0;       // kilograms
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
-constexpr double kElevatorGearRatio = 40 / 40;
+constexpr double kElevatorGearRatio = 45 / 12 * 7 / 1 * 40 / 40;
 constexpr double kNumMotors = 2.0;
 constexpr double kStallTorque = 2.41 * kNumMotors;    // N-m
 constexpr double kStallCurrent = 131.0 * kNumMotors;  // amps
@@ -175,21 +173,32 @@ constexpr double kFreeSpeed = 5330.0;                 // no load rpm
 constexpr double kFreeCurrent = 2.7 * kNumMotors;     // amps
 constexpr double kResistance = 12.0 / kStallCurrent;  // resistance of motor
 constexpr double kKt = kStallTorque / kStallCurrent;  // torque constant
+constexpr double kElevatorMin = 0.0;
 constexpr double kElevatorMax = 1.32;
 
 // Distance per Pulse for Elevator
 constexpr double kElevatorDpP = (2.0 * kPi * kDrumRadius) * 2.0 / 2048.0;
 
 // Setpoints
-constexpr double kBottomHatch = 0.46482;
-constexpr double kMiddleHatch = 1.17602;
-constexpr double kTopHatch = 1.88722;
-constexpr double kBottomCargo = 0.68072;
-constexpr double kMiddleCargo = 1.39192;
-constexpr double kTopCargo = 2.10312;
-constexpr double kCargoShip = 2.0193;
 
-// CSV Logging File
-constexpr const char* kCSVFile = "/home/lvuser/CSVFile.csv";
+// Represents the height the four-bar offers when scoring in most goals
+constexpr double kFourBarOffset = 0.5334;
 
+// Approximates the height the bottom of the elevator is off the ground
+constexpr double kElevatorOffset = 0.18415;
+
+constexpr double kFloorHeight = 0.0;
+
+constexpr double kBottomHatch = 0.0;  // 0.46482;
+constexpr double kMiddleHatch = 1.17602 - kFourBarOffset - kElevatorOffset;
+constexpr double kTopHatch = 1.88722 - kFourBarOffset - kElevatorOffset;
+
+constexpr double kBottomCargo = 0.0;
+constexpr double kMiddleCargo = 1.39192 - kFourBarOffset - kElevatorOffset;
+// 0.07 compensates for the physical limitations of the elevator
+constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.07;
+
+constexpr double kCargoShip = 1.0541 - kFourBarOffset - kElevatorOffset;
+
+constexpr int kMjpegServerPort = 1180;
 }  // namespace frc3512

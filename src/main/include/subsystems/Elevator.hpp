@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <frc/DigitalInput.h>
+#include <atomic>
+
 #include <frc/Encoder.h>
 #include <frc/Notifier.h>
 #include <frc/Spark.h>
@@ -40,10 +41,6 @@ public:
      */
     double GetHeight();
 
-    double GetVelocity();
-
-    bool GetMagneticSwitch();
-
     void Enable();
     void Disable();
 
@@ -61,18 +58,17 @@ public:
 
     void ProcessMessage(const CommandPacket& message) override;
 
+    void ProcessMessage(const HIDPacket& message) override;
+
 private:
     frc::Spark m_grbx{kElevatorPort};
 
     ElevatorController m_controller;
     frc::Encoder m_encoder{kEncoderA, kEncoderB};
 
-    frc::DigitalInput m_topLimitSwitch{kTopLimitSwitchPort};
-
-    frc::DigitalInput m_bottomLimitSwitch{kBottomLimitSwitchPort};
-
-    bool m_limitPressedState = false;
     frc::Notifier m_thread{&Elevator::Iterate, this};
+
+    std::atomic<bool> m_isEnabled{true};
 };
 
 }  // namespace frc3512

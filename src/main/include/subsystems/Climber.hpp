@@ -52,8 +52,8 @@ public:
      */
     void Climb();
 
-    void ProcessMessage(const ButtonPacket& message) override;
     void ProcessMessage(const POVPacket& message) override;
+    void ProcessMessage(const HIDPacket& message) override;
     void ProcessMessage(const CommandPacket& message) override;
 
 private:

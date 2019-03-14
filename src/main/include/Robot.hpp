@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cscore.h>
+
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 
@@ -47,8 +49,12 @@ private:
     frc::Joystick m_driveStick1{kDriveStick1Port};
     frc::Joystick m_driveStick2{kDriveStick2Port};
     frc::Joystick m_appendageStick{kAppendageStickPort};
+    frc::Joystick m_appendageStick2{kAppendageStick2Port};
 
     LogFileSink fileSink{"/home/lvuser/Robot.log"};
+
+    cs::UsbCamera camera{"Camera 1", 0};
+    cs::MjpegServer server{"Server", kMjpegServerPort};
 };
 
 }  // namespace frc3512

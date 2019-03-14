@@ -4,7 +4,6 @@
 
 #include <limits>
 
-#include <frc/DigitalInput.h>
 #include <frc/DriverStation.h>
 
 #include "Robot.hpp"
@@ -18,15 +17,12 @@ Elevator::Elevator() : PublishNode("Elevator") {
 }
 
 void Elevator::SetVoltage(double voltage) {
-    if (voltage > 0.0 && m_topLimitSwitch.Get() == m_limitPressedState) {
+    /*if (voltage > 0.0 && m_encoder.GetDistance() >= kElevatorMax) {
         voltage = 0.0;
     }
-    if (voltage < 0.0 && m_bottomLimitSwitch.Get() == m_limitPressedState) {
+    if (voltage < 0.0 && m_encoder.GetDistance() <= kElevatorMin) {
         voltage = 0.0;
-    }
-    if (voltage > 0.0 && m_encoder.GetDistance() >= kElevatorMax) {
-        voltage = 0.0;
-    }
+    }*/
     m_grbx.Set(voltage);
 }
 
@@ -34,27 +30,16 @@ void Elevator::ResetEncoder() { m_encoder.Reset(); }
 
 double Elevator::GetHeight() { return m_encoder.GetDistance(); }
 
-double Elevator::GetVelocity() {
-    static double last = m_encoder.GetRate();
-
-    // TODO make average A more accurate std::cout << (m_encoder.GetRate() -
-    // last) / 0.02 << std::endl;
-    last = m_encoder.GetRate();
-    return 0;
-}
-
-bool Elevator::GetMagneticSwitch() {
-    return m_bottomLimitSwitch.Get() == m_limitPressedState;
-}
-
 void Elevator::Enable() {
     m_controller.Enable();
     m_thread.StartPeriodic(0.005);
+    m_isEnabled = true;
 }
 
 void Elevator::Disable() {
     m_controller.Disable();
     m_thread.Stop();
+    m_isEnabled = false;
 }
 
 void Elevator::SetGoal(double position) { m_controller.SetGoal(position); }
@@ -81,19 +66,46 @@ void Elevator::Reset() {
 }
 
 void Elevator::ProcessMessage(const ButtonPacket& message) {
-    /*
-      if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
-          message.pressed) {
-          SetGoal(1.32);
-      }
-      if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
-          message.pressed) {
-          SetGoal(0.0);
-      }
-      if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
-          message.pressed) {
-          SetGoal(0.5);
-      }*/
+    if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+        message.pressed) {
+        SetGoal(kFloorHeight);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
+        message.pressed) {
+        SetGoal(kBottomHatch);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
+        message.pressed) {
+        SetGoal(kBottomCargo);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 9 &&
+        message.pressed) {
+        SetGoal(kMiddleHatch);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 10 &&
+        message.pressed) {
+        SetGoal(kMiddleCargo);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 7 &&
+        message.pressed) {
+        SetGoal(kTopHatch);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 8 &&
+        message.pressed) {
+        SetGoal(kTopCargo);
+    }
+    if (message.topic == "Robot/AppendageStick" && message.button == 2 &&
+        message.pressed) {
+        SetGoal(kCargoShip);
+    }
+    if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
+        message.pressed) {
+        Disable();
+    }
+    if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
+        message.pressed) {
+        Enable();
+    }
 }
 
 void Elevator::ProcessMessage(const CommandPacket& message) {
@@ -105,5 +117,11 @@ void Elevator::ProcessMessage(const CommandPacket& message) {
     }
     if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
+    }
+}
+
+void Elevator::ProcessMessage(const HIDPacket& message) {
+    if (!m_isEnabled) {
+        SetVoltage(message.y4 * 0.4);
     }
 }

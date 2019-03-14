@@ -25,6 +25,10 @@ Robot::Robot() : PublishNode("Robot") {
     m_elevator.Subscribe(*this);
     m_intake.Subscribe(*this);
     m_fourBarLift.Subscribe(*this);
+
+    camera.SetResolution(160, 120);
+    camera.SetFPS(15);
+    server.SetSource(camera);
 }
 
 void Robot::DisabledInit() {
@@ -59,14 +63,28 @@ void Robot::RobotPeriodic() {
             Publish(message);
         }
     }
+
     if (m_appendageStick.GetPOV() == 0) {
         POVPacket message{"AppendagePOV", 0};
+        Publish(message);
     } else if (m_appendageStick.GetPOV() == 180) {
         POVPacket message{"AppendagePOV", 180};
-        // TODO: integrate this into Publish/Subscribe system
+        Publish(message);
     } else {
         POVPacket message{"AppendagePOV", -1};
+        Publish(message);
     }
+    if (m_driveStick2.GetPOV() == 0) {
+        POVPacket message{"Drive2POV", 0};
+        Publish(message);
+    } else if (m_driveStick2.GetPOV() == 180) {
+        POVPacket message{"Drive2POV", 180};
+        Publish(message);
+    } else {
+        POVPacket message{"Drive2POV", -1};
+        Publish(message);
+    }
+
     auto& ds = frc::DriverStation::GetInstance();
     HIDPacket message{"",
                       m_driveStick1.GetX(),
@@ -77,11 +95,16 @@ void Robot::RobotPeriodic() {
                       ds.GetStickButtons(1),
                       m_appendageStick.GetX(),
                       m_appendageStick.GetY(),
-                      ds.GetStickButtons(2)};
+                      ds.GetStickButtons(2),
+                      m_appendageStick2.GetX(),
+                      m_appendageStick2.GetY(),
+                      ds.GetStickButtons(3)};
     Publish(message);
 }
 
-void Robot::DisabledPeriodic() {}
+void Robot::DisabledPeriodic() {
+    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
+}
 
 void Robot::AutonomousPeriodic() {}
 

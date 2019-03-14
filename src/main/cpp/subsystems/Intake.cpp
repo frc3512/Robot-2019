@@ -8,11 +8,11 @@ Intake::Intake() : PublishNode("Intake") {}
 
 void Intake::SetMotors(MotorState motorState) {
     if (motorState == MotorState::kIntake) {
-        m_leftMotor.Set(-0.5);
-        m_rightMotor.Set(0.5);
+        m_leftMotor.Set(-0.75);
+        m_rightMotor.Set(0.75);
     } else if (motorState == MotorState::kOuttake) {
-        m_leftMotor.Set(0.5);
-        m_rightMotor.Set(-0.5);
+        m_leftMotor.Set(0.75);
+        m_rightMotor.Set(-0.75);
     } else {
         m_leftMotor.Set(0.0);
         m_rightMotor.Set(0.0);
@@ -44,11 +44,11 @@ void Intake::ProcessMessage(const ButtonPacket& message) {
         !message.pressed) {
         SetMotors(MotorState::kIdle);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 9 &&
+    if (message.topic == "Robot/AppendageStick" && message.button == 3 &&
         message.pressed) {
         SetClaw(SolenoidState::kOpen);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 10 &&
+    if (message.topic == "Robot/AppendageStick" && message.button == 5 &&
         message.pressed) {
         SetClaw(SolenoidState::kClose);
     }

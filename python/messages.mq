@@ -21,3 +21,6 @@ HID:
   double x3
   double y3
   int buttons3
+  double x4
+  double y4
+  int buttons4

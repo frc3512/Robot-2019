@@ -43,6 +43,8 @@ bool PublishNode::GetRawButton(const HIDPacket& message, int joystick,
         return message.buttons2 & (1 << (button - 1));
     } else if (joystick == 2) {
         return message.buttons3 & (1 << (button - 1));
+    } else if (joystick == 3) {
+        return message.buttons4 & (1 << (button - 1));
     }
 }
 

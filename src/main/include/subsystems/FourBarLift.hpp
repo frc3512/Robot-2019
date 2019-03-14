@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <frc/DigitalInput.h>
 #include <frc/Encoder.h>
 #include <frc/Notifier.h>
 #include <frc/Spark.h>
