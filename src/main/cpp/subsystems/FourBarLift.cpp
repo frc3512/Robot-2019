@@ -62,6 +62,14 @@ void FourBarLift::ProcessMessage(const ButtonPacket& message) {
         message.pressed) {
         SetGoal(kFourBarBottomHatch);
     }
+    if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
+        message.pressed) {
+        m_controller.SetClimbing(true);
+    }
+    if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
+        message.pressed) {
+        m_controller.SetClimbing(false);
+    }
     if (message.topic == "Robot/AppendageStick" && message.pressed) {
         if (message.button == 12 || message.button == 9 ||
             message.button == 10 || message.button == 7 ||

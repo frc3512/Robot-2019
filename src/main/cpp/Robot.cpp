@@ -104,6 +104,7 @@ void Robot::RobotPeriodic() {
 
 void Robot::DisabledPeriodic() {
     std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
+    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
 }
 
 void Robot::AutonomousPeriodic() {}

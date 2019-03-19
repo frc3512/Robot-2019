@@ -38,13 +38,21 @@ void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
 }
 
 double FourBarLiftController::ControllerVoltage() const {
-    return m_loop.U(0) +
-           (1 / 2) *
-               (kRobotVoltage * kFourBarLiftMass * kGravity *
-                kFourBarLiftLength) /
-               (kFourBarLiftGearRatio *
-                (kFourBarLiftStallTorque / kFourBarLiftStallCurrent)) *
-               std::cos(EstimatedAngle());
+    if (!m_climbing) {
+        return m_loop.U(0) +
+               (1 / 2) *
+                   (kRobotVoltage * kFourBarLiftMass * kGravity *
+                    kFourBarLiftLength) /
+                   (kFourBarLiftGearRatio *
+                    (kFourBarLiftStallTorque / kFourBarLiftStallCurrent)) *
+                   std::cos(EstimatedAngle());
+    } else {
+        return m_loop.U(0);
+    }
+}
+
+void FourBarLiftController::SetClimbing(bool climbing) {
+    m_climbing = climbing;
 }
 
 double FourBarLiftController::EstimatedAngle() const { return m_loop.Xhat(0); }

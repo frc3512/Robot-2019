@@ -47,17 +47,7 @@ void Climber::ProcessMessage(const CommandPacket& message) {
     }
 }
 
-void Climber::ProcessMessage(const POVPacket& message) {
-    if (message.topic == "Robot/AppendagePOV" && message.direction == 0) {
-        SetDriveVoltage(0.5);
-    } else if (message.topic == "Robot/AppendagePOV" &&
-               message.direction == 180) {
-        SetDriveVoltage(-0.5);
-    } else {
-        SetDriveVoltage(0);
-    }
-}
-
 void Climber::ProcessMessage(const HIDPacket& message) {
-    SetLiftVoltage(message.y3 * 0.5);
+    SetLiftVoltage(message.y3 * -0.5);
+    SetDriveVoltage(message.y1 * 0.75);
 }

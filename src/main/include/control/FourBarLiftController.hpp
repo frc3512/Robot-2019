@@ -52,6 +52,8 @@ public:
      */
     double ControllerVoltage() const;
 
+    void SetClimbing(bool climbing);
+
     /**
      * Returns the estimated angle.
      */
@@ -104,6 +106,7 @@ private:
     frc::StateSpaceLoop<2, 1, 1> m_loop{MakeFourBarLiftLoop()};
 
     bool m_atReferences = false;
+    bool m_climbing = false;
 
     CsvLogger elevatorLogger{"/home/lvuser/FourBarLift.csv",
                              "Time,EstPos,PosRef,Voltage"};
