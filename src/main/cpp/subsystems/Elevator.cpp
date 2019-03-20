@@ -16,15 +16,7 @@ Elevator::Elevator() : PublishNode("Elevator") {
     EnablePeriodic();
 }
 
-void Elevator::SetVoltage(double voltage) {
-    /*if (voltage > 0.0 && m_encoder.GetDistance() >= kElevatorMax) {
-        voltage = 0.0;
-    }
-    if (voltage < 0.0 && m_encoder.GetDistance() <= kElevatorMin) {
-        voltage = 0.0;
-    }*/
-    m_grbx.Set(voltage);
-}
+void Elevator::SetVoltage(double voltage) { m_grbx.Set(voltage); }
 
 void Elevator::ResetEncoder() { m_encoder.Reset(); }
 

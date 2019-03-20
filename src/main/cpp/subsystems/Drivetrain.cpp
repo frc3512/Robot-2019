@@ -41,13 +41,9 @@ void Drivetrain::ResetGyro() { m_gyro.Reset(); }
 
 void Drivetrain::CalibrateGyro() { m_gyro.Calibrate(); }
 
-void Drivetrain::Debug() {}
-
 double Drivetrain::GetLeftDisplacement() { return m_leftEncoder.Get(); }
 
 double Drivetrain::GetRightDisplacement() { return m_rightEncoder.Get(); }
-
-void Drivetrain::SubsystemPeriodic() {}
 
 void Drivetrain::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/DriveStick2" && message.button == 1 &&

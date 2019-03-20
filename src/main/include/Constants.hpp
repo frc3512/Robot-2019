@@ -6,17 +6,6 @@
 
 namespace frc3512 {
 
-// Includes definition for Talons and etc that connect to the RoboRIO
-
-/* Order of constants:
- * > Motor IDs
- * > Solenoid Ports
- * > Limit switches
- * > Distance per pulse
- * > PID
- * > Other (i.e. miscellaneous constants)
- */
-
 /*
  * Math and Conversions
  */
@@ -39,6 +28,14 @@ template <class T>
 constexpr T rad2deg(const T& value) {
     return value * 180 / kPi;
 }
+
+/*
+ * Miscellaneous
+ */
+
+constexpr int kNodeQueueSize = 1024;
+constexpr int kMjpegServerPort = 1180;
+constexpr double kRobotVoltage = 12.0;
 
 /*
  * Joystick and buttons
@@ -67,35 +64,8 @@ constexpr int kLeftEncoderB = 3;
 constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
 
-// Controller constants
-constexpr double kB = 1.0;
-constexpr double kZeta = 1.0;
-constexpr double kDt = 0.00505;
-constexpr auto kDt_s = 0.00505_s;
-
-// Drive trapezoid profile constants
-constexpr auto kRobotMaxV = 5.461_mps;              // m/sec
-constexpr auto kRobotMaxA = 1.0922_mps_sq;          // 3.0;           // sec
-constexpr auto kRobotMaxRotateRate = 4.52_mps;      // rad/sec
-constexpr auto kRobotMaxRotateAccel = 4.52_mps_sq;  // sec
-
-// Physical Robot Constants
-constexpr double kWheelbaseWidth = 0.6096;  // 24.0;
-constexpr double kRobotLength = 0.9398;     // 37.0;  // Approximate
-constexpr double kRobotWidth = 0.8382;      // 33.0;   // Approximate
-constexpr double kWheelRadius = 0.0746125;  // 2.9375;  // 2.947
-constexpr double kDriveGearRatio = 1.0 / 1.0;
-constexpr double kRobotVoltage = 12.0;
-
 // Solenoid Ports
 constexpr int kShifterPort = 1;
-
-// CheesyDrive constants
-constexpr double kLowGearSensitive = 0.75;
-constexpr double kTurnNonLinearity = 1.0;
-constexpr double kInertiaDampen = 2.5;
-constexpr double kInertiaHighTurn = 3.0;
-constexpr double kInertiaLowTurn = 3.0;
 
 /*
  * Climber
@@ -140,6 +110,7 @@ constexpr double kFourBarBottomHatch = -0.883;
 constexpr int kLeftIntakePort = 0;
 constexpr int kRightIntakePort = 8;
 
+// Power Distribution Panel Ports
 constexpr int kLeftIntakePDP = 11;
 constexpr int kRightIntakePDP = 10;
 
@@ -157,9 +128,6 @@ constexpr int kElevatorPort = 4;
 constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
 
-// PublishNode constants
-constexpr int kNodeQueueSize = 1024;
-
 // Elevator Physical Constants
 constexpr auto kElevatorMaxV = 2.7_mps;     // m/sec
 constexpr auto kElevatorMaxA = 9.0_mps_sq;  // Reduced from 12 to please Rowe
@@ -176,7 +144,9 @@ constexpr double kKt = kStallTorque / kStallCurrent;  // torque constant
 constexpr double kElevatorMin = 0.0;
 constexpr double kElevatorMax = 1.32;
 
-// Distance per Pulse for Elevator
+constexpr auto kDt_s = 0.00505_s;
+
+// Distance per Pulse
 constexpr double kElevatorDpP = (2.0 * kPi * kDrumRadius) * 2.0 / 2048.0;
 
 // Setpoints
@@ -200,5 +170,4 @@ constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.07;
 
 constexpr double kCargoShip = 1.0541 - kFourBarOffset - kElevatorOffset;
 
-constexpr int kMjpegServerPort = 1180;
 }  // namespace frc3512

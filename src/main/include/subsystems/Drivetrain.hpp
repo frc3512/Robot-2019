@@ -84,11 +84,6 @@ public:
     void CalibrateGyro();
 
     /**
-     * Sends print statements for debugging purposes.
-     */
-    void Debug();
-
-    /**
      * Returns left encoder displacement.
      *
      * @return displacement
@@ -101,8 +96,6 @@ public:
      * @return displacement
      */
     double GetRightDisplacement();
-
-    void SubsystemPeriodic() override;
 
     void ProcessMessage(const ButtonPacket& message) override;
 
