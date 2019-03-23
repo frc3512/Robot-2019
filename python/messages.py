@@ -174,30 +174,72 @@ def write_packettype_header(msg_names):
     os.rename("PacketType.hpp", f"../src/main/include/communications/PacketType.hpp")
 
 
-def write_packettype_source(msg_names):
-    """Write PacketType.cpp source file.
+def write_publishnodebase_header(msg_names):
+    """Write PublishNodeBase.hpp header file.
 
     Keyword arguments:
     msg_names -- list of packet message names
     """
-    with open("PacketType.cpp", "w") as output:
-        output.write('#include "communications/PacketType.hpp"\n')
+    with open("PublishNodeBase.hpp", "w") as output:
+        output.write("#pragma once\n")
+        output.write("\n")
+        output.write("#include <stdint.h>\n")
+        output.write("\n")
+        output.write("#include <mutex>\n")
         output.write("\n")
         output.write("#include <wpi/SmallVector.h>\n")
         output.write("\n")
+        for msg_name in msg_names:
+            output.write(f'#include "communications/{msg_name}Packet.hpp"\n')
+        output.write("\n")
+        output.write("namespace frc3512 {\n")
+        output.write("\n")
+
+        output.write("class PublishNodeBase {\n")
+        output.write(" public:\n")
+        output.write(
+            """  /**
+   * Deserialize the provided message and process it via the ProcessMessage()
+   * function corresponding to the message type.
+   *
+   * Do NOT provide an implementation for this function. messages.py generates
+   * one in PacketType.cpp.
+   *
+   * @param message The buffer containing the message to deserialize.
+   */\n"""
+        )
+        output.write(
+            "  void DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message);\n"
+        )
+        output.write("\n")
+        for msg_name in msg_names:
+            output.write(
+                f"  virtual void ProcessMessage(const {msg_name}Packet& message);\n"
+            )
+        output.write("\n")
+        output.write("  protected:\n")
+        output.write("    std::mutex m_mutex;\n")
+        output.write("};\n")
+        output.write("\n")
+        output.write("}  // namespace frc3512\n")
+    os.rename(
+        "PublishNodeBase.hpp", f"../src/main/include/communications/PublishNodeBase.hpp"
+    )
+
+
+def write_publishnodebase_source(msg_names):
+    """Write PublishNodeBase.cpp source file.
+
+    Keyword arguments:
+    msg_names -- list of packet message names
+    """
+    with open("PublishNodeBase.cpp", "w") as output:
+        output.write('#include "communications/PublishNodeBase.hpp"\n')
+        output.write("\n")
         output.write("using namespace frc3512;\n")
         output.write("\n")
-
-        includes = []
-        for msg_name in msg_names:
-            includes.append(f'#include "communications/{msg_name}Packet.hpp"\n')
-        includes.append('#include "communications/PublishNode.hpp"\n')
-        for include in sorted(includes):
-            output.write(include)
-
-        output.write("\n")
         output.write(
-            "void PublishNode::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message) {\n"
+            "void PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message) {\n"
         )
         output.write(
             "    // Checks the first byte of the message for its ID to determine\n"
@@ -219,7 +261,15 @@ def write_packettype_source(msg_names):
             output.write("        m_mutex.lock();\n")
             output.write("    }")
         output.write("\n}\n")
-    os.rename("PacketType.cpp", f"../src/main/cpp/communications/PacketType.cpp")
+        output.write("\n")
+        for msg_name in msg_names:
+            output.write("\n")
+            output.write(
+                f"void PublishNodeBase::ProcessMessage(const {msg_name}Packet& message) {{}}\n"
+            )
+    os.rename(
+        "PublishNodeBase.cpp", f"../src/main/cpp/communications/PublishNodeBase.cpp"
+    )
 
 
 def main():
@@ -249,8 +299,10 @@ def main():
 
         write_msg_header(msg_name, match.capturesdict()["type"], arg_types, names)
         write_msg_source(msg_name, arg_types, names, serial_names)
+    msg_names = sorted(msg_names)
     write_packettype_header(msg_names)
-    write_packettype_source(msg_names)
+    write_publishnodebase_header(msg_names)
+    write_publishnodebase_source(msg_names)
 
 
 if __name__ == "__main__":
