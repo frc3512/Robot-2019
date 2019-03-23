@@ -58,7 +58,7 @@ void Elevator::Reset() {
 }
 
 void Elevator::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 1 &&
         message.pressed) {
         SetGoal(kFloorHeight);
     }
@@ -86,15 +86,15 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
         message.pressed) {
         SetGoal(kTopCargo);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 2 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
         message.pressed) {
         SetGoal(kCargoShip);
     }
-    if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 7 &&
         message.pressed) {
         Disable();
     }
-    if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 8 &&
         message.pressed) {
         Enable();
     }

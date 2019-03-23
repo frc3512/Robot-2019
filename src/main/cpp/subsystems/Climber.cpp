@@ -41,9 +41,16 @@ void Climber::Climb() {
     }
 }
 
+void Climber::ProcessMessage(const ButtonPacket& message) {
+    if (message.topic == "Robot/AppendageStick" && message.button == 9) {
+        m_isEnabled = true;
+    }
+}
+
 void Climber::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         EnablePeriodic();
+        m_isEnabled = false;
     }
 }
 

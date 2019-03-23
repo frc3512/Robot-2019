@@ -23,7 +23,7 @@ public:
 
     void SetMotors(MotorState motorState);
 
-    void SetClaw(SolenoidState solenoidState);
+    void ToggleClaw();
 
     void ProcessMessage(const ButtonPacket& message);
 

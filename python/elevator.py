@@ -32,7 +32,7 @@ class Elevator(frccnt.System):
         # Number of motors
         num_motors = 2.0
         # Elevator carriage mass in kg
-        m = 11.0  # 6.803886
+        m = 5.0  # 6.803886
         # Radius of pulley in meters
         r = 0.0181864
         # Gear ratio

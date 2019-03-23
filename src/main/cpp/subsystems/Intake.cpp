@@ -19,37 +19,27 @@ void Intake::SetMotors(MotorState motorState) {
     }
 }
 
-void Intake::SetClaw(SolenoidState solenoidState) {
-    if (solenoidState == SolenoidState::kOpen) {
-        m_claw.Set(true);
-    } else if (solenoidState == SolenoidState::kClose) {
-        m_claw.Set(false);
-    }
-}
+void Intake::ToggleClaw() { m_claw.Set(!m_claw.Get()); }
 
 void Intake::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 4 &&
-        message.pressed) {
-        SetMotors(MotorState::kIntake);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 6 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 4 &&
         message.pressed) {
         SetMotors(MotorState::kOuttake);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 4 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 6 &&
+        message.pressed) {
+        SetMotors(MotorState::kIntake);
+    }
+    if (message.topic == "Robot/AppendageStick2" && message.button == 4 &&
         !message.pressed) {
         SetMotors(MotorState::kIdle);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 6 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 6 &&
         !message.pressed) {
         SetMotors(MotorState::kIdle);
     }
-    if (message.topic == "Robot/AppendageStick" && message.button == 3 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
         message.pressed) {
-        SetClaw(SolenoidState::kOpen);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 5 &&
-        message.pressed) {
-        SetClaw(SolenoidState::kClose);
-    }
+        ToggleClaw();
+    }  // TODO get state and put in DS
 }

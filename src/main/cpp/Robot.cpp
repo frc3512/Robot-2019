@@ -44,11 +44,7 @@ void Robot::AutonomousInit() {
 void Robot::TeleopInit() {
     CommandPacket message{"TeleopInit", false};
     Publish(message);
-}
 
-void Robot::TestInit() {}
-
-void Robot::RobotPeriodic() {
     for (int i = 1; i <= 12; i++) {
         if (m_driveStick2.GetRawButtonPressed(i)) {
             ButtonPacket message{"DriveStick2", i, true};
@@ -60,6 +56,52 @@ void Robot::RobotPeriodic() {
         }
         if (m_appendageStick.GetRawButtonReleased(i)) {
             ButtonPacket message{"AppendageStick", i, false};
+            Publish(message);
+        }
+        if (m_appendageStick2.GetRawButtonPressed(i)) {
+            ButtonPacket message{"AppendageStick2", i, true};
+            std::cout << "h" << std::endl;
+            Publish(message);
+        }
+        if (m_appendageStick2.GetRawButtonReleased(i)) {
+            ButtonPacket message{"AppendageStick2", i, false};
+            std::cout << "r" << std::endl;
+            Publish(message);
+        }
+    }
+}
+
+void Robot::TestInit() {}
+
+void Robot::RobotPeriodic() {}
+
+void Robot::DisabledPeriodic() {
+    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
+    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
+}
+
+void Robot::AutonomousPeriodic() { TeleopPeriodic(); }
+
+void Robot::TeleopPeriodic() {
+    for (int i = 1; i <= 12; i++) {
+        if (m_driveStick2.GetRawButtonPressed(i)) {
+            ButtonPacket message{"DriveStick2", i, true};
+            Publish(message);
+        }
+        if (m_appendageStick.GetRawButtonPressed(i)) {
+            ButtonPacket message{"AppendageStick", i, true};
+            Publish(message);
+        }
+        if (m_appendageStick.GetRawButtonReleased(i)) {
+            ButtonPacket message{"AppendageStick", i, false};
+            Publish(message);
+        }
+        if (m_appendageStick2.GetRawButtonPressed(i)) {
+            ButtonPacket message{"AppendageStick2", i, true};
+            Publish(message);
+        }
+        if (m_appendageStick2.GetRawButtonReleased(i)) {
+            ButtonPacket message{"AppendageStick2", i, false};
             Publish(message);
         }
     }
@@ -101,15 +143,6 @@ void Robot::RobotPeriodic() {
                       ds.GetStickButtons(3)};
     Publish(message);
 }
-
-void Robot::DisabledPeriodic() {
-    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
-    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
-}
-
-void Robot::AutonomousPeriodic() {}
-
-void Robot::TeleopPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }

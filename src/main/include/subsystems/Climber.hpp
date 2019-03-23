@@ -55,11 +55,15 @@ public:
     void ProcessMessage(const HIDPacket& message) override;
     void ProcessMessage(const CommandPacket& message) override;
 
+    void ProcessMessage(const ButtonPacket& message) override;
+
 private:
     State m_state = State::kInit;
 
     frc::Spark m_lift{kClimberLiftPort};
     frc::Spark m_drive{kClimberDrivePort};
+
+    std::atomic<bool> m_isEnabled{false};
 };
 
 }  // namespace frc3512

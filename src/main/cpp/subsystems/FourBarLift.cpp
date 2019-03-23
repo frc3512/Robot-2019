@@ -54,9 +54,13 @@ void FourBarLift::Reset() {
 }
 
 void FourBarLift::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 1 &&
         message.pressed) {
         SetGoal(kFourBarLiftMin);
+    }
+    if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
+        message.pressed) {
+        SetGoal(kFourBarLiftMax);
     }
     if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
         message.pressed) {
@@ -73,7 +77,7 @@ void FourBarLift::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick" && message.pressed) {
         if (message.button == 12 || message.button == 9 ||
             message.button == 10 || message.button == 7 ||
-            message.button == 8 || message.button == 2) {
+            message.button == 8) {
             SetGoal(kFourBarLiftMax);
         }
     }
