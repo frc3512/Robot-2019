@@ -26,8 +26,8 @@ class FourBarLift(frccnt.System):
         u_labels = [("Voltage", "V")]
         self.set_plot_labels(state_labels, u_labels)
 
-        frccnt.System.__init__(self, np.zeros((2, 1)), np.array([[-7.0]]),
-                               np.array([[7.0]]), dt)
+        frccnt.System.__init__(self, np.zeros((2, 1)), np.array([[-12.0]]),
+                               np.array([[12.0]]), dt)
 
     def create_model(self, states):
         # Number of motors

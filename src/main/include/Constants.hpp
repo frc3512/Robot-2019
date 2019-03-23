@@ -86,8 +86,8 @@ constexpr int kFourBarLiftPort = 3;
 constexpr int kFourBarLiftEncoderA = 6;
 constexpr int kFourBarLiftEncoderB = 7;
 
-constexpr auto kFourBarLiftMaxV = 0.5_mps;
-constexpr auto kFourBarLiftMaxA = 2_mps_sq;
+constexpr auto kFourBarLiftMaxV = 1.25_mps;
+constexpr auto kFourBarLiftMaxA = 0.5_mps_sq;
 constexpr double kFourBarLiftGearRatio = 200 / 1;
 constexpr double kFourBarLiftMax = 0.0;
 constexpr double kFourBarLiftMin = -1.49;
@@ -130,7 +130,7 @@ constexpr int kEncoderB = 5;
 
 // Elevator Physical Constants
 constexpr auto kElevatorMaxV = 2.7_mps;     // m/sec
-constexpr auto kElevatorMaxA = 9.0_mps_sq;  // Reduced from 12 to please Rowe
+constexpr auto kElevatorMaxA = 3.0_mps_sq;  // Reduced from 12 to please Rowe
 constexpr double kCarriageMass = 2.0;       // kilograms
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
 constexpr double kElevatorGearRatio = 45 / 12 * 7 / 1 * 40 / 40;
@@ -165,8 +165,8 @@ constexpr double kTopHatch = 1.88722 - kFourBarOffset - kElevatorOffset;
 
 constexpr double kBottomCargo = 0.0;
 constexpr double kMiddleCargo = 1.39192 - kFourBarOffset - kElevatorOffset;
-// 0.07 compensates for the physical limitations of the elevator
-constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.07;
+// 0.06 compensates for the physical limitations of the elevator
+constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.06;
 
 constexpr double kCargoShip = 1.0541 - kFourBarOffset - kElevatorOffset;
 

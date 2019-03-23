@@ -45,7 +45,7 @@ double FourBarLiftController::ControllerVoltage() const {
                     kFourBarLiftLength) /
                    (kFourBarLiftGearRatio *
                     (kFourBarLiftStallTorque / kFourBarLiftStallCurrent)) *
-                   std::cos(EstimatedAngle());
+                   std::cos(EstimatedAngle() + 1.5);
     } else {
         return m_loop.U(0);
     }
