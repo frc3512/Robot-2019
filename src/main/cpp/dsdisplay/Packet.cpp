@@ -125,6 +125,8 @@ Packet& Packet::operator>>(std::string& data) {
         // Update reading position
         m_readPos += length;
     }
+
+    return *this;
 }
 
 Packet& Packet::operator<<(bool data) {
