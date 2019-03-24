@@ -68,11 +68,11 @@ model {
 
             sources.cpp {
                 source {
-                    srcDirs = ['src/main/cpp', 'thirdparty/cpp']
+                    srcDirs = ['src/main/cpp', 'thirdparty/cpp', 'build/generated/cpp']
                     include '**/*.cpp', '**/*.cc'
                 }
                 exportedHeaders {
-                    srcDirs = ['src/main/include', 'thirdparty/include']
+                    srcDirs = ['src/main/include', 'thirdparty/include', 'build/generated/include']
                     if (includeSrcInIncludeRoot) {
                         srcDir 'src/main/cpp'
                     }

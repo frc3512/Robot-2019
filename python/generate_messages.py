@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+"""Called by generate_src.py."""
+
 import os
 import regex
 import sys
+
+DEST = "../build/generated"
 
 
 def write_msg_header(msg_name, types, arg_types, names):
@@ -91,8 +95,7 @@ namespace frc3512 {
         output.write("\n")
         output.write("}\n")
     os.rename(
-        f"{msg_name}Packet.hpp",
-        f"../src/main/include/communications/{msg_name}Packet.hpp",
+        f"{msg_name}Packet.hpp", f"{DEST}/include/communications/{msg_name}Packet.hpp"
     )
 
 
@@ -141,7 +144,7 @@ def write_msg_source(msg_name, arg_types, names, serial_names):
         output.write("    Deserialize(packet);\n")
         output.write("}\n")
     os.rename(
-        f"{msg_name}Packet.cpp", f"../src/main/cpp/communications/{msg_name}Packet.cpp"
+        f"{msg_name}Packet.cpp", f"{DEST}/cpp/communications/{msg_name}Packet.cpp"
     )
 
 
@@ -171,7 +174,7 @@ def write_packettype_header(msg_names):
             output.write(f"{enum_type} {{{multiline_types}\n}};\n")
         output.write("\n")
         output.write("}\n")
-    os.rename("PacketType.hpp", f"../src/main/include/communications/PacketType.hpp")
+    os.rename("PacketType.hpp", f"{DEST}/include/communications/PacketType.hpp")
 
 
 def write_publishnodebase_header(msg_names):
@@ -223,7 +226,7 @@ def write_publishnodebase_header(msg_names):
         output.write("\n")
         output.write("}  // namespace frc3512\n")
     os.rename(
-        "PublishNodeBase.hpp", f"../src/main/include/communications/PublishNodeBase.hpp"
+        "PublishNodeBase.hpp", f"{DEST}/include/communications/PublishNodeBase.hpp"
     )
 
 
@@ -267,9 +270,7 @@ def write_publishnodebase_source(msg_names):
             output.write(
                 f"void PublishNodeBase::ProcessMessage(const {msg_name}Packet& message) {{}}\n"
             )
-    os.rename(
-        "PublishNodeBase.cpp", f"../src/main/cpp/communications/PublishNodeBase.cpp"
-    )
+    os.rename("PublishNodeBase.cpp", f"{DEST}/cpp/communications/PublishNodeBase.cpp")
 
 
 def main():
@@ -277,6 +278,11 @@ def main():
         r"(?P<msg_name>\w+):(?P<var>\n[ ]+(?P<type>[\w:]+)\s+(?P<name>\w+))+"
     )
     msg_names = []
+
+    if not os.path.exists(f"{DEST}/cpp/communications"):
+        os.makedirs(f"{DEST}/cpp/communications")
+    if not os.path.exists(f"{DEST}/include/communications"):
+        os.makedirs(f"{DEST}/include/communications")
 
     # Parse schema file
     with open(f"{sys.argv[1]}", "r") as schemafile:

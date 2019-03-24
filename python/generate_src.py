@@ -4,13 +4,23 @@ import os
 import subprocess
 import sys
 
+DEST = "../build/generated"
+
 # Generate coeffs
-subprocess.run([sys.executable, "generate_coeffs.py", "--noninteractive"])
 subprocess.run([sys.executable, "elevator.py", "--noninteractive"])
 subprocess.run([sys.executable, "four_bar_lift.py", "--noninteractive"])
-os.rename("ElevatorCoeffs.hpp", "../src/main/include/control/ElevatorCoeffs.hpp")
-os.rename("ElevatorCoeffs.cpp", "../src/main/cpp/control/ElevatorCoeffs.cpp")
-os.rename("FourBarLiftCoeffs.hpp", "../src/main/include/control/FourBarLiftCoeffs.hpp")
-os.rename("FourBarLiftCoeffs.cpp", "../src/main/cpp/control/FourBarLiftCoeffs.cpp")
+
+# Move .cpp files
+if not os.path.exists(f"{DEST}/cpp/control"):
+    os.makedirs(f"{DEST}/cpp/control")
+os.rename("ElevatorCoeffs.cpp", f"{DEST}/cpp/control/ElevatorCoeffs.cpp")
+os.rename("FourBarLiftCoeffs.cpp", f"{DEST}/cpp/control/FourBarLiftCoeffs.cpp")
+
+# Move .hpp files
+if not os.path.exists(f"{DEST}/include/control"):
+    os.makedirs(f"{DEST}/include/control")
+os.rename("ElevatorCoeffs.hpp", f"{DEST}/include/control/ElevatorCoeffs.hpp")
+os.rename("FourBarLiftCoeffs.hpp", f"{DEST}/include/control/FourBarLiftCoeffs.hpp")
+
 # Generate messages
-subprocess.run([sys.executable, "messages.py", "messages.mq"])
+subprocess.run([sys.executable, "generate_messages.py", "messages.mq"])

@@ -78,4 +78,4 @@ private:
     bool CheckSize(size_t size);
 };
 
-}
+}  // namespace frc3512

@@ -15,7 +15,6 @@ import numpy as np
 
 
 class FourBarLift(frccnt.System):
-
     def __init__(self, dt):
         """Four-bar lift subsystem.
 
@@ -26,8 +25,9 @@ class FourBarLift(frccnt.System):
         u_labels = [("Voltage", "V")]
         self.set_plot_labels(state_labels, u_labels)
 
-        frccnt.System.__init__(self, np.zeros((2, 1)), np.array([[-12.0]]),
-                               np.array([[12.0]]), dt)
+        frccnt.System.__init__(
+            self, np.zeros((2, 1)), np.array([[-12.0]]), np.array([[12.0]]), dt
+        )
 
     def create_model(self, states):
         # Number of motors
@@ -37,12 +37,13 @@ class FourBarLift(frccnt.System):
         # Length of arm in m
         l = 0.4572
         # Arm moment of inertia in kg-m^2
-        J = 2 / 3 * m * l**2
+        J = 2 / 3 * m * l ** 2
         # Gear ratio
         G = 420.0 / 1.0
 
-        return frccnt.models.single_jointed_arm(frccnt.models.MOTOR_CIM,
-                                                num_motors, J, G)
+        return frccnt.models.single_jointed_arm(
+            frccnt.models.MOTOR_CIM, num_motors, J, G
+        )
 
     def design_controller_observer(self):
         q_pos = 0.01745
@@ -74,7 +75,8 @@ def main():
         plt.savefig("four_bar_lift_pzmaps.svg")
 
     t, xprof, vprof, aprof = frccnt.generate_s_curve_profile(
-        max_v=0.5, max_a=1, time_to_max_a=0.5, dt=dt, goal=1.04)
+        max_v=0.5, max_a=1, time_to_max_a=0.5, dt=dt, goal=1.04
+    )
 
     # Generate references for simulation
     refs = []
@@ -84,8 +86,7 @@ def main():
 
     if "--save-plots" in sys.argv or "--noninteractive" not in sys.argv:
         plt.figure(2)
-        state_rec, ref_rec, u_rec = four_bar_lift.generate_time_responses(
-            t, refs)
+        state_rec, ref_rec, u_rec = four_bar_lift.generate_time_responses(t, refs)
         four_bar_lift.plot_time_responses(t, state_rec, ref_rec, u_rec)
     if "--save-plots" in sys.argv:
         plt.savefig("four_bar_lift_response.svg")
