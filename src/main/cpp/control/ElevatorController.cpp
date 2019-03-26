@@ -59,7 +59,7 @@ double ElevatorController::ControllerVoltage() const {
     if (m_controller.GetIndex() == 1) {
         // Feedforward compensates for unmodeled extra weight from lifting robot
         // while climbing
-        return m_controller.U(0) - 0.5;
+        return m_controller.U(0) - 1.0;
     } else {
         return m_controller.U(0) +
                (std::pow(kCarriageMass, 2) * kGravity * kResistance *

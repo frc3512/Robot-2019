@@ -23,8 +23,9 @@ namespace frc3512 {
 
 enum class State {
     kInit,
-    kElevatorRaise,
-    kFourBarRaise,
+    kThirdLevel,
+    kSecondLevel,
+    kFourBarDescend,
     kDescend,
     kDriveForward,
     kIdle
@@ -120,6 +121,7 @@ private:
 
     frc::Timer m_timer;
     double lastVelocity;
+    bool m_thirdLevel = true;
 
     ClimberController m_controller;
 

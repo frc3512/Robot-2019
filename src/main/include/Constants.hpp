@@ -94,7 +94,7 @@ constexpr auto kFourBarLiftMaxV = 1.25_mps;
 constexpr auto kFourBarLiftMaxA = 0.5_mps_sq;
 constexpr double kFourBarLiftGearRatio = 200 / 1;
 constexpr double kFourBarLiftMax = 0.0;
-constexpr double kFourBarLiftMin = -1.49;
+constexpr double kFourBarLiftMin = -1.60;
 constexpr double kFourBarLiftStallTorque = 0.71;
 constexpr double kFourBarLiftStallCurrent = 134.0;
 constexpr double kFourBarLiftLength = 0.508;   // Approx 20.0 IN
@@ -130,7 +130,8 @@ constexpr double kClimberDpP = (2.0 * kPi * kSprocketRadius) / 2048.0;
 constexpr double kRobotMass = 63.503;  // kg
 
 // Climber Setpoints
-constexpr double kClimbHeight = -0.4826 - 0.0254;  // - 0.04;
+constexpr double kClimb3Height = -0.4826 - 0.0254;  // - 0.04;
+constexpr double kClimb2Height = -0.1498 - 0.0254;
 
 /*
  * Elevator
@@ -186,5 +187,8 @@ constexpr double kMiddleCargo = 1.39192 - kFourBarOffset - kElevatorOffset;
 constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.06;
 
 constexpr double kCargoShip = 1.0541 - kFourBarOffset - kElevatorOffset;
+
+constexpr double kHab3 = 0.48;
+constexpr double kHab2 = 0.1498;
 
 }  // namespace frc3512

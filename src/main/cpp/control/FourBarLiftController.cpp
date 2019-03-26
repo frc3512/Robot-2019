@@ -53,7 +53,7 @@ double FourBarLiftController::ControllerVoltage() const {
     } else {
         // Feedforward compensates for unmodeled extra weight from lifting robot
         // while climbing
-        return m_loop.U(0) - 0.5;
+        return m_loop.U(0) - 2.0;
     }
 }
 

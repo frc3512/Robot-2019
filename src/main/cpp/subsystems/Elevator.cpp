@@ -117,13 +117,16 @@ void Elevator::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
     }
-    if (message.topic == "Climber/ElevatorStart") {
-        SetGoal(0.48);
+    if (message.topic == "Climber/ThirdLevel") {
+        SetGoal(kHab3);
+    }
+    if (message.topic == "Climber/SecondLevel") {
+        SetGoal(kHab2);
     }
     if (message.topic == "Climber/ClimbingProfile") {
         m_controller.SetClimbingIndex();
     }
-    if (message.topic == "Climber/Down") {
+    if (message.topic == "Climber/Down3" || message.topic == "Climber/Down2") {
         SetGoal(0);
     }
     if (message.topic == "Climber/ScoringProfile") {

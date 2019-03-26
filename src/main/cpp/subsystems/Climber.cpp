@@ -101,29 +101,55 @@ void Climber::SubsystemPeriodic() {
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 7 && m_buttonPacket.pressed) {
                 m_buttonPacket.pressed = false;
-                CommandPacket message{"ElevatorStart", true};
+                m_thirdLevel = true;
+                CommandPacket message{"ThirdLevel", true};
                 Publish(message);
-                m_state = State::kElevatorRaise;
+                m_state = State::kThirdLevel;
+            }
+            if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
+                m_buttonPacket.button == 8 && m_buttonPacket.pressed) {
+                m_buttonPacket.pressed = false;
+                m_thirdLevel = false;
+                CommandPacket message{"SecondLevel", true};
+                Publish(message);
+                m_state = State::kSecondLevel;
             }
             break;
         }
-        case State::kElevatorRaise: {
+        case State::kThirdLevel: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            std::cout << "ElevatorRaise" << std::endl;
+            std::cout << "ThirdLevel" << std::endl;
             if (m_elevatorStatusPacket.atGoal) {
                 CommandPacket message0{"FourBarStart", true};
                 Publish(message0);
-                m_state = State::kFourBarRaise;
+                m_state = State::kFourBarDescend;
             }
             break;
         }
-        case State::kFourBarRaise: {
-            std::cout << "FourBarRaise" << std::endl;
+        case State::kSecondLevel: {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::cout << "SecondLevel" << std::endl;
+            if (m_elevatorStatusPacket.atGoal) {
+                CommandPacket message0{"FourBarStart", true};
+                Publish(message0);
+                m_state = State::kFourBarDescend;
+            }
+            break;
+        }
+        case State::kFourBarDescend: {
+            std::cout << "FourBarDescend" << std::endl;
             if (m_fourBarLiftStatusPacket.atGoal) {
                 CommandPacket message1{"ClimbingProfile", false};
                 Publish(message1);
-                CommandPacket message2{"Down", false};
-                Publish(message2);
+                if (m_thirdLevel) {
+                    CommandPacket message2{"Down3", false};
+                    std::cout << "thirdlevel" << std::endl;
+                    Publish(message2);
+                } else {
+                    CommandPacket message2{"Down2", false};
+                    std::cout << "secondlevel" << std::endl;
+                    Publish(message2);
+                }
                 m_state = State::kDescend;
             }
             break;
@@ -139,7 +165,7 @@ void Climber::SubsystemPeriodic() {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
             m_drive.Set(m_HIDPacket.y1);
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
-                m_buttonPacket.button == 7 && m_buttonPacket.pressed) {
+                m_buttonPacket.button == 9 && m_buttonPacket.pressed) {
                 m_buttonPacket.pressed = false;
                 CommandPacket message{"Up", false};
                 Publish(message);
@@ -161,6 +187,16 @@ void Climber::ProcessMessage(const ButtonPacket& message) {
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_buttonPacket = message;
     }
+    if (message.topic == "Robot/AppendageStick2" && message.button == 8 &&
+        message.pressed) {
+        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        m_buttonPacket = message;
+    }
+    if (message.topic == "Robot/AppendageStick2" && message.button == 9 &&
+        message.pressed) {
+        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        m_buttonPacket = message;
+    }
 }
 
 void Climber::ProcessMessage(const CommandPacket& message) {
@@ -169,8 +205,11 @@ void Climber::ProcessMessage(const CommandPacket& message) {
         Enable();
         SetGoal(0.035);
     }
-    if (message.topic == "Climber/Down") {
-        SetGoal(kClimbHeight);
+    if (message.topic == "Climber/Down3") {
+        SetGoal(kClimb3Height);
+    }
+    if (message.topic == "Climber/Down2") {
+        SetGoal(kClimb2Height);
     }
     if (message.topic == "Climber/Up") {
         SetGoal(0);
