@@ -4,12 +4,10 @@
 
 #include <atomic>
 #include <mutex>
-#include <thread>
 
 #include <frc/Encoder.h>
 #include <frc/Notifier.h>
 #include <frc/PowerDistributionPanel.h>
-#include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/Timer.h>
 
@@ -112,8 +110,6 @@ public:
     void SubsystemPeriodic() override;
 
 private:
-    std::thread m_thread;
-
     State m_state = State::kInit;
 
     frc::Spark m_lift{kClimberLiftPort};
@@ -124,8 +120,6 @@ private:
     bool m_thirdLevel = true;
 
     ClimberController m_controller;
-
-    // frc::Solenoid m_lift{kClimberLiftPort};
 
     frc::PowerDistributionPanel m_pdpDrive{0};
     frc::Encoder m_encoder{kLiftEncoderA, kLiftEncoderB};
