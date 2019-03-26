@@ -137,6 +137,7 @@ void Climber::SubsystemPeriodic() {
             break;
         }
         case State::kFourBarDescend: {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
             std::cout << "FourBarDescend" << std::endl;
             if (m_fourBarLiftStatusPacket.atGoal) {
                 CommandPacket message1{"ClimbingProfile", false};
