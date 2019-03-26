@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include <wpi/raw_ostream.h>
+
 #include "Robot.hpp"
 
 using namespace frc3512;
@@ -49,7 +51,7 @@ double ClimberController::ControllerVoltage() {
     constexpr double kFeedForward = 0;
     if ((std::abs(PositionError()) > 0.1) || m_errorExceeded) {
         m_errorExceeded = true;
-        std::cout << "CLIMBER ERROR" << std::endl;
+        wpi::outs() << "CLIMBER ERROR\n";
         return kFeedForward;
     } else {
         return m_loop.U(0) + kFeedForward;

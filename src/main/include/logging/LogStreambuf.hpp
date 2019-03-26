@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <iostream>
+#include <ios>
 #include <streambuf>
 #include <string>
 

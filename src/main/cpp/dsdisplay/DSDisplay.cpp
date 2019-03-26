@@ -4,8 +4,9 @@
 
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <memory>
+
+#include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 using namespace std::chrono_literals;
@@ -22,16 +23,16 @@ DSDisplay::DSDisplay(int port) : m_dsPort(port) {
 #endif
     if (autonModeFile.is_open()) {
         if (autonModeFile >> m_curAutonMode) {
-            std::cout << "dsdisplay: restored auton " << m_curAutonMode
-                      << std::endl;
+            wpi::outs() << "dsdisplay: restored auton " << m_curAutonMode
+                        << "\n";
 
             // Selection is stored as ASCII number in file
             m_curAutonMode -= '0';
         } else {
-            std::cout << "dsdisplay: failed restoring auton" << std::endl;
+            wpi::errs() << "dsdisplay: failed restoring auton\n";
         }
     } else {
-        std::cout << "dsdisplay: failed opening autonMode.txt" << std::endl;
+        wpi::errs() << "dsdisplay: failed opening autonMode.txt\n";
         m_curAutonMode = 0;
     }
 
@@ -265,16 +266,16 @@ void DSDisplay::ReceiveFromDS() {
                 char autonNum = '0' + m_curAutonMode;
 
                 if (autonModeFile << autonNum) {
-                    std::cout << "dsdisplay: autonSelect: wrote auton "
-                              << autonNum << " to file" << std::endl;
+                    wpi::outs() << "dsdisplay: autonSelect: wrote auton "
+                                << autonNum << " to file\n";
                 } else {
-                    std::cout << "dsdisplay: autonSelect: failed writing auton "
-                              << autonNum << " into open file" << std::endl;
+                    wpi::errs()
+                        << "dsdisplay: autonSelect: failed writing auton "
+                        << autonNum << " into open file\n";
                 }
             } else {
-                std::cout
-                    << "dsdisplay: autonSelect: failed to open autonMode.txt"
-                    << std::endl;
+                wpi::errs()
+                    << "dsdisplay: autonSelect: failed to open autonMode.txt\n";
             }
 
             SendToDS(packet);

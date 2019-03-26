@@ -6,7 +6,8 @@
 #include <sys/socket.h>
 
 #include <cstring>
-#include <iostream>
+
+#include <wpi/raw_ostream.h>
 
 #include "dsdisplay/Packet.hpp"
 
@@ -22,7 +23,7 @@ UdpSocket::Status UdpSocket::bind(uint16_t port) {
     sockaddr_in address = UdpSocket::createAddress(INADDR_ANY, port);
     if (::bind(m_socket, reinterpret_cast<sockaddr*>(&address),
                sizeof(address)) == -1) {
-        std::cerr << "Failed to bind socket to port " << port << "\n";
+        wpi::errs() << "Failed to bind socket to port " << port << "\n";
         return Error;
     }
 
@@ -41,8 +42,8 @@ UdpSocket::Status UdpSocket::send(const void* data, size_t size,
 
     // Make sure that all the data will fit in one datagram
     if (size > kMaxDatagramSize) {
-        std::cerr << "Cannot send data over the network (the number of bytes "
-                     "to send is greater than UdpSocket::kMaxDatagramSize)\n";
+        wpi::errs() << "Cannot send data over the network (the number of bytes "
+                       "to send is greater than UdpSocket::kMaxDatagramSize)\n";
         return Error;
     }
 
@@ -72,8 +73,8 @@ UdpSocket::Status UdpSocket::receive(void* data, size_t size, size_t& received,
 
     // Check the destination buffer
     if (!data) {
-        std::cerr << "Cannot receive data from the network (the destination "
-                     "buffer is invalid)\n";
+        wpi::errs() << "Cannot receive data from the network (the destination "
+                       "buffer is invalid)\n";
         return Error;
     }
 
@@ -155,7 +156,7 @@ void UdpSocket::create(int handle) {
         int yes = 1;
         if (setsockopt(m_socket, SOL_SOCKET, SO_BROADCAST,
                        reinterpret_cast<char*>(&yes), sizeof(yes)) == -1) {
-            std::cerr << "Failed to enable broadcast on UDP socket\n";
+            wpi::errs() << "Failed to enable broadcast on UDP socket\n";
         }
     }
 }

@@ -2,9 +2,6 @@
 
 #include "communications/PublishNode.hpp"
 
-#include <cstring>
-#include <iostream>
-
 #include <wpi/SmallVector.h>
 
 using namespace frc3512;

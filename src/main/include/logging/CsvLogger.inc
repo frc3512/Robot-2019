@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include <iomanip>
-#include <iostream>
-
 namespace frc3512 {
 
 template <class... doubles>

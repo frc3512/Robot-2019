@@ -2,10 +2,10 @@
 
 #include "Robot.hpp"
 
-#include <iostream>
 #include <string>
 
 #include <frc/DriverStation.h>
+#include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 
@@ -72,12 +72,12 @@ void Robot::TeleopInit() {
         }
         if (m_appendageStick2.GetRawButtonPressed(i)) {
             ButtonPacket message{"AppendageStick2", i, true};
-            std::cout << "h" << std::endl;
+            wpi::outs() << "h\n";
             Publish(message);
         }
         if (m_appendageStick2.GetRawButtonReleased(i)) {
             ButtonPacket message{"AppendageStick2", i, false};
-            std::cout << "r" << std::endl;
+            wpi::outs() << "r\n";
             Publish(message);
         }
     }
@@ -131,9 +131,9 @@ void Robot::TeleopPeriodic() {
 }
 
 void Robot::DisabledPeriodic() {
-    std::cout << "FourBar: " << m_fourBarLift.GetHeight() << std::endl;
-    std::cout << "Elevator: " << m_elevator.GetHeight() << std::endl;
-    std::cout << "Climber: " << m_climber.GetHeight() << std::endl;
+    wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
+    wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
+    wpi::outs() << "Climber: " << m_climber.GetHeight() << "\n";
 }
 
 #ifndef RUNNING_FRC_TESTS

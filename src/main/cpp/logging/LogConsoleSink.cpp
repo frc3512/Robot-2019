@@ -2,10 +2,10 @@
 
 #include "logging/LogConsoleSink.hpp"
 
-#include <iostream>
+#include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 
 void LogConsoleSink::Log(LogEvent event) {
-    std::cout << event.ToFormattedString();
+    wpi::outs() << event.ToFormattedString();
 }

@@ -2,7 +2,7 @@
 
 #include "logging/CsvLogger.hpp"
 
-#include <iostream>
+#include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 
@@ -10,7 +10,7 @@ CsvLogger::CsvLogger(const std::string& filename, std::string valueNames)
     : m_logfile(filename) {
     m_startTime = std::chrono::steady_clock::now();
     if (!m_logfile.is_open()) {
-        std::cout << filename << " has failed to open." << std::endl;
+        wpi::errs() << filename << " has failed to open.\n";
     }
     m_logfile << valueNames << '\n';
     m_logfile.flush();

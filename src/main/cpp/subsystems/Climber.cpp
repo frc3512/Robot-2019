@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include <frc/DriverStation.h>
+#include <wpi/raw_ostream.h>
 
 #include "Robot.hpp"
 
@@ -76,10 +77,10 @@ void Climber::Iterate() {
     } else {
         SetVoltage(m_controller.ControllerVoltage() / batteryVoltage);
     }
-    /*std::cout << m_controller.PositionReference() << " || "
+    /*wpi::outs() << m_controller.PositionReference() << " || "
               << m_controller.EstimatedPosition() << " || "
               << m_controller.ControllerVoltage() << " || "
-              << m_controller.EstimatedVelocity() << std::endl;*/
+              << m_controller.EstimatedVelocity() << "\n";*/
 }
 
 void Climber::SetGoal(double position) { m_controller.SetGoal(position); }
@@ -97,7 +98,7 @@ void Climber::SubsystemPeriodic() {
     switch (m_state) {
         case State::kInit: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            std::cout << "Init" << std::endl;
+            wpi::outs() << "Init\n";
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 7 && m_buttonPacket.pressed) {
                 m_buttonPacket.pressed = false;
@@ -118,7 +119,7 @@ void Climber::SubsystemPeriodic() {
         }
         case State::kThirdLevel: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            std::cout << "ThirdLevel" << std::endl;
+            wpi::outs() << "ThirdLevel\n";
             if (m_elevatorStatusPacket.atGoal) {
                 CommandPacket message0{"FourBarStart", true};
                 Publish(message0);
@@ -128,7 +129,7 @@ void Climber::SubsystemPeriodic() {
         }
         case State::kSecondLevel: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            std::cout << "SecondLevel" << std::endl;
+            wpi::outs() << "SecondLevel\n";
             if (m_elevatorStatusPacket.atGoal) {
                 CommandPacket message0{"FourBarStart", true};
                 Publish(message0);
@@ -138,17 +139,17 @@ void Climber::SubsystemPeriodic() {
         }
         case State::kFourBarDescend: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            std::cout << "FourBarDescend" << std::endl;
+            wpi::outs() << "FourBarDescend\n";
             if (m_fourBarLiftStatusPacket.atGoal) {
                 CommandPacket message1{"ClimbingProfile", false};
                 Publish(message1);
                 if (m_thirdLevel) {
                     CommandPacket message2{"Down3", false};
-                    std::cout << "thirdlevel" << std::endl;
+                    wpi::outs() << "ThirdLevel\n";
                     Publish(message2);
                 } else {
                     CommandPacket message2{"Down2", false};
-                    std::cout << "secondlevel" << std::endl;
+                    wpi::outs() << "SecondLevel\n";
                     Publish(message2);
                 }
                 m_state = State::kDescend;
