@@ -65,7 +65,7 @@ void FourBarLift::SubsystemPeriodic() {
 }
 
 void FourBarLift::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick2" && message.button == 1 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
         message.pressed) {
         SetGoal(kFourBarLiftMin);
     }

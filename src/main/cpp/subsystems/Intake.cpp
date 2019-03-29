@@ -38,7 +38,7 @@ void Intake::ProcessMessage(const ButtonPacket& message) {
         !message.pressed) {
         SetMotors(MotorState::kIdle);
     }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
+    if (message.topic == "Robot/AppendageStick2" && message.button == 1 &&
         message.pressed) {
         ToggleClaw();
     }  // TODO get state and put in DS
