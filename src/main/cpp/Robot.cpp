@@ -43,9 +43,6 @@ Robot::Robot() : PublishNode("Robot") {
 void Robot::DisabledInit() {
     CommandPacket message{"DisabledInit", false};
     Publish(message);
-    m_elevator.Reset();
-    m_elevator.Disable();
-    m_climber.Disable();
 }
 
 void Robot::AutonomousInit() {

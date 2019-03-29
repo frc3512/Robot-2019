@@ -49,13 +49,7 @@ double ClimberController::ControllerVoltage() {
     /*constexpr double kFeedForward = kRobotMass* kRobotMass * kGravity *
        kResistance * kSprocketRadius / (kClimberGearRatio * kKt);*/
     constexpr double kFeedForward = 0;
-    if ((std::abs(PositionError()) > 0.1) || m_errorExceeded) {
-        m_errorExceeded = true;
-        wpi::outs() << "CLIMBER ERROR\n";
-        return kFeedForward;
-    } else {
-        return m_loop.U(0) + kFeedForward;
-    }
+    return m_loop.U(0) + kFeedForward;
 }
 
 double ClimberController::EstimatedPosition() const { return m_loop.Xhat(0); }

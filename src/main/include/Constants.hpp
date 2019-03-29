@@ -184,7 +184,7 @@ constexpr double kTopHatch = 1.88722 - kFourBarOffset - kElevatorOffset;
 constexpr double kBottomCargo = 0.0;
 constexpr double kMiddleCargo = 1.39192 - kFourBarOffset - kElevatorOffset;
 // 0.06 compensates for the physical limitations of the elevator
-constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.06;
+constexpr double kTopCargo = 2.10312 - kFourBarOffset - kElevatorOffset - 0.11;
 
 constexpr double kCargoShip = 1.0541 - kFourBarOffset - kElevatorOffset;
 

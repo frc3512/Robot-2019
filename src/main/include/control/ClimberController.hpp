@@ -109,7 +109,7 @@ private:
     bool m_atReferences = false;
     bool m_errorExceeded = false;
 
-    CsvLogger climberLogger{"/home/lvuser/climber.csv",
+    CsvLogger climberLogger{"/home/lvuser/Climber.csv",
                             "Time,EstPos,PosRef,Voltage"};
 };
 
