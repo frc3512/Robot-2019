@@ -8,11 +8,12 @@
 #include <frc/DriverStation.h>
 
 using namespace frc3512;
+using namespace frc3512::Constants::FourBarLift;
 using namespace std::chrono_literals;
 
 FourBarLift::FourBarLift() : PublishNode("FourBarLift") {
     m_grbx.Set(0.0);
-    m_encoder.SetDistancePerPulse(kFourBarLiftDpP);
+    m_encoder.SetDistancePerPulse(kDpP);
     EnablePeriodic();
     m_grbx.SetInverted(true);
     SetGoal(0.0);
@@ -65,15 +66,15 @@ void FourBarLift::SubsystemPeriodic() {
 void FourBarLift::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
         message.pressed) {
-        SetGoal(kFourBarLiftMin);
+        SetGoal(kMin);
     }
     if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
         message.pressed) {
-        SetGoal(kFourBarLiftMax);
+        SetGoal(kMax);
     }
     if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
         message.pressed) {
-        SetGoal(kFourBarBottomHatch);
+        SetGoal(kBottomHatch);
     }
     if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
         message.pressed) {
@@ -87,7 +88,7 @@ void FourBarLift::ProcessMessage(const ButtonPacket& message) {
         if (message.button == 12 || message.button == 9 ||
             message.button == 10 || message.button == 7 ||
             message.button == 8) {
-            SetGoal(kFourBarLiftMax);
+            SetGoal(kMax);
         }
     }
 }

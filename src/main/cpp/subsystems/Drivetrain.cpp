@@ -7,6 +7,8 @@
 #include <string>
 
 using namespace frc3512;
+using namespace frc3512::Constants::Drivetrain;
+using namespace frc3512::Constants::Robot;
 
 Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
     m_drive.SetDeadband(kJoystickDeadband);

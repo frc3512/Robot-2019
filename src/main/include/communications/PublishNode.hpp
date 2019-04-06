@@ -10,7 +10,6 @@
 
 #include <frc/circular_buffer.h>
 
-#include "Constants.hpp"
 #include "communications/PublishNodeBase.hpp"
 
 namespace frc3512 {
@@ -77,6 +76,8 @@ public:
     void PushMessage(P p);
 
 private:
+    static constexpr int kNodeQueueSize = 1024;
+
     std::string m_nodeName;
     std::vector<PublishNode*> m_subList;
     frc::circular_buffer<char> m_queue{kNodeQueueSize};

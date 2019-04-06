@@ -97,8 +97,8 @@ private:
     Eigen::Matrix<double, 1, 1> m_Y;
     TrapezoidalMotionProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints constraints{kClimberMaxV,
-                                                      kClimberMaxA};
+    TrapezoidalMotionProfile::Constraints constraints{
+        Constants::Climber::kMaxV, Constants::Climber::kMaxA};
     TrapezoidalMotionProfile m_positionProfile{constraints, {0_m, 0_mps}};
 
     TrapezoidalMotionProfile::State m_profiledReference;

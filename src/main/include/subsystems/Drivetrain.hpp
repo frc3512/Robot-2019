@@ -105,12 +105,14 @@ public:
 
 private:
     // Left gearbox used in position PID
-    frc::Spark m_leftGrbx{kLeftDriveMasterPort};
-    frc::Encoder m_leftEncoder{kLeftEncoderA, kLeftEncoderB};
+    frc::Spark m_leftGrbx{Constants::Drivetrain::kLeftMasterPort};
+    frc::Encoder m_leftEncoder{Constants::Drivetrain::kLeftEncoderA,
+                               Constants::Drivetrain::kLeftEncoderB};
 
     // Right gearbox used in position PID
-    frc::Spark m_rightGrbx{kRightDriveMasterPort};
-    frc::Encoder m_rightEncoder{kRightEncoderA, kRightEncoderB};
+    frc::Spark m_rightGrbx{Constants::Drivetrain::kRightMasterPort};
+    frc::Encoder m_rightEncoder{Constants::Drivetrain::kRightEncoderA,
+                                Constants::Drivetrain::kRightEncoderB};
 
     frc::DifferentialDrive m_drive{m_leftGrbx, m_rightGrbx};
 
@@ -118,7 +120,7 @@ private:
     frc::ADXRS450_Gyro m_gyro;
 
     // Solenoid
-    frc::Solenoid m_shifter{kShifterPort};
+    frc::Solenoid m_shifter{Constants::Drivetrain::kShifterPort};
 };
 
 }  // namespace frc3512

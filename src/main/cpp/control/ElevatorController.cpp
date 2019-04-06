@@ -5,6 +5,7 @@
 #include <cmath>
 
 using namespace frc3512;
+using namespace frc3512::Constants::Elevator;
 
 ElevatorController::ElevatorController() { m_Y.setZero(); }
 
@@ -60,8 +61,8 @@ double ElevatorController::ControllerVoltage() const {
         return m_controller.U(0) - 1.0;
     } else {
         return m_controller.U(0) +
-               (std::pow(kCarriageMass, 2) * kGravity * kResistance *
-                kDrumRadius / (kElevatorGearRatio * kKt));
+               (std::pow(kCarriageMass, 2) * Constants::kGravity * kResistance *
+                kDrumRadius / (kGearRatio * kKt));
     }
 }
 
@@ -94,7 +95,7 @@ void ElevatorController::Update() {
         units::meter_t(m_nextR(0, 0)),
         units::meters_per_second_t(m_nextR(1, 0))};
     TrapezoidalMotionProfile profile{m_activeConstraints, m_goal, references};
-    m_profiledReference = profile.Calculate(kDt_s);
+    m_profiledReference = profile.Calculate(Constants::kDt_s);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 

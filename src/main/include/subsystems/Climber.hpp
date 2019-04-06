@@ -109,8 +109,8 @@ public:
 private:
     State m_state = State::kInit;
 
-    frc::Spark m_lift{kClimberLiftPort};
-    frc::Spark m_drive{kClimberDrivePort};
+    frc::Spark m_lift{Constants::Climber::kLiftPort};
+    frc::Spark m_drive{Constants::Climber::kDrivePort};
 
     frc::Timer m_timer;
     double lastVelocity;
@@ -118,7 +118,8 @@ private:
 
     ClimberController m_controller;
 
-    frc::Encoder m_encoder{kLiftEncoderA, kLiftEncoderB};
+    frc::Encoder m_encoder{Constants::Climber::kLiftEncoderA,
+                           Constants::Climber::kLiftEncoderB};
     frc::Notifier m_notifier{&Climber::Iterate, this};
     CsvLogger climberLogger{"/home/lvuser/ClimberStuff.csv",
                             "Time,Pos,Velo,Accel"};

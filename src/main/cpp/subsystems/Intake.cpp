@@ -3,6 +3,7 @@
 #include "subsystems/Intake.hpp"
 
 using namespace frc3512;
+using namespace frc3512::Constants::Intake;
 
 Intake::Intake() : PublishNode("Intake") {}
 

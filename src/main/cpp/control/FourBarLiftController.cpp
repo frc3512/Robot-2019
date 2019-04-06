@@ -5,6 +5,7 @@
 #include <cmath>
 
 using namespace frc3512;
+using namespace frc3512::Constants::FourBarLift;
 
 FourBarLiftController::FourBarLiftController() { m_Y.setZero(); }
 
@@ -41,13 +42,11 @@ void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
 
 double FourBarLiftController::ControllerVoltage() const {
     if (!m_climbing) {
-        return m_loop.U(0) +
-               (1 / 2) *
-                   (kRobotVoltage * kFourBarLiftMass * kGravity *
-                    kFourBarLiftLength) /
-                   (kFourBarLiftGearRatio *
-                    (kFourBarLiftStallTorque / kFourBarLiftStallCurrent)) *
-                   std::cos(EstimatedAngle() + 1.5);
+        return m_loop.U(0) + (1 / 2) *
+                                 (Constants::Robot::kNominalVoltage * kMass *
+                                  Constants::kGravity * kLength) /
+                                 (kGearRatio * (kStallTorque / kStallCurrent)) *
+                                 std::cos(EstimatedAngle() + 1.5);
     } else {
         // Feedforward compensates for unmodeled extra weight from lifting robot
         // while climbing
@@ -85,7 +84,7 @@ void FourBarLiftController::Update() {
         units::meter_t(m_loop.NextR(0)),
         units::meters_per_second_t(m_loop.NextR(1))};
     TrapezoidalMotionProfile profile{constraints, m_goal, references};
-    m_profiledReference = profile.Calculate(kDt_s);
+    m_profiledReference = profile.Calculate(Constants::kDt_s);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 

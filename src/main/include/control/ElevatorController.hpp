@@ -105,10 +105,10 @@ private:
     Eigen::Matrix<double, 1, 1> m_Y;
     TrapezoidalMotionProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints scoringConstraints{kElevatorMaxV,
-                                                             kElevatorMaxA};
-    TrapezoidalMotionProfile::Constraints climbingConstraints{kElevatorClimbV,
-                                                              kElevatorClimbA};
+    TrapezoidalMotionProfile::Constraints scoringConstraints{
+        Constants::Elevator::kMaxV, Constants::Elevator::kMaxA};
+    TrapezoidalMotionProfile::Constraints climbingConstraints{
+        Constants::Elevator::kClimbMaxV, Constants::Elevator::kClimbMaxA};
     TrapezoidalMotionProfile::Constraints m_activeConstraints =
         scoringConstraints;
 

@@ -19,6 +19,8 @@
 #include "subsystems/FourBarLift.hpp"
 #include "subsystems/Intake.hpp"
 
+using namespace frc3512::Constants::Robot;
+
 namespace frc3512 {
 
 class Robot : public frc::TimedRobot, public PublishNode {

@@ -66,10 +66,11 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    frc::Spark m_grbx{kElevatorPort};
+    frc::Spark m_grbx{Constants::Elevator::kPort};
 
     ElevatorController m_controller;
-    frc::Encoder m_encoder{kEncoderA, kEncoderB};
+    frc::Encoder m_encoder{Constants::Elevator::kEncoderA,
+                           Constants::Elevator::kEncoderB};
 
     frc::Notifier m_thread{&Elevator::Iterate, this};
 

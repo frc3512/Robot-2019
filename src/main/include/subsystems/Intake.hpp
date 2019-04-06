@@ -28,10 +28,10 @@ public:
     void ProcessMessage(const ButtonPacket& message);
 
 private:
-    frc::Spark m_leftMotor{kLeftIntakePort};
-    frc::Spark m_rightMotor{kRightIntakePort};
+    frc::Spark m_leftMotor{Constants::Intake::kLeftPort};
+    frc::Spark m_rightMotor{Constants::Intake::kRightPort};
 
-    frc::Solenoid m_claw{kIntakeClawPort};
+    frc::Solenoid m_claw{Constants::Intake::kClawPort};
 };
 
 }  // namespace frc3512

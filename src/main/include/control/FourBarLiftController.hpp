@@ -98,8 +98,8 @@ private:
     Eigen::Matrix<double, 1, 1> m_Y;
     TrapezoidalMotionProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints constraints{kFourBarLiftMaxV,
-                                                      kFourBarLiftMaxA};
+    TrapezoidalMotionProfile::Constraints constraints{
+        Constants::FourBarLift::kMaxV, Constants::FourBarLift::kMaxA};
     TrapezoidalMotionProfile m_angleProfile{constraints, {0_m, 0_mps}};
 
     TrapezoidalMotionProfile::State m_profiledReference;

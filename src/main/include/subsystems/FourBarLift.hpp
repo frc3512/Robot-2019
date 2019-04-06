@@ -58,10 +58,11 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    frc::Spark m_grbx{kFourBarLiftPort};
+    frc::Spark m_grbx{Constants::FourBarLift::kPort};
 
     FourBarLiftController m_controller;
-    frc::Encoder m_encoder{kFourBarLiftEncoderA, kFourBarLiftEncoderB};
+    frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,
+                           Constants::FourBarLift::kEncoderB};
 
     frc::Notifier m_thread{&FourBarLift::Iterate, this};
 };
