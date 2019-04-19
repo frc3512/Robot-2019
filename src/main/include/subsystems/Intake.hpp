@@ -21,8 +21,14 @@ public:
     Intake(const Intake&) = delete;
     Intake& operator=(const Intake&) = delete;
 
+    /**
+     * Sets the intake's motors to spin inward or outward.
+     */
     void SetMotors(MotorState motorState);
 
+    /**
+     * Toggles the claw solenoid.
+     */
     void ToggleClaw();
 
     void ProcessMessage(const ButtonPacket& message);

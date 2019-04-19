@@ -37,8 +37,6 @@ bool ClimberController::AtGoal() const {
     return m_atReferences && m_goal == m_profiledReference;
 }
 
-bool ClimberController::ErrorExceeded() const { return m_errorExceeded; }
-
 void ClimberController::SetMeasuredPosition(double measuredPosition) {
     m_y(0, 0) = measuredPosition;
 }

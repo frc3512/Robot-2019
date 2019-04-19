@@ -38,34 +38,18 @@ public:
      */
     explicit Climber(frc::PowerDistributionPanel& pdp);
 
-    void SetLiftVoltage(double voltage);
+    /**
+     * Sets the voltage to pass into the drive motor.
+     *
+     * @param voltage Voltage on [-1..1]
+     */
     void SetDriveVoltage(double voltage);
 
     /**
-     * Pushes the back end of the robot up
+     * Sets the voltage to pass into the lift motor.
+     *
+     * @param voltage Voltage on [-1..1]
      */
-    void Up();
-
-    /**
-     * Allows the back end of the robot down
-     */
-    void Down();
-
-    /**
-     * Drives the robot forward onto platform
-     */
-    void Forward();
-
-    /**
-     * Drives the robot backward
-     */
-    void Backward();
-
-    /**
-     * Stops the robot
-     */
-    void Stop();
-
     void SetVoltage(double voltage);
 
     /**
@@ -74,25 +58,50 @@ public:
     void ResetEncoder();
 
     /**
-     * Returns height of the elevator.
-     *
-     * @return height in inches
+     * Returns the height of the elevator in meters.
      */
     double GetHeight();
 
+    /**
+     * Returns the velocity of the elevator in meters per second.
+     */
     double GetVelocity();
 
+    /**
+     * Runs the control loop every 0.005 seconds.
+     */
     void Enable();
+
+    /**
+     * Disables the notifier running the control loop.
+     */
     void Disable();
 
+    /**
+     * Sets the goal of the controller.
+     *
+     * @param position The goal to pass to the controller in meters.
+     */
     void SetGoal(double position);
 
+    /**
+     * Returns whether or not the controller is at its references..
+     */
     bool AtReference() const;
 
+    /**
+     * Updates the controller from sensors and the motors from the controller.
+     */
     void Iterate();
 
+    /**
+     * Returns the voltage from the controller.
+     */
     double ControllerVoltage();
 
+    /**
+     * Resets sensors and the controller.
+     */
     void Reset();
 
     void ProcessMessage(const CommandPacket& message) override;

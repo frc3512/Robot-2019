@@ -28,7 +28,6 @@ public:
      *
      * @param velocity in [-1..1]
      */
-    // todo: rename to be more accurate
     void SetVoltage(double voltage);
 
     /**
@@ -43,24 +42,61 @@ public:
      */
     double GetHeight();
 
+    /**
+     * Runs the control loop every 0.005 seconds.
+     */
     void Enable();
+
+    /**
+     * Disables the notifier running the control loop.
+     */
     void Disable();
 
+    /**
+     * Changes the controller's profile constants to be faster.
+     */
     void SetScoringIndex();
+
+    /**
+     * Changes the controller's profile constants to be slower.
+     */
     void SetClimbingIndex();
 
+    /**
+     * Sets the goal of the controller.
+     *
+     * @param position The goal to pass to the controller in meters.
+     */
     void SetGoal(double position);
 
+    /**
+     * Returns whether or not the controller is at its references..
+     */
     bool AtReference() const;
 
+    /**
+     * Returns whether or not the controller has reached its goal.
+     */
     bool AtGoal();
 
+    /**
+     * Updates the controller from sensors and the motors from the controller.
+     */
     void Iterate();
 
+    /**
+     * Returns the voltage from the controller.
+     */
     double ControllerVoltage() const;
 
+    /**
+     * Resets sensors and the controller.
+     */
     void Reset();
 
+    /**
+     * Publishes status packets.
+     */
     void SubsystemPeriodic() override;
 
     void ProcessMessage(const ButtonPacket& message) override;

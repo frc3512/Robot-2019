@@ -19,32 +19,9 @@ Climber::Climber(frc::PowerDistributionPanel& pdp)
     Subscribe(*this);
 }
 
-void Climber::SetLiftVoltage(double voltage) { m_lift.Set(voltage); }
-
-void Climber::Forward() { m_drive.Set(1.0); }
-
 void Climber::SetDriveVoltage(double voltage) { m_drive.Set(voltage); }
 
-void Climber::Backward() { m_drive.Set(-1.0); }
-
-void Climber::Up() { m_lift.Set(1.0); }
-
-void Climber::Down() { m_lift.Set(-1.0); }
-
-void Climber::Stop() { m_drive.Set(0); }
-
-void Climber::SetVoltage(double voltage) {
-    /*if(voltage > 0.0 && m_topLimitSwitch.Get() == m_limitPressedState) {
-        voltage = 0.0;
-    }
-    if (voltage < 0.0 && m_bottomLimitSwitch.Get() == m_limitPressedState) {
-        voltage = 0.0;
-    }
-    if (voltage > 0.0 && m_encoder.GetDistance() >= kElevatorMax) {
-        voltage = 0.0;
-    }*/
-    m_lift.Set(voltage);
-}
+void Climber::SetVoltage(double voltage) { m_lift.Set(voltage); }
 
 void Climber::ResetEncoder() { m_encoder.Reset(); }
 
@@ -70,17 +47,7 @@ void Climber::Iterate() {
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
 
-    if (m_controller.ErrorExceeded()) {
-        SetVoltage(
-            (m_controller.ControllerVoltage() + (m_HIDPacket.y2 * -0.4)) /
-            batteryVoltage);
-    } else {
-        SetVoltage(m_controller.ControllerVoltage() / batteryVoltage);
-    }
-    /*wpi::outs() << m_controller.PositionReference() << " || "
-              << m_controller.EstimatedPosition() << " || "
-              << m_controller.ControllerVoltage() << " || "
-              << m_controller.EstimatedVelocity() << "\n";*/
+    SetVoltage(m_controller.ControllerVoltage() / batteryVoltage);
 }
 
 void Climber::SetGoal(double position) { m_controller.SetGoal(position); }
@@ -98,7 +65,6 @@ void Climber::SubsystemPeriodic() {
     switch (m_state) {
         case State::kInit: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            wpi::outs() << "Init\n";
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 7 && m_buttonPacket.pressed) {
                 m_buttonPacket.pressed = false;
@@ -141,10 +107,6 @@ void Climber::SubsystemPeriodic() {
         }
         case State::kFourBarDescend: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
-            wpi::outs() << "FourBarDescend\n";
-            wpi::outs() << "Goal: " << m_fourBarLiftStatusPacket.atGoal << "\n";
-            wpi::outs() << "Distance: " << m_fourBarLiftStatusPacket.distance
-                        << "\n";
             if (m_fourBarLiftStatusPacket.atGoal &&
                 m_fourBarLiftStatusPacket.distance < -0.7) {
                 CommandPacket message1{"ClimbingProfile", false};

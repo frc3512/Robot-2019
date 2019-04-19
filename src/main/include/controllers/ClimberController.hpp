@@ -27,9 +27,21 @@ public:
     ClimberController(const ClimberController&) = delete;
     ClimberController& operator=(const ClimberController&) = delete;
 
+    /**
+     * Enables the control loop.
+     */
     void Enable();
+
+    /**
+     * Disables the control loop.
+     */
     void Disable();
 
+    /**
+     * Sets the end goal of the controller profile.
+     *
+     * @param goal Position in meters to set the goal to.
+     */
     void SetGoal(double goal);
 
     /**
@@ -41,11 +53,15 @@ public:
     void SetReferences(units::meter_t position,
                        units::meters_per_second_t velocity);
 
+    /**
+     * Returns whether or not the goal has been reached.
+     */
     bool AtGoal() const;
 
+    /**
+     * Returns whether or not position and velocity are tracking the profile.
+     */
     bool AtReferences() const;
-
-    bool ErrorExceeded() const;
 
     /**
      * Sets the current encoder measurement.
@@ -111,6 +127,7 @@ private:
     frc::TrapezoidProfile<units::meters> m_positionProfile{constraints,
                                                            {0_m, 0_mps}};
 
+    // The current references from the profile.
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = [=] {
@@ -134,7 +151,6 @@ private:
     frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer};
 
     bool m_atReferences = false;
-    bool m_errorExceeded = false;
 
     CsvLogger climberLogger{"/home/lvuser/Climber.csv",
                             "Time,EstPos,PosRef,Voltage,EstVel,VelRef"};

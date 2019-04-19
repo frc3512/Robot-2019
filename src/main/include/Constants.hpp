@@ -117,6 +117,7 @@ constexpr int kPort = 3;
 constexpr int kEncoderA = 6;
 constexpr int kEncoderB = 7;
 
+// Four-bar Lift Physical Constants
 constexpr auto kMaxV = 1.477996_rad_per_s;
 constexpr auto kMaxA = 7.782482_rad_per_s / 1_s;
 constexpr double kGearRatio = 302.22 / 1;

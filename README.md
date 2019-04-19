@@ -2,7 +2,7 @@
 
 Source code for the 2019 comp robot: Andromeda
 
-Source code also for the 2019 practice robot: Aether
+Source code also for the 2019 practice robot: Aithir
 
 ## Setup
 
@@ -58,14 +58,12 @@ The game for 2019 is called Deep Space and this year there is no autonomous peri
 
 This years robot's unique features include:
 
-- Three State-space controllers
-- Climbing backjack
+- State-space controllers
 - Four Bar
+- Elevator
+- "Backjack" climbing mechanism
 - Intake and outake via wheels (similar to 2016, 2018)
-- Elevator system
 - 120 Degree FOV Camera
-- Hall effect limit switch
-- Extensive Data And Driver UI Reporting
 
 ## Goals of the year
 
@@ -78,6 +76,6 @@ This years robot's unique features include:
 
 ## Roster
 
-Mentors: Tyler Veness, William Ward
+Mentors: Tyler Veness
 
 Students: Charlie Parkinson (Lead), Luke Rowe, William Jin, Kyle Quinlan, Matthew Santana, Gabriel Castellanos

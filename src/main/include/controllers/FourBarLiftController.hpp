@@ -27,9 +27,21 @@ public:
     FourBarLiftController(const FourBarLiftController&) = delete;
     FourBarLiftController& operator=(const FourBarLiftController&) = delete;
 
+    /**
+     * Enables the control loop.
+     */
     void Enable();
+
+    /**
+     * Disables the control loop.
+     */
     void Disable();
 
+    /**
+     * Sets the end goal of the controller profile.
+     *
+     * @param goal Position in meters to set the goal to.
+     */
     void SetGoal(double goal);
 
     /**
@@ -42,8 +54,14 @@ public:
     void SetReferences(units::radian_t angle,
                        units::radians_per_second_t angularVelocity);
 
+    /**
+     * Returns whether or not position and velocity are tracking the profile.
+     */
     bool AtReferences() const;
 
+    /**
+     * Returns whether or not the goal has been reached.
+     */
     bool AtGoal() const;
 
     /**
@@ -58,6 +76,11 @@ public:
      */
     double ControllerVoltage() const;
 
+    /**
+     * Informs the controller if to use the climbing feedforward.
+     *
+     * @param climbing Whether or not to use the climbing feedforward.
+     */
     void SetClimbing(bool climbing);
 
     /**
