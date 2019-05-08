@@ -19,15 +19,7 @@
 
 namespace frc3512 {
 
-enum class State {
-    kInit,
-    kThirdLevel,
-    kSecondLevel,
-    kFourBarDescend,
-    kDescend,
-    kDriveForward,
-    kIdle
-};
+enum class State { kInit, kFourBarDescend, kDescend, kDriveForward, kIdle };
 
 class Climber : public SubsystemBase, public PublishNode {
 public:
