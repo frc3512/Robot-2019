@@ -56,6 +56,14 @@ model {
                 targetPlatform wpi.platforms.desktop
             }
 
+            binaries {
+              all {
+                if (it.buildType.name.contains('debug')) {
+                  it.buildable = false
+                }
+              }
+            }
+
             binaries.all {
                 binary ->
                 binary.getTasks().withType(AbstractNativeSourceCompileTask) {
