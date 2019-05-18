@@ -2,28 +2,23 @@
 
 """Called by generate_src.py."""
 
+import argparse
 import os
-import regex
-import sys
-
-DEST = "../build/generated"
+import re
 
 
-def write_msg_header(msg_name, types, arg_types, names):
+def write_msg_header(
+    output_dir, msg_name, member_var_types, constructor_arg_types, member_var_names
+):
     """Write message header file.
 
     Keyword arguments:
+    output_dir -- output directory root for source
     msg_name -- name of message in camel case
-    types -- list of member variable types
-    arg_types -- list of function argument types
-    names -- list of member variable names
+    member_var_types -- list of member variable types
+    constructor_arg_types -- list of function argument types
+    member_var_names -- list of member variable names
     """
-    member_types = ["string"]
-    member_types.extend(types)
-    for i in range(len(member_types)):
-        if member_types[i] == "string":
-            member_types[i] = "std::string"
-
     with open(f"{msg_name}Packet.hpp", "w") as output:
         output.write(
             """#pragma once
@@ -44,11 +39,12 @@ namespace frc3512 {
         output.write(f"    int8_t ID = static_cast<int8_t>(PacketType::k{msg_name});\n")
 
         default_vals = {"double": " = 0.0;\n", "int": " = 0;\n", "bool": " = false;\n"}
-        for i in range(len(member_types)):
-            output.write(f"    {member_types[i]} {names[i]}")
+        for i in range(len(member_var_types)):
+            output.write(f"    {member_var_types[i]} {member_var_names[i]}")
             try:
-                output.write(default_vals[member_types[i]])
+                output.write(default_vals[member_var_types[i]])
             except KeyError:
+                # No known default value, so use default constructor instead
                 output.write(";\n")
         output.write("\n")
         output.write(f"    {msg_name}Packet() = default;\n")
@@ -57,7 +53,14 @@ namespace frc3512 {
         output.write(f"     * Construct a {msg_name}Packet with the given fields.\n")
         output.write("     */\n")
         output.write(f"    {msg_name}Packet(")
-        output.write(", ".join([x[0] + " " + x[1] for x in zip(arg_types, names)]))
+        output.write(
+            ", ".join(
+                [
+                    x[0] + " " + x[1]
+                    for x in zip(constructor_arg_types, member_var_names)
+                ]
+            )
+        )
         output.write(");\n")
         output.write("\n")
         output.write("    /**\n")
@@ -95,17 +98,21 @@ namespace frc3512 {
         output.write("\n")
         output.write("}\n")
     os.rename(
-        f"{msg_name}Packet.hpp", f"{DEST}/include/communications/{msg_name}Packet.hpp"
+        f"{msg_name}Packet.hpp",
+        f"{output_dir}/include/communications/{msg_name}Packet.hpp",
     )
 
 
-def write_msg_source(msg_name, arg_types, names, serial_names):
+def write_msg_source(
+    output_dir, msg_name, constructor_arg_types, member_var_names, serial_names
+):
     """Write message source file.
 
     Keyword arguments:
+    output_dir -- output directory root for source
     msg_name -- name of message in camel case
-    arg_types -- list of function argument types
-    names -- list of member variable names
+    constructor_arg_types -- list of function argument types
+    member_var_names -- list of member variable names
     serial_names -- list of member variable names to serialize/deserialize
     """
     with open(f"{msg_name}Packet.cpp", "w") as output:
@@ -114,9 +121,16 @@ def write_msg_source(msg_name, arg_types, names, serial_names):
         output.write("using namespace frc3512;\n")
         output.write("\n")
         output.write(f"{msg_name}Packet::{msg_name}Packet(")
-        output.write(", ".join([x[0] + " " + x[1] for x in zip(arg_types, names)]))
+        output.write(
+            ", ".join(
+                [
+                    x[0] + " " + x[1]
+                    for x in zip(constructor_arg_types, member_var_names)
+                ]
+            )
+        )
         output.write(") {\n")
-        for name in names:
+        for name in member_var_names:
             output.write(f"    this->{name} = {name};\n")
         output.write("}\n")
         output.write("\n")
@@ -144,14 +158,15 @@ def write_msg_source(msg_name, arg_types, names, serial_names):
         output.write("    Deserialize(packet);\n")
         output.write("}\n")
     os.rename(
-        f"{msg_name}Packet.cpp", f"{DEST}/cpp/communications/{msg_name}Packet.cpp"
+        f"{msg_name}Packet.cpp", f"{output_dir}/cpp/communications/{msg_name}Packet.cpp"
     )
 
 
-def write_packettype_header(msg_names):
+def write_packettype_header(output_dir, msg_names):
     """Write PacketType.hpp header file.
 
     Keyword arguments:
+    output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
     with open("PacketType.hpp", "w") as output:
@@ -165,22 +180,23 @@ def write_packettype_header(msg_names):
         enum_type = "enum class PacketType : int8_t"
         types = ["k" + x for x in msg_names]
         singleline_types = ", ".join(types)
-        multiline_types = ",".join(["\n    " + x for x in types])
 
         len_first_line = len(enum_type) + len(singleline_types) + len(" {  };")
         if len_first_line <= 80:
             output.write(f"{enum_type} {{ {singleline_types} }};\n")
         else:
+            multiline_types = ",".join(["\n    " + x for x in types])
             output.write(f"{enum_type} {{{multiline_types}\n}};\n")
         output.write("\n")
         output.write("}\n")
-    os.rename("PacketType.hpp", f"{DEST}/include/communications/PacketType.hpp")
+    os.rename("PacketType.hpp", f"{output_dir}/include/communications/PacketType.hpp")
 
 
-def write_publishnodebase_header(msg_names):
+def write_publishnodebase_header(output_dir, msg_names):
     """Write PublishNodeBase.hpp header file.
 
     Keyword arguments:
+    output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
     with open("PublishNodeBase.hpp", "w") as output:
@@ -226,14 +242,16 @@ def write_publishnodebase_header(msg_names):
         output.write("\n")
         output.write("}  // namespace frc3512\n")
     os.rename(
-        "PublishNodeBase.hpp", f"{DEST}/include/communications/PublishNodeBase.hpp"
+        "PublishNodeBase.hpp",
+        f"{output_dir}/include/communications/PublishNodeBase.hpp",
     )
 
 
-def write_publishnodebase_source(msg_names):
+def write_publishnodebase_source(output_dir, msg_names):
     """Write PublishNodeBase.cpp source file.
 
     Keyword arguments:
+    output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
     with open("PublishNodeBase.cpp", "w") as output:
@@ -270,45 +288,82 @@ def write_publishnodebase_source(msg_names):
             output.write(
                 f"void PublishNodeBase::ProcessMessage(const {msg_name}Packet& message) {{}}\n"
             )
-    os.rename("PublishNodeBase.cpp", f"{DEST}/cpp/communications/PublishNodeBase.cpp")
+    os.rename(
+        "PublishNodeBase.cpp", f"{output_dir}/cpp/communications/PublishNodeBase.cpp"
+    )
 
 
 def main():
-    var_regex = regex.compile(
-        r"(?P<msg_name>\w+):(?P<var>\n[ ]+(?P<type>[\w:]+)\s+(?P<name>\w+))+"
+    parser = argparse.ArgumentParser(
+        description="Parses message descriptor files from the given directory and generates C++ source for serializing and deserializing them."
     )
-    msg_names = []
+    parser.add_argument(
+        "--input", dest="input_dir", help="directory containing message files"
+    )
+    parser.add_argument(
+        "--output", dest="output_dir", help="directory to which to write C++ source"
+    )
+    args = parser.parse_args()
 
-    if not os.path.exists(f"{DEST}/cpp/communications"):
-        os.makedirs(f"{DEST}/cpp/communications")
-    if not os.path.exists(f"{DEST}/include/communications"):
-        os.makedirs(f"{DEST}/include/communications")
+    msg_files = [
+        os.path.join(dp, f)
+        for dp, dn, fn in os.walk(args.input_dir)
+        for f in fn
+        if f.endswith(".msg")
+    ]
 
-    # Parse schema file
-    with open(f"{sys.argv[1]}", "r") as schemafile:
-        contents = schemafile.read()
-    for match in var_regex.finditer(contents):
-        msg_name = match.group("msg_name")
-        msg_names.append(msg_name)
+    # Make destination folders for messages
+    if not os.path.exists(f"{args.output_dir}/cpp/communications"):
+        os.makedirs(f"{args.output_dir}/cpp/communications")
+    if not os.path.exists(f"{args.output_dir}/include/communications"):
+        os.makedirs(f"{args.output_dir}/include/communications")
 
-        names = ["topic"]
-        names.extend(match.capturesdict()["name"])
+    # Parse schema files
+    var_regex = re.compile(r"(?P<type>\w+)\s+(?P<name>\w+)")
+    for filename in msg_files:
+        with open(filename, "r") as msgfile:
+            member_var_types = ["std::string"]
+            member_var_names = ["topic"]
+            constructor_arg_types = ["wpi::StringRef"]
+            serial_names = ["ID", "topic"]
+            for line in msgfile:
+                # Strip comments
+                if line.find("#") != -1:
+                    line = line[: line.find("#")]
 
-        serial_names = ["ID"]
-        serial_names.extend(names)
+                match = var_regex.search(line)
+                if match:
+                    type = match.group("type")
+                    name = match.group("name")
+                    if type == "string":
+                        member_var_types.append("std::string")
+                        constructor_arg_types.append("wpi::StringRef")
+                    else:
+                        member_var_types.append(type)
+                        constructor_arg_types.append(type)
+                    member_var_names.append(name)
+                    serial_names.append(name)
 
-        arg_types = ["string"]
-        arg_types.extend(match.capturesdict()["type"])
-        for i in range(len(arg_types)):
-            if arg_types[i] == "string":
-                arg_types[i] = "wpi::StringRef"
-
-        write_msg_header(msg_name, match.capturesdict()["type"], arg_types, names)
-        write_msg_source(msg_name, arg_types, names, serial_names)
+            msg_name = os.path.splitext(os.path.basename(filename))[0]
+            write_msg_header(
+                args.output_dir,
+                msg_name,
+                member_var_types,
+                constructor_arg_types,
+                member_var_names,
+            )
+            write_msg_source(
+                args.output_dir,
+                msg_name,
+                constructor_arg_types,
+                member_var_names,
+                serial_names,
+            )
+    msg_names = [os.path.splitext(os.path.basename(name))[0] for name in msg_files]
     msg_names = sorted(msg_names)
-    write_packettype_header(msg_names)
-    write_publishnodebase_header(msg_names)
-    write_publishnodebase_source(msg_names)
+    write_packettype_header(args.output_dir, msg_names)
+    write_publishnodebase_header(args.output_dir, msg_names)
+    write_publishnodebase_source(args.output_dir, msg_names)
 
 
 if __name__ == "__main__":

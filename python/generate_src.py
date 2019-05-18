@@ -28,4 +28,13 @@ os.rename("ElevatorClimbCoeffs.hpp", f"{DEST}/include/control/ElevatorClimbCoeff
 os.rename("ClimberCoeffs.hpp", f"{DEST}/include/control/ClimberCoeffs.hpp")
 
 # Generate messages
-subprocess.run([sys.executable, "generate_messages.py", "messages.mq"])
+subprocess.run(
+    [
+        sys.executable,
+        "generate_messages.py",
+        "--input",
+        "../msgs",
+        "--output",
+        "../build/generated",
+    ]
+)
