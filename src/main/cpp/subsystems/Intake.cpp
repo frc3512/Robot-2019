@@ -26,21 +26,17 @@ void Intake::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick2" && message.button == 4 &&
         message.pressed) {
         SetMotors(MotorState::kOuttake);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 6 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 6 && message.pressed) {
         SetMotors(MotorState::kIntake);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 4 &&
-        !message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 4 && !message.pressed) {
         SetMotors(MotorState::kIdle);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 6 &&
-        !message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 6 && !message.pressed) {
         SetMotors(MotorState::kIdle);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 1 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 1 && message.pressed) {
         ToggleClaw();
     }  // TODO get state and put in DS
 }

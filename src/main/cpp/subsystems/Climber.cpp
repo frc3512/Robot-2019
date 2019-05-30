@@ -154,14 +154,12 @@ void Climber::ProcessMessage(const ButtonPacket& message) {
         message.pressed) {
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_buttonPacket = message;
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 8 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 8 && message.pressed) {
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_buttonPacket = message;
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 9 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 9 && message.pressed) {
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_buttonPacket = message;
     }
@@ -172,19 +170,15 @@ void Climber::ProcessMessage(const CommandPacket& message) {
         EnablePeriodic();
         Enable();
         SetGoal(0.03);
-    }
-    if (message.topic == "Robot/TeleopInit") {
+    } else if (message.topic == "Robot/TeleopInit") {
         EnablePeriodic();
         Enable();
         SetGoal(0.03);
-    }
-    if (message.topic == "Climber/Down3") {
+    } else if (message.topic == "Climber/Down3") {
         SetGoal(kClimb3Height);
-    }
-    if (message.topic == "Climber/Down2") {
+    } else if (message.topic == "Climber/Down2") {
         SetGoal(kClimb2Height);
-    }
-    if (message.topic == "Climber/Up") {
+    } else if (message.topic == "Climber/Up") {
         SetGoal(0);
     }
 }

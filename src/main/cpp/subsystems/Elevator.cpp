@@ -77,33 +77,26 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
         message.pressed) {
         SetGoal(kFloorHeight);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" &&
+               message.button == 11 && message.pressed) {
         SetGoal(kBottomHatch);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 12 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" &&
+               message.button == 12 && message.pressed) {
         SetGoal(kBottomCargo);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 9 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 9 &&
+               message.pressed) {
         SetGoal(kMiddleHatch);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 10 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" &&
+               message.button == 10 && message.pressed) {
         SetGoal(kMiddleCargo);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 7 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 7 &&
+               message.pressed) {
         SetGoal(kTopHatch);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 8 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 8 &&
+               message.pressed) {
         SetGoal(kTopCargo);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick2" &&
+               message.button == 2 && message.pressed) {
         SetGoal(kCargoShip);
     }
 }
@@ -111,26 +104,20 @@ void Elevator::ProcessMessage(const ButtonPacket& message) {
 void Elevator::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         Enable();
-    }
-    if (message.topic == "Robot/AutonomousInit" && !message.reply) {
+    } else if (message.topic == "Robot/AutonomousInit" && !message.reply) {
         Enable();
-    }
-    if (message.topic == "Robot/DisabledInit" && !message.reply) {
+    } else if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
-    }
-    if (message.topic == "Climber/ThirdLevel") {
+    } else if (message.topic == "Climber/ThirdLevel") {
         SetGoal(kHab3);
-    }
-    if (message.topic == "Climber/SecondLevel") {
+    } else if (message.topic == "Climber/SecondLevel") {
         SetGoal(kHab2);
-    }
-    if (message.topic == "Climber/ClimbingProfile") {
+    } else if (message.topic == "Climber/ClimbingProfile") {
         m_controller.SetClimbingIndex();
-    }
-    if (message.topic == "Climber/Down3" || message.topic == "Climber/Down2") {
+    } else if (message.topic == "Climber/Down3" ||
+               message.topic == "Climber/Down2") {
         SetGoal(0);
-    }
-    if (message.topic == "Climber/ScoringProfile") {
+    } else if (message.topic == "Climber/ScoringProfile") {
         m_controller.SetScoringIndex();
     }
 }

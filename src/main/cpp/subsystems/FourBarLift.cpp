@@ -67,24 +67,19 @@ void FourBarLift::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
         message.pressed) {
         SetGoal(kMin);
-    }
-    if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
+    } else if (message.topic == "Robot/AppendageStick2" && message.button == 2 &&
         message.pressed) {
         SetGoal(kMax);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 11 &&
         message.pressed) {
         SetGoal(kBottomHatch);
-    }
-    if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
+    } else if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
         message.pressed) {
         m_controller.SetClimbing(true);
-    }
-    if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
-        message.pressed) {
+    } else if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
+               message.pressed) {
         m_controller.SetClimbing(false);
-    }
-    if (message.topic == "Robot/AppendageStick" && message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.pressed) {
         if (message.button == 12 || message.button == 9 ||
             message.button == 10 || message.button == 7 ||
             message.button == 8) {
@@ -96,18 +91,14 @@ void FourBarLift::ProcessMessage(const ButtonPacket& message) {
 void FourBarLift::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         Enable();
-    }
-    if (message.topic == "Robot/AutonomousInit" && !message.reply) {
+    } else if (message.topic == "Robot/AutonomousInit" && !message.reply) {
         Enable();
-    }
-    if (message.topic == "Robot/DisabledInit" && !message.reply) {
+    } else if (message.topic == "Robot/DisabledInit" && !message.reply) {
         Disable();
-    }
-    if (message.topic == "Climber/FourBarStart") {
+    } else if (message.topic == "Climber/FourBarStart") {
         m_controller.SetClimbing(true);
         SetGoal(-1.35);
-    }
-    if (message.topic == "Climber/Up") {
+    } else if (message.topic == "Climber/Up") {
         m_controller.SetClimbing(false);
         SetGoal(0);
     }
