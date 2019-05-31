@@ -5,8 +5,8 @@
 #include <string>
 
 #include <frc/DriverStation.h>
-#include <wpi/raw_ostream.h>
 #include <frc/livewindow/LiveWindow.h>
+#include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 

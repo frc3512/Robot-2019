@@ -85,12 +85,12 @@ public:
     /**
      * Executes the control loop for a cycle.
      */
-    void Update(void);
+    void Update();
 
     /**
      * Resets any internal state.
      */
-    void Reset(void);
+    void Reset();
 
 private:
     // The current sensor measurement.
