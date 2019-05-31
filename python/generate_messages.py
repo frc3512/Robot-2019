@@ -23,9 +23,8 @@ def write_msg_header(
         output.write(
             """#pragma once
 
-#include <wpi/StringRef.h>
-
 #include <string>
+#include <string_view>
 
 #include "communications/PacketType.hpp"
 #include "dsdisplay/Packet.hpp"
@@ -333,7 +332,7 @@ def main():
         with open(filename, "r") as msgfile:
             member_var_types = ["std::string"]
             member_var_names = ["topic"]
-            constructor_arg_types = ["wpi::StringRef"]
+            constructor_arg_types = ["std::string_view"]
             serial_names = ["ID", "topic"]
             for line in msgfile:
                 # Strip comments
@@ -346,7 +345,7 @@ def main():
                     name = match.group("name")
                     if type == "string":
                         member_var_types.append("std::string")
-                        constructor_arg_types.append("wpi::StringRef")
+                        constructor_arg_types.append("std::string_view")
                     else:
                         member_var_types.append(type)
                         constructor_arg_types.append(type)

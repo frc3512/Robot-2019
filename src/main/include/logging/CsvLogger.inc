@@ -8,7 +8,7 @@ template <class... doubles>
 void CsvLogger::Log(double value, doubles... values) {
     m_logfile << Timestamp() << ',';
 
-    LogImpl(value, values...);
+    WriteValues(value, values...);
 }
 
 template <class... doubles>
@@ -19,9 +19,13 @@ void CsvLogger::Log(units::second_t t, double value, doubles... values) {
 }
 
 template <class... doubles>
-void CsvLogger::LogImpl(double value, doubles... values) {
+void CsvLogger::WriteValues(double value, doubles... values) {
     m_logfile << value << ',';
-    LogImpl(values...);
+    if constexpr (sizeof...(values) > 0) {
+        WriteValues(values...);
+    } else {
+        m_logfile.flush();
+    }
 }
 
 }  // namespace frc3512

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/DrivetrainController.hpp"
 
@@ -44,7 +44,7 @@ bool DrivetrainController::IsEnabled() const { return m_isEnabled; }
 
 void DrivetrainController::SetWaypoints(
     const std::vector<frc::Pose2d>& waypoints) {
-    std::lock_guard<wpi::mutex> lock(m_trajectoryMutex);
+    std::lock_guard lock(m_trajectoryMutex);
     m_goal = waypoints.back();
     m_trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
         waypoints, frc::TrajectoryConfig{kMaxV, kMaxA});
@@ -118,7 +118,7 @@ double DrivetrainController::RightVelocityReference() { return m_nextR(4, 0); }
 void DrivetrainController::Update() {
     frc::Trajectory::State ref;
     {
-        std::lock_guard<wpi::mutex> lock(m_trajectoryMutex);
+        std::lock_guard lock(m_trajectoryMutex);
         ref =
             m_trajectory.Sample(std::chrono::steady_clock::now() - m_startTime);
     }

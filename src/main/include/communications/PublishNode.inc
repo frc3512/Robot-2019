@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -20,7 +20,7 @@ void PublishNode::PushMessage(P p) {
     size_t len = packet.getDataSize();
     auto ptr = static_cast<const char*>(packet.getData());
 
-    std::lock_guard<wpi::mutex> lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     m_queue.push_back(len);
     for (size_t j = 0; j < len; j++) {
         m_queue.push_back(ptr[j]);

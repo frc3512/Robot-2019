@@ -1,4 +1,4 @@
-// Copyright (c) 2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2020 FRC Team 3512. All Rights Reserved.
 
 #include "communications/PublishNode.hpp"
 
@@ -6,7 +6,7 @@
 
 using namespace frc3512;
 
-PublishNode::PublishNode(std::string nodeName) {
+PublishNode::PublishNode(std::string_view nodeName) {
     m_nodeName = nodeName;
     m_thread = std::thread(&PublishNode::RunFramework, this);
 }

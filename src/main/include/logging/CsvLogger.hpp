@@ -4,7 +4,7 @@
 
 #include <chrono>
 #include <fstream>
-#include <string>
+#include <string_view>
 
 #include <units/units.h>
 
@@ -15,7 +15,7 @@ namespace frc3512 {
  */
 class CsvLogger {
 public:
-    explicit CsvLogger(const std::string& filename, std::string valueNames);
+    explicit CsvLogger(std::string_view filename, std::string_view valueNames);
 
     template <class... doubles>
     void Log(double value, doubles... values);
@@ -25,9 +25,7 @@ public:
 
 private:
     template <class... doubles>
-    void LogImpl(double value, doubles... values);
-
-    void LogImpl(double value);
+    void WriteValues(double value, doubles... values);
 
     double Timestamp();
 

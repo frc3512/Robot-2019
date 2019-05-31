@@ -4,6 +4,7 @@
 
 #include <atomic>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -25,7 +26,7 @@ public:
      *
      * @param nodeName Name of node.
      */
-    explicit PublishNode(std::string nodeName = "Misc");
+    explicit PublishNode(std::string_view nodeName = "Misc");
     virtual ~PublishNode();
 
     /**

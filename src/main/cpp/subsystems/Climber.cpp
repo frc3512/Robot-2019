@@ -64,7 +64,7 @@ void Climber::Reset() {
 void Climber::SubsystemPeriodic() {
     switch (m_state) {
         case State::kInit: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 7 && m_buttonPacket.pressed) {
                 m_buttonPacket.pressed = false;
@@ -84,7 +84,7 @@ void Climber::SubsystemPeriodic() {
             break;
         }
         case State::kThirdLevel: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             wpi::outs() << "ThirdLevel\n";
             if (m_elevatorStatusPacket.atGoal &&
                 m_elevatorStatusPacket.distance > 0.3) {
@@ -95,7 +95,7 @@ void Climber::SubsystemPeriodic() {
             break;
         }
         case State::kSecondLevel: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             wpi::outs() << "SecondLevel\n";
             if (m_elevatorStatusPacket.atGoal &&
                 m_elevatorStatusPacket.distance > 0.1) {
@@ -106,7 +106,7 @@ void Climber::SubsystemPeriodic() {
             break;
         }
         case State::kFourBarDescend: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             if (m_fourBarLiftStatusPacket.atGoal &&
                 m_fourBarLiftStatusPacket.distance < -0.7) {
                 CommandPacket message1{"ClimbingProfile", false};
@@ -123,14 +123,14 @@ void Climber::SubsystemPeriodic() {
             break;
         }
         case State::kDescend: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             if (m_controller.AtGoal() && m_elevatorStatusPacket.atGoal) {
                 m_state = State::kDriveForward;
             }
             break;
         }
         case State::kDriveForward: {
-            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            std::lock_guard lock(m_cacheMutex);
             m_drive.Set(-m_HIDPacket.y1);
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 9 && m_buttonPacket.pressed) {
@@ -152,15 +152,15 @@ void Climber::SubsystemPeriodic() {
 void Climber::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/AppendageStick2" && message.button == 7 &&
         message.pressed) {
-        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        std::lock_guard lock(m_cacheMutex);
         m_buttonPacket = message;
     } else if (message.topic == "Robot/AppendageStick2" &&
                message.button == 8 && message.pressed) {
-        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        std::lock_guard lock(m_cacheMutex);
         m_buttonPacket = message;
     } else if (message.topic == "Robot/AppendageStick2" &&
                message.button == 9 && message.pressed) {
-        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        std::lock_guard lock(m_cacheMutex);
         m_buttonPacket = message;
     }
 }
@@ -184,16 +184,16 @@ void Climber::ProcessMessage(const CommandPacket& message) {
 }
 
 void Climber::ProcessMessage(const HIDPacket& message) {
-    std::lock_guard<std::mutex> lock(m_cacheMutex);
+    std::lock_guard lock(m_cacheMutex);
     m_HIDPacket = message;
 }
 
 void Climber::ProcessMessage(const ElevatorStatusPacket& message) {
-    std::lock_guard<std::mutex> lock(m_cacheMutex);
+    std::lock_guard lock(m_cacheMutex);
     m_elevatorStatusPacket = message;
 }
 
 void Climber::ProcessMessage(const FourBarLiftStatusPacket& message) {
-    std::lock_guard<std::mutex> lock(m_cacheMutex);
+    std::lock_guard lock(m_cacheMutex);
     m_fourBarLiftStatusPacket = message;
 }
