@@ -4,8 +4,6 @@
 
 #include <cmath>
 
-#include "Robot.hpp"
-
 using namespace frc3512;
 
 FourBarLiftController::FourBarLiftController() { m_Y.setZero(); }

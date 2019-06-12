@@ -21,6 +21,7 @@ includeOtherLibs {
   gtest/
   hal/
   wpi/
+  cscore\.h$
 }
 
 generatedFileExclude {
