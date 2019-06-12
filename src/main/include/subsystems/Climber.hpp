@@ -23,7 +23,12 @@ enum class State { kInit, kFourBarDescend, kDescend, kDriveForward, kIdle };
 
 class Climber : public SubsystemBase, public PublishNode {
 public:
-    Climber();
+    /**
+     * Constructs a Climber.
+     *
+     * @param pdp The robot's power distribution panel.
+     */
+    explicit Climber(frc::PowerDistributionPanel& pdp);
 
     void SetLiftVoltage(double voltage);
     void SetDriveVoltage(double voltage);
@@ -113,7 +118,6 @@ private:
 
     ClimberController m_controller;
 
-    frc::PowerDistributionPanel m_pdpDrive{0};
     frc::Encoder m_encoder{kLiftEncoderA, kLiftEncoderB};
     frc::Notifier m_notifier{&Climber::Iterate, this};
     CsvLogger climberLogger{"/home/lvuser/ClimberStuff.csv",
@@ -124,6 +128,8 @@ private:
     HIDPacket m_HIDPacket;
     ButtonPacket m_buttonPacket;
     std::mutex m_cacheMutex;
+
+    frc::PowerDistributionPanel& m_pdp;
 };
 
 }  // namespace frc3512

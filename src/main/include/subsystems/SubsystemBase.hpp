@@ -13,8 +13,6 @@ class SubsystemBase {
 public:
     /**
      * Constructs a SubsystemBase
-     *
-     * @param nodeName A name to refer to the subsystem
      */
     SubsystemBase() = default;
     virtual ~SubsystemBase() = default;

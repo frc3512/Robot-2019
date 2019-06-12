@@ -5,13 +5,10 @@
 #include <cscore.h>
 
 #include <frc/Joystick.h>
+#include <frc/PowerDistributionPanel.h>
 #include <frc/TimedRobot.h>
 
 #include "Constants.hpp"
-#include "communications/ButtonPacket.hpp"
-#include "communications/CommandPacket.hpp"
-#include "communications/POVPacket.hpp"
-#include "communications/PublishNode.hpp"
 #include "logging/LogFileSink.hpp"
 #include "logging/Logger.hpp"
 #include "subsystems/Climber.hpp"
@@ -36,10 +33,9 @@ public:
     void AutonomousPeriodic() override;
     void TeleopPeriodic() override;
 
-    static frc::PowerDistributionPanel pdp;
-
 private:
-    Climber m_climber;
+    frc::PowerDistributionPanel m_pdp;
+    Climber m_climber{m_pdp};
     Drivetrain m_drivetrain;
     Elevator m_elevator;
     Logger m_logger;

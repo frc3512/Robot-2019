@@ -10,8 +10,6 @@
 
 using namespace frc3512;
 
-frc::PowerDistributionPanel Robot::pdp;
-
 Robot::Robot() : PublishNode("Robot") {
     m_logger.AddLogSink(fileSink);
     m_logger.Subscribe(m_climber);

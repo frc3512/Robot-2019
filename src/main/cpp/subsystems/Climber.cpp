@@ -12,7 +12,8 @@
 using namespace frc3512;
 using namespace std::chrono_literals;
 
-Climber::Climber() : PublishNode("Climber") {
+Climber::Climber(frc::PowerDistributionPanel& pdp)
+    : PublishNode("Climber"), m_pdp(pdp) {
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kClimberDpP);
     m_timer.Start();
