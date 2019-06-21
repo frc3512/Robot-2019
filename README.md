@@ -58,20 +58,21 @@ The game for 2019 is called Deep Space and this year there is no autonomous peri
 
 This years robot's unique features include:
 
-Two PID driven systems
-Four Bar
-Intake and outake via wheels (similar to 2016, 2018)
-Elevator system
-120 Degree FOV Camera
-Hall effect limit switch
-Extensive Data And Driver UI Reporting
+- Three State-space controllers
+- Climbing backjack
+- Four Bar
+- Intake and outake via wheels (similar to 2016, 2018)
+- Elevator system
+- 120 Degree FOV Camera
+- Hall effect limit switch
+- Extensive Data And Driver UI Reporting
 
 ## Goals of the year
 
 |Status|Goal|
 |------|----|
-|yes|Pub Sub System|
-|No|Data Reporting|
+|Yes|Pub Sub System|
+|Yes|Data Reporting|
 |Yes|State-space Controllers|
 |No|Vision Processing|
 
