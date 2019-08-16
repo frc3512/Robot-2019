@@ -105,8 +105,8 @@ void ElevatorController::Update() {
     m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
                      std::abs(error(1, 0)) < kVelocityTolerance;
 
-    m_observer.Predict(m_controller.U());
     m_controller.Update(m_nextR, m_observer.Xhat());
+    m_observer.Predict(m_controller.U());
 }
 
 void ElevatorController::Reset() {
