@@ -13,6 +13,7 @@
 #include <wpi/circular_buffer.h>
 #include <wpi/condition_variable.h>
 
+#include "SubscriptionTree.hpp"
 #include "Tree.hpp"
 #include "communications/PublishNodeBase.hpp"
 
