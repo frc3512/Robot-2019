@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -8,9 +8,12 @@
 #include <thread>
 #include <vector>
 
+#include <wpi/SmallSet.h>
+#include <wpi/StringRef.h>
 #include <wpi/circular_buffer.h>
 #include <wpi/condition_variable.h>
 
+#include "Tree.hpp"
 #include "communications/PublishNodeBase.hpp"
 
 namespace frc3512 {
@@ -32,18 +35,20 @@ public:
     /**
      * Adds this object to the specified PublishNode's subscriber list.
      *
-     * @param publisher The PublishNode that this instance wants to recieve
-     *                  event from.
+     * @param publisher The PublishNode from which this instance wants to
+     *                  recieve events.
+     * @param topic     The topic to which to subscribe.
      */
-    void Subscribe(PublishNode& publisher);
+    void SubscribeTo(PublishNode& publisher, wpi::StringRef topic);
 
     /**
      * Removes this object from the specified PublishNode's subscriber list.
      *
-     * @param publisher The PublishNode that this instance wants to stop
-     *                  recieving event from.
+     * @param publisher The PublishNode from which this instance wants to stop
+     *                  recieving events.
+     * @param topic     The topic from which to unsubscribe.
      */
-    void Unsubscribe(PublishNode& publisher);
+    void UnsubscribeFrom(PublishNode& publisher, wpi::StringRef topic);
 
     /**
      * Get the button value (starting at button 1).
@@ -65,7 +70,7 @@ public:
      *
      * @param p Any packet with a Serialize() method.
      */
-    template <class P>
+    template <typename P>
     void Publish(P p);
 
     /**
@@ -77,10 +82,17 @@ public:
     void PushMessage(P p);
 
 private:
+    struct Node {
+        std::string topic;
+        wpi::SmallSet<PublishNode*, 32> subscribers;
+
+        explicit Node(wpi::StringRef topic) { this->topic = topic; }
+    };
+
     static constexpr int kNodeQueueSize = 1024;
 
     std::string m_nodeName;
-    std::vector<PublishNode*> m_subList;
+    Tree<Node> m_subscriberTree{""};
     wpi::circular_buffer<char> m_queue{kNodeQueueSize};
 
     std::thread m_thread;

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -9,8 +9,38 @@ namespace frc3512 {
 template <class P>
 void PublishNode::Publish(P p) {
     p.topic = m_nodeName + "/" + p.topic;
-    for (auto sub : m_subList) {
-        sub->PushMessage(p);
+    wpi::StringRef topic = p.topic;
+    wpi::StringRef lhs;
+    wpi::StringRef rhs;
+
+    // Start at root
+    auto* currentTree = &m_subscriberTree;
+    // auto [lhs, rhs] = topic.split('/');
+    auto temp = topic.split('/');
+    lhs = temp.first;
+    rhs = temp.second;
+
+    while (rhs.size() > 0) {
+        // Publish to subscribers at current tree node
+        for (auto& sub : currentTree->data.subscribers) {
+            sub->PushMessage(p);
+        }
+
+        auto it = std::find_if(
+            currentTree->children.begin(), currentTree->children.end(),
+            [=](const auto& child) { return child.data.topic == lhs; });
+        // Found child matching topic segment, so publish to it
+        if (it != currentTree->children.end()) {
+            currentTree = &(*it);
+        } else {
+            break;
+        }
+
+        // TODO: C++17 structured bindings
+        // auto [lhs, rhs] = topic.split('/');
+        auto temp = rhs.split('/');
+        lhs = temp.first;
+        rhs = temp.second;
     }
 }
 

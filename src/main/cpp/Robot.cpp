@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2017-2021 FRC Team 3512. All Rights Reserved.
 
 #include "Robot.hpp"
 
@@ -8,31 +8,29 @@ namespace frc3512 {
 
 Robot::Robot() : PublishNode("Robot") {
     m_logger.AddLogSink(fileSink);
-    m_logger.Subscribe(m_climber);
-    m_logger.Subscribe(m_drivetrain);
-    m_logger.Subscribe(m_elevator);
-    m_logger.Subscribe(m_intake);
-    m_logger.Subscribe(m_fourBarLift);
-    m_logger.Subscribe(*this);
+    m_logger.SubscribeTo(m_climber, "Climber");
+    m_logger.SubscribeTo(m_drivetrain, "Drivetrain");
+    m_logger.SubscribeTo(m_elevator, "Elevator");
+    m_logger.SubscribeTo(m_intake, "Intake");
+    m_logger.SubscribeTo(m_fourBarLift, "FourBarLift");
+    m_logger.SubscribeTo(*this, "Logger");
 
-    m_climber.Subscribe(*this);
-    m_climber.Subscribe(m_climber);
-    m_climber.Subscribe(m_elevator);
-    m_climber.Subscribe(m_fourBarLift);
-    m_drivetrain.Subscribe(*this);
-    m_elevator.Subscribe(*this);
-    m_elevator.Subscribe(m_climber);
-    m_elevator.Subscribe(m_fourBarLift);
-    m_intake.Subscribe(*this);
-    m_fourBarLift.Subscribe(*this);
-    m_fourBarLift.Subscribe(m_elevator);
-    m_fourBarLift.Subscribe(m_climber);
+    m_climber.SubscribeTo(*this, "Robot");
+    m_climber.SubscribeTo(m_climber, "Climber");
+    m_climber.SubscribeTo(m_elevator, "Elevator");
+    m_climber.SubscribeTo(m_fourBarLift, "FourBarLift");
+    m_drivetrain.SubscribeTo(*this, "Robot");
+    m_elevator.SubscribeTo(*this, "Robot");
+    m_elevator.SubscribeTo(m_climber, "Climber");
+    m_elevator.SubscribeTo(m_fourBarLift, "FourBarLift");
+    m_intake.SubscribeTo(*this, "Robot");
+    m_fourBarLift.SubscribeTo(*this, "Robot");
+    m_fourBarLift.SubscribeTo(m_elevator, "Elevator");
+    m_fourBarLift.SubscribeTo(m_climber, "Climber");
 
     camera.SetResolution(160, 120);
     camera.SetFPS(15);
     server.SetSource(camera);
-
-    m_fourBarLift.Subscribe(m_climber);
 
     frc::LiveWindow::GetInstance()->DisableAllTelemetry();
 }

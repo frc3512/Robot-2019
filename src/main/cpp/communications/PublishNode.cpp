@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2021 FRC Team 3512. All Rights Reserved.
 
 #include "communications/PublishNode.hpp"
 
@@ -17,19 +17,97 @@ PublishNode::~PublishNode() {
     m_thread.join();
 }
 
-void PublishNode::Subscribe(PublishNode& publisher) {
-    auto it =
-        std::find(publisher.m_subList.begin(), publisher.m_subList.end(), this);
-    if (it == publisher.m_subList.end()) {
-        publisher.m_subList.push_back(this);
+void PublishNode::SubscribeTo(PublishNode& publisher, wpi::StringRef topic) {
+    wpi::StringRef lhs;
+    wpi::StringRef rhs;
+
+    // Start at root
+    auto* current = &publisher.m_subscriberTree;
+    // TODO: C++17 structured bindings
+    // auto [lhs, rhs] = topic.split('/');
+    auto temp = topic.split('/');
+    lhs = temp.first;
+    rhs = temp.second;
+
+    // While there are still parts of the topic to unpack
+    while (rhs.size() > 0) {
+        // If subscriber is already subscribed to a parent topic, do nothing
+        if (current->data.subscribers.count(this) > 0) {
+            return;
+        }
+
+        auto it = std::find_if(
+            current->children.begin(), current->children.end(),
+            [=](const auto& child) { return child.data.topic == lhs; });
+        if (it == current->children.end()) {
+            // TODO: C++17 emplace_back()
+            // current = &current->children.emplace_back(lhs);
+            current->children.emplace_back(lhs);
+            current = &current->children.back();
+        } else {
+            current = &(*it);
+        }
+
+        // TODO: C++17 structured bindings
+        // auto [lhs, rhs] = rhs.split('/');
+        auto temp = rhs.split('/');
+        lhs = temp.first;
+        rhs = temp.second;
+    }
+
+    // If rhs is empty, the proper location for the subscriber was found
+    if (rhs.size() == 0) {
+        current->data.subscribers.insert(this);
+    }
+
+    // Unsub subscriber from all children to avoid receiving same message twice
+    for (auto& child : current->children) {
+        child.DFS([this](Node& node) {
+            node.subscribers.erase(this);
+            return true;
+        });
     }
 }
 
-void PublishNode::Unsubscribe(PublishNode& publisher) {
-    auto it =
-        std::find(publisher.m_subList.begin(), publisher.m_subList.end(), this);
-    if (it != publisher.m_subList.end()) {
-        publisher.m_subList.erase(it);
+void PublishNode::UnsubscribeFrom(PublishNode& publisher,
+                                  wpi::StringRef topic) {
+    wpi::StringRef lhs;
+    wpi::StringRef rhs;
+
+    // Start at root
+    auto* currentTree = &m_subscriberTree;
+    // TODO: C++17 structured bindings
+    // auto [lhs, rhs] = topic.split('/');
+    auto temp = topic.split('/');
+    lhs = temp.first;
+    rhs = temp.second;
+
+    // While there are still parts of the topic to unpack
+    while (rhs.size() > 0) {
+        auto it = std::find_if(
+            currentTree->children.begin(), currentTree->children.end(),
+            [=](const auto& child) { return child.data.topic == lhs; });
+        // Found child matching topic segment, so continue searching
+        if (it != currentTree->children.end()) {
+            currentTree = &(*it);
+        } else {
+            break;
+        }
+
+        // TODO: C++17 structured bindings
+        // auto [lhs, rhs] = rhs.split('/');
+        auto temp = rhs.split('/');
+        lhs = temp.first;
+        rhs = temp.second;
+    }
+
+    // If rhs is empty, the subscriber was found, so unsub it from the current
+    // tree node and all its children
+    if (rhs.size() == 0) {
+        currentTree->DFS([this](Node& node) {
+            node.subscribers.erase(this);
+            return true;
+        });
     }
 }
 
