@@ -2,12 +2,13 @@
 
 #include "communications/PublishNode.hpp"
 
+#include <iostream>
+
 #include <wpi/SmallVector.h>
 
 using namespace frc3512;
 
-PublishNode::PublishNode(std::string_view nodeName) {
-    m_nodeName = nodeName;
+PublishNode::PublishNode() {
     m_thread = std::thread(&PublishNode::RunFramework, this);
 }
 
@@ -18,21 +19,29 @@ PublishNode::~PublishNode() {
 }
 
 void PublishNode::SubscribeTo(PublishNode& publisher, wpi::StringRef topic) {
+    std::cout << "total topic: " << topic << std::endl;
     wpi::StringRef lhs;
     wpi::StringRef rhs;
 
     // Start at root
     auto* current = &publisher.m_subscriberTree;
-    // TODO: C++17 structured bindings
-    // auto [lhs, rhs] = topic.split('/');
-    auto temp = topic.split('/');
-    lhs = temp.first;
-    rhs = temp.second;
+    rhs = topic;
 
     // While there are still parts of the topic to unpack
-    while (rhs.size() > 0) {
+    do {
+        // TODO: C++17 structured bindings
+        // auto [lhs, rhs] = topic.split('/');
+        auto temp = rhs.split("/");
+        lhs = temp.first;
+        rhs = temp.second;
+        std::cout << "current lhs: " << lhs << std::endl;
+        std::cout << "current rhs: " << rhs << std::endl;
+        std::cout << "Current node topic we're on " << current->data.topic
+                  << std::endl;
         // If subscriber is already subscribed to a parent topic, do nothing
         if (current->data.subscribers.count(this) > 0) {
+            std::cout << "Exiting. You're already subscribed to "
+                      << current->data.topic << std::endl;
             return;
         }
 
@@ -47,21 +56,20 @@ void PublishNode::SubscribeTo(PublishNode& publisher, wpi::StringRef topic) {
         } else {
             current = &(*it);
         }
+    } while (rhs.size() > 0);
 
-        // TODO: C++17 structured bindings
-        // auto [lhs, rhs] = rhs.split('/');
-        auto temp = rhs.split('/');
-        lhs = temp.first;
-        rhs = temp.second;
-    }
-
+    std::cout << "Loop exits" << std::endl;
     // If rhs is empty, the proper location for the subscriber was found
     if (rhs.size() == 0) {
+        std::cout << "Found the right most topic. Inserting self into the "
+                     "other's sub list under the "
+                  << current->data.topic << " topic." << std::endl;
         current->data.subscribers.insert(this);
     }
 
     // Unsub subscriber from all children to avoid receiving same message twice
     for (auto& child : current->children) {
+        std::cout << "Reducing redundency" << std::endl;
         child.DFS([this](Node& node) {
             node.subscribers.erase(this);
             return true;

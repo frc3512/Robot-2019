@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -16,10 +16,10 @@ public:
     enum class MotorState { kIntake, kOuttake, kIdle };
     enum class SolenoidState { kOpen, kClose };
 
-    Intake();
+    Intake() = default;
 
-    Intake(const Intake&) = delete;
-    Intake& operator=(const Intake&) = delete;
+    Intake(Intake&&) = default;
+    Intake& operator=(Intake&&) = default;
 
     /**
      * Sets the intake's motors to spin inward or outward.

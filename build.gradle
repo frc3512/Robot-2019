@@ -171,6 +171,10 @@ model {
                 exportedHeaders {
                     srcDir 'src/test/include'
                 }
+
+                exportedHeaders {
+                    srcDirs += ['src/test/include']
+		}
             }
 
             wpi.deps.vendor.cpp(it)

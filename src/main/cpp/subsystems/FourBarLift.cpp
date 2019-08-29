@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/FourBarLift.hpp"
 
@@ -11,7 +11,7 @@ using namespace frc3512;
 using namespace frc3512::Constants::FourBarLift;
 using namespace std::chrono_literals;
 
-FourBarLift::FourBarLift() : PublishNode("FourBarLift") {
+FourBarLift::FourBarLift() {
     m_grbx.Set(0.0);
     m_encoder.SetDistancePerPulse(kDpP);
     EnablePeriodic();

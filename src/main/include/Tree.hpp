@@ -49,6 +49,10 @@ public:
 
         return count;
     }
+
+    bool operator==(const Tree& rhs) {
+        return data == rhs.data && children == rhs.children;
+    }
 };
 
 }  // namespace frc3512

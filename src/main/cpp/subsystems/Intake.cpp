@@ -1,11 +1,9 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/Intake.hpp"
 
 using namespace frc3512;
 using namespace frc3512::Constants::Intake;
-
-Intake::Intake() : PublishNode("Intake") {}
 
 void Intake::SetMotors(MotorState motorState) {
     if (motorState == MotorState::kIntake) {

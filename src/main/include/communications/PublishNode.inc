@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include <iostream>
 #include <string>
 
 namespace frc3512 {
 
 template <class P>
 void PublishNode::Publish(P p) {
-    p.topic = m_nodeName + "/" + p.topic;
     wpi::StringRef topic = p.topic;
     wpi::StringRef lhs;
     wpi::StringRef rhs;
@@ -24,6 +24,7 @@ void PublishNode::Publish(P p) {
         // Publish to subscribers at current tree node
         for (auto& sub : currentTree->data.subscribers) {
             sub->PushMessage(p);
+            std::cout << "Publishing" << std::endl;
         }
 
         auto it = std::find_if(

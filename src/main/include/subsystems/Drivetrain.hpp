@@ -29,8 +29,8 @@ namespace frc3512 {
 class Drivetrain : public SubsystemBase, public PublishNode {
 public:
     Drivetrain();
-    Drivetrain(const Drivetrain&) = delete;
-    Drivetrain& operator=(const Drivetrain&) = delete;
+    Drivetrain(Drivetrain&&) = default;
+    Drivetrain& operator=(Drivetrain&&) = default;
 
     /**
      * Drives robot with given speed and turn values [-1..1].

@@ -17,7 +17,8 @@ namespace frc3512 {
 class FourBarLift : public SubsystemBase, public PublishNode {
 public:
     FourBarLift();
-    FourBarLift& operator=(const FourBarLift&) = delete;
+    FourBarLift(FourBarLift&&) = default;
+    FourBarLift& operator=(FourBarLift&&) = default;
 
     /**
      * Sets the voltage of the elevator.

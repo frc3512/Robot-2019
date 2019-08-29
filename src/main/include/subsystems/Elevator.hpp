@@ -21,7 +21,8 @@ namespace frc3512 {
 class Elevator : public SubsystemBase, public PublishNode {
 public:
     Elevator();
-    Elevator& operator=(const Elevator&) = delete;
+    Elevator(Elevator&&) = default;
+    Elevator& operator=(Elevator&&) = default;
 
     /**
      * Sets the velocity of the elevator.

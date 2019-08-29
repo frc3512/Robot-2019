@@ -26,10 +26,8 @@ class PublishNode : public PublishNodeBase {
 public:
     /**
      * Construct a PublishNode.
-     *
-     * @param nodeName Name of node.
      */
-    explicit PublishNode(std::string_view nodeName = "Misc");
+    PublishNode();
     virtual ~PublishNode();
 
     /**
@@ -91,7 +89,6 @@ private:
 
     static constexpr int kNodeQueueSize = 1024;
 
-    std::string m_nodeName;
     Tree<Node> m_subscriberTree{""};
     wpi::circular_buffer<char> m_queue{kNodeQueueSize};
 
@@ -104,6 +101,8 @@ private:
      * of a message or until the node deconstructs, then processes each message.
      */
     void RunFramework();
+
+    friend class PublishNodeMockTest_SubscribeTest_Test;
 };
 
 }  // namespace frc3512

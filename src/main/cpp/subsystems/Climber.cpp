@@ -10,7 +10,7 @@
 using namespace frc3512;
 using namespace frc3512::Constants::Climber;
 
-Climber::Climber() : PublishNode("Climber") {
+Climber::Climber() {
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kDpP);
     m_lift.SetInverted(true);
