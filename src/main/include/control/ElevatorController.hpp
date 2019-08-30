@@ -6,11 +6,11 @@
 #include <frc/controller/StateSpaceController.h>
 #include <frc/controller/StateSpaceObserver.h>
 #include <frc/controller/StateSpacePlant.h>
+#include <frc/trajectory/TrapezoidProfile.h>
 
 #include "Constants.hpp"
 #include "control/ElevatorClimbCoeffs.hpp"
 #include "control/ElevatorCoeffs.hpp"
-#include "control/TrapezoidalMotionProfile.hpp"
 #include "logging/CsvLogger.hpp"
 
 namespace frc3512 {
@@ -103,19 +103,17 @@ public:
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_Y;
-    TrapezoidalMotionProfile::State m_goal;
+    frc::TrapezoidProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints scoringConstraints{
+    frc::TrapezoidProfile::Constraints scoringConstraints{
         Constants::Elevator::kMaxV, Constants::Elevator::kMaxA};
-    TrapezoidalMotionProfile::Constraints climbingConstraints{
+    frc::TrapezoidProfile::Constraints climbingConstraints{
         Constants::Elevator::kClimbMaxV, Constants::Elevator::kClimbMaxA};
-    TrapezoidalMotionProfile::Constraints m_activeConstraints =
-        scoringConstraints;
+    frc::TrapezoidProfile::Constraints m_activeConstraints = scoringConstraints;
 
-    TrapezoidalMotionProfile m_positionProfile{scoringConstraints,
-                                               {0_m, 0_mps}};
+    frc::TrapezoidProfile m_positionProfile{scoringConstraints, {0_m, 0_mps}};
 
-    TrapezoidalMotionProfile::State m_profiledReference;
+    frc::TrapezoidProfile::State m_profiledReference;
 
     frc::StateSpacePlant<2, 1, 1> m_plant = [&] {
         frc::StateSpacePlant<2, 1, 1> plant{MakeElevatorPlantCoeffs()};

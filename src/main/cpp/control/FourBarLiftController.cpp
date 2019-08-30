@@ -15,9 +15,9 @@ void FourBarLiftController::Disable() { m_loop.Disable(); }
 
 void FourBarLiftController::SetGoal(double goal) {
     m_angleProfile =
-        TrapezoidalMotionProfile{constraints,
-                                 {units::meter_t{goal}, 0_mps},
-                                 {units::meter_t{EstimatedAngle()}, 0_mps}};
+        frc::TrapezoidProfile{constraints,
+                              {units::meter_t{goal}, 0_mps},
+                              {units::meter_t{EstimatedAngle()}, 0_mps}};
     m_goal = {units::meter_t{goal}, 0_mps};
 }
 
@@ -80,10 +80,10 @@ double FourBarLiftController::AngleReference() {
 void FourBarLiftController::Update() {
     elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage());
 
-    TrapezoidalMotionProfile::State references = {
+    frc::TrapezoidProfile::State references = {
         units::meter_t(m_loop.NextR(0)),
         units::meters_per_second_t(m_loop.NextR(1))};
-    TrapezoidalMotionProfile profile{constraints, m_goal, references};
+    frc::TrapezoidProfile profile{constraints, m_goal, references};
     m_profiledReference = profile.Calculate(Constants::kDt_s);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);

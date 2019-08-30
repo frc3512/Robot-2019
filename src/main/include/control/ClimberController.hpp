@@ -4,10 +4,10 @@
 
 #include <Eigen/Core>
 #include <frc/controller/StateSpaceLoop.h>
+#include <frc/trajectory/TrapezoidProfile.h>
 
 #include "Constants.hpp"
 #include "control/ClimberCoeffs.hpp"
-#include "control/TrapezoidalMotionProfile.hpp"
 #include "logging/CsvLogger.hpp"
 
 namespace frc3512 {
@@ -95,13 +95,13 @@ public:
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_Y;
-    TrapezoidalMotionProfile::State m_goal;
+    frc::TrapezoidProfile::State m_goal;
 
-    TrapezoidalMotionProfile::Constraints constraints{
-        Constants::Climber::kMaxV, Constants::Climber::kMaxA};
-    TrapezoidalMotionProfile m_positionProfile{constraints, {0_m, 0_mps}};
+    frc::TrapezoidProfile::Constraints constraints{Constants::Climber::kMaxV,
+                                                   Constants::Climber::kMaxA};
+    frc::TrapezoidProfile m_positionProfile{constraints, {0_m, 0_mps}};
 
-    TrapezoidalMotionProfile::State m_profiledReference;
+    frc::TrapezoidProfile::State m_profiledReference;
 
     // The control loop.
     frc::StateSpaceLoop<2, 1, 1> m_loop{MakeClimberLoop()};
