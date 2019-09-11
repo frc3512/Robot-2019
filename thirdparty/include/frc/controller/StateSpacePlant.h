@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -190,9 +190,11 @@ class StateSpacePlant {
   /**
    * Computes the new x and y given the control input.
    *
+   * @param x The current state.
    * @param u The control input.
    */
-  void Update(const Eigen::Matrix<double, Inputs, 1>& u);
+  void Update(const Eigen::Matrix<double, States, 1>& x,
+              const Eigen::Matrix<double, Inputs, 1>& u);
 
   /**
    * Computes the new x given the old x and the control input.
@@ -203,19 +205,22 @@ class StateSpacePlant {
    * @param x The current state.
    * @param u The control input.
    */
-  Eigen::Matrix<double, States, 1> UpdateX(
-      const Eigen::Matrix<double, States, 1> x,
+  Eigen::Matrix<double, States, 1> CalculateX(
+      const Eigen::Matrix<double, States, 1>& x,
       const Eigen::Matrix<double, Inputs, 1>& u) const;
 
   /**
    * Computes the new y given the control input.
    *
-   * This should be used when setting x manually to update y separately.
+   * This is used by state observers directly to run updates based on state
+   * estimate.
    *
+   * @param x The current state.
    * @param u The control input.
    */
-  Eigen::Matrix<double, Outputs, 1> UpdateY(
-      const Eigen::Matrix<double, Inputs, 1>& u);
+  Eigen::Matrix<double, Outputs, 1> CalculateY(
+      const Eigen::Matrix<double, States, 1>& x,
+      const Eigen::Matrix<double, Inputs, 1>& u) const;
 
  protected:
   // These are accessible from non-templated subclasses.

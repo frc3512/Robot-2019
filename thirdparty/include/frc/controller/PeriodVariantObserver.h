@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <chrono>
 #include <vector>
 
 #include <Eigen/Core>
+#include <units/units.h>
 
-#include "frc/controller/PeriodVariantKalmanFilterCoeffs.h"
+#include "frc/controller/PeriodVariantObserverCoeffs.h"
 #include "frc/controller/PeriodVariantPlant.h"
 
 namespace frc {
@@ -36,7 +36,7 @@ namespace frc {
  * https://file.tavsys.net/control/state-space-guide.pdf.
  */
 template <int States, int Inputs, int Outputs>
-class PeriodVariantKalmanFilter {
+class PeriodVariantObserver {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -48,14 +48,13 @@ class PeriodVariantKalmanFilter {
    * @param nominalSamplePeriod The nominal period at which the control loop
    *                            will run.
    */
-  PeriodVariantKalmanFilter(const PeriodVariantKalmanFilterCoeffs<
-                                States, Inputs, Outputs>& observerCoeffs,
-                            PeriodVariantPlant<States, Inputs, Outputs>& plant,
-                            const std::chrono::nanoseconds nominalSamplePeriod =
-                                std::chrono::milliseconds(5));
+  PeriodVariantObserver(const PeriodVariantObserverCoeffs<
+                            States, Inputs, Outputs>& observerCoeffs,
+                        PeriodVariantPlant<States, Inputs, Outputs>& plant,
+                        const units::second_t nominalSamplePeriod = 5_ms);
 
-  PeriodVariantKalmanFilter(PeriodVariantKalmanFilter&&) = default;
-  PeriodVariantKalmanFilter& operator=(PeriodVariantKalmanFilter&&) = default;
+  PeriodVariantObserver(PeriodVariantObserver&&) = default;
+  PeriodVariantObserver& operator=(PeriodVariantObserver&&) = default;
 
   /**
    * Returns the discretized process noise covariance matrix.
@@ -135,7 +134,7 @@ class PeriodVariantKalmanFilter {
    * @param dt   Timestep for prediction.
    */
   void Predict(const Eigen::Matrix<double, Inputs, 1>& newU,
-               std::chrono::nanoseconds dt);
+               units::second_t dt);
 
   /**
    * Correct the state estimate x-hat using the measurements in y.
@@ -152,22 +151,21 @@ class PeriodVariantKalmanFilter {
    * @param coefficients Observer coefficients.
    */
   void AddCoefficients(
-      const PeriodVariantKalmanFilterCoeffs<States, Inputs, Outputs>&
-          coefficients);
+      const PeriodVariantObserverCoeffs<States, Inputs, Outputs>& coefficients);
 
   /**
    * Returns the observer coefficients with the given index.
    *
    * @param index Index of coefficients.
    */
-  const PeriodVariantKalmanFilterCoeffs<States, Inputs, Outputs>&
-  GetCoefficients(int index) const;
+  const PeriodVariantObserverCoeffs<States, Inputs, Outputs>& GetCoefficients(
+      int index) const;
 
   /**
    * Returns the current observer coefficients.
    */
-  const PeriodVariantKalmanFilterCoeffs<States, Inputs, Outputs>&
-  GetCoefficients() const;
+  const PeriodVariantObserverCoeffs<States, Inputs, Outputs>& GetCoefficients()
+      const;
 
   /**
    * Sets the current observer to be "index", clamped to be within range. This
@@ -188,10 +186,10 @@ class PeriodVariantKalmanFilter {
    *
    * @param dt Discretization timestep.
    */
-  void UpdateQR(std::chrono::nanoseconds dt);
+  void UpdateQR(units::second_t dt);
 
   PeriodVariantPlant<States, Inputs, Outputs>* m_plant;
-  const std::chrono::nanoseconds m_nominalSamplePeriod;
+  const units::second_t m_nominalSamplePeriod;
 
   /**
    * Internal state estimate.
@@ -213,11 +211,11 @@ class PeriodVariantKalmanFilter {
    */
   Eigen::Matrix<double, Outputs, Outputs> m_R;
 
-  std::vector<PeriodVariantKalmanFilterCoeffs<States, Inputs, Outputs>>
+  std::vector<PeriodVariantObserverCoeffs<States, Inputs, Outputs>>
       m_coefficients;
   int m_index = 0;
 };
 
 }  // namespace frc
 
-#include "frc/controller/PeriodVariantKalmanFilter.inc"
+#include "frc/controller/PeriodVariantObserver.inc"

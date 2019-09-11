@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -9,14 +9,14 @@
 
 #include <cassert>
 
-#include <Eigen/MatrixFunctions>
+#include <unsupported/Eigen/MatrixFunctions>
 
 namespace frc {
 
 template <int States, int Inputs, int Outputs>
 PeriodVariantPlant<States, Inputs, Outputs>::PeriodVariantPlant(
     const PeriodVariantPlantCoeffs<States, Inputs, Outputs>& plantCoeffs,
-    const std::chrono::nanoseconds nominalSamplePeriod)
+    const units::second_t nominalSamplePeriod)
     : m_nominalSamplePeriod(nominalSamplePeriod) {
   AddCoefficients(plantCoeffs);
   Reset();
@@ -152,40 +152,38 @@ void PeriodVariantPlant<States, Inputs, Outputs>::Reset() {
 
 template <int States, int Inputs, int Outputs>
 void PeriodVariantPlant<States, Inputs, Outputs>::Update(
-    const Eigen::Matrix<double, Inputs, 1>& u, std::chrono::nanoseconds dt) {
-  m_X = UpdateX(X(), m_delayedU);
-  m_Y = UpdateY(m_delayedU);
+    const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
+  m_X = CalculateX(X(), m_delayedU);
+  m_Y = CalculateY(X(), m_delayedU);
   m_delayedU = u;
 }
 
 template <int States, int Inputs, int Outputs>
 Eigen::Matrix<double, States, 1>
-PeriodVariantPlant<States, Inputs, Outputs>::UpdateX(
+PeriodVariantPlant<States, Inputs, Outputs>::CalculateX(
     const Eigen::Matrix<double, States, 1>& x,
-    const Eigen::Matrix<double, Inputs, 1>& u, std::chrono::nanoseconds dt) {
+    const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
   UpdateAB(dt);
   return A() * x + B() * u;
 }
 
 template <int States, int Inputs, int Outputs>
 Eigen::Matrix<double, Outputs, 1>
-PeriodVariantPlant<States, Inputs, Outputs>::UpdateY(
-    const Eigen::Matrix<double, Inputs, 1>& u) {
-  return C() * X() + D() * u;
+PeriodVariantPlant<States, Inputs, Outputs>::CalculateY(
+    const Eigen::Matrix<double, States, 1>& x,
+    const Eigen::Matrix<double, Inputs, 1>& u) const {
+  return C() * x + D() * u;
 }
 
 template <int States, int Inputs, int Outputs>
-void PeriodVariantPlant<States, Inputs, Outputs>::UpdateAB(
-    std::chrono::nanoseconds dt) {
+void PeriodVariantPlant<States, Inputs, Outputs>::UpdateAB(units::second_t dt) {
   // Matrices are blocked here to minimize matrix exponentiation calculations.
   Eigen::Matrix<double, States + Inputs, States + Inputs> MstateContinuous;
   MstateContinuous.setZero();
   MstateContinuous.template block<States, States>(0, 0) =
-      GetCoefficients().Acontinuous *
-      std::chrono::duration_cast<std::chrono::duration<double>>(dt).count();
+      GetCoefficients().Acontinuous * dt.to<double>();
   MstateContinuous.template block<States, Inputs>(0, States) =
-      GetCoefficients().Bcontinuous *
-      std::chrono::duration_cast<std::chrono::duration<double>>(dt).count();
+      GetCoefficients().Bcontinuous * dt.to<double>();
 
   Eigen::Matrix<double, States + Inputs, States + Inputs> Mstate =
       MstateContinuous.exp();

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <chrono>
 #include <vector>
 
 #include <Eigen/Core>
+#include <units/units.h>
 
 #include "frc/controller/PeriodVariantPlantCoeffs.h"
 
@@ -42,8 +42,7 @@ class PeriodVariantPlant {
    */
   explicit PeriodVariantPlant(
       const PeriodVariantPlantCoeffs<States, Inputs, Outputs>& plantCoeffs,
-      const std::chrono::nanoseconds nominalSamplePeriod =
-          std::chrono::milliseconds(5));
+      const units::second_t nominalSamplePeriod = 5_ms);
 
   virtual ~PeriodVariantPlant() = default;
 
@@ -203,8 +202,7 @@ class PeriodVariantPlant {
    * @param u  The control input.
    * @param dt The timestep.
    */
-  void Update(const Eigen::Matrix<double, Inputs, 1>& u,
-              std::chrono::nanoseconds dt);
+  void Update(const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt);
 
   /**
    * Computes the new x given the old x and the control input.
@@ -216,19 +214,22 @@ class PeriodVariantPlant {
    * @param u  The control input.
    * @param dt The timestep.
    */
-  Eigen::Matrix<double, States, 1> UpdateX(
+  Eigen::Matrix<double, States, 1> CalculateX(
       const Eigen::Matrix<double, States, 1>& x,
-      const Eigen::Matrix<double, Inputs, 1>& u, std::chrono::nanoseconds dt);
+      const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt);
 
   /**
    * Computes the new y given the control input.
    *
-   * This should be used when setting x manually to update y separately.
+   * This is used by state observers directly to run updates based on state
+   * estimate.
    *
+   * @param x The current state.
    * @param u The control input.
    */
-  Eigen::Matrix<double, Outputs, 1> UpdateY(
-      const Eigen::Matrix<double, Inputs, 1>& u);
+  Eigen::Matrix<double, Outputs, 1> CalculateY(
+      const Eigen::Matrix<double, States, 1>& x,
+      const Eigen::Matrix<double, Inputs, 1>& u) const;
 
  protected:
   // These are accessible from non-templated subclasses.
@@ -242,9 +243,9 @@ class PeriodVariantPlant {
    *
    * @param dt Timestep.
    */
-  void UpdateAB(std::chrono::nanoseconds dt);
+  void UpdateAB(units::second_t dt);
 
-  const std::chrono::nanoseconds m_nominalSamplePeriod;
+  const units::second_t m_nominalSamplePeriod;
 
   /**
    * Current state.

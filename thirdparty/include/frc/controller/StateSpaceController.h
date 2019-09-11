@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -118,11 +118,11 @@ class StateSpaceController {
   /**
    * Set a new reference and update the controller.
    *
-   * @param nextR The next reference vector r.
    * @param x     The current state x.
+   * @param nextR The next reference vector r.
    */
-  void Update(const Eigen::Matrix<double, States, 1>& nextR,
-              const Eigen::Matrix<double, States, 1>& x);
+  void Update(const Eigen::Matrix<double, States, 1>& x,
+              const Eigen::Matrix<double, States, 1>& nextR);
 
   /**
    * Sets the current controller to be "index", clamped to be within range. This

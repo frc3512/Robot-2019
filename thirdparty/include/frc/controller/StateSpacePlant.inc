@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -144,27 +144,26 @@ void StateSpacePlant<States, Inputs, Outputs>::Reset() {
 
 template <int States, int Inputs, int Outputs>
 void StateSpacePlant<States, Inputs, Outputs>::Update(
+    const Eigen::Matrix<double, States, 1>& x,
     const Eigen::Matrix<double, Inputs, 1>& u) {
-  // Powers outside of the range are more likely controller bugs than things
-  // that the plant should deal with.
-  CheckU(u);
-  m_X = UpdateX(X(), u);
-  m_Y = UpdateY(u);
+  m_X = CalculateX(x, u);
+  m_Y = CalculateY(x, u);
 }
 
 template <int States, int Inputs, int Outputs>
 Eigen::Matrix<double, States, 1>
-StateSpacePlant<States, Inputs, Outputs>::UpdateX(
-    const Eigen::Matrix<double, States, 1> x,
+StateSpacePlant<States, Inputs, Outputs>::CalculateX(
+    const Eigen::Matrix<double, States, 1>& x,
     const Eigen::Matrix<double, Inputs, 1>& u) const {
   return A() * x + B() * u;
 }
 
 template <int States, int Inputs, int Outputs>
 Eigen::Matrix<double, Outputs, 1>
-StateSpacePlant<States, Inputs, Outputs>::UpdateY(
-    const Eigen::Matrix<double, Inputs, 1>& u) {
-  return C() * X() + D() * u;
+StateSpacePlant<States, Inputs, Outputs>::CalculateY(
+    const Eigen::Matrix<double, States, 1>& x,
+    const Eigen::Matrix<double, Inputs, 1>& u) const {
+  return C() * x + D() * u;
 }
 
 }  // namespace frc

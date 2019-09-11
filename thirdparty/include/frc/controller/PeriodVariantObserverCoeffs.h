@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -15,32 +15,32 @@ namespace frc {
  * A container for all the observer coefficients.
  */
 template <int States, int Inputs, int Outputs>
-struct PeriodVariantKalmanFilterCoeffs final {
+struct PeriodVariantObserverCoeffs final {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   /**
-   * Process noise covariance matrix (continuous).
+   * The continuous process noise covariance matrix.
    */
-  const Eigen::Matrix<double, States, States> Qcontinuous;
+  Eigen::Matrix<double, States, States> Qcontinuous;
 
   /**
-   * Measurement noise covariance matrix (continuous).
+   * The continuous measurement noise covariance matrix.
    */
-  const Eigen::Matrix<double, Outputs, Outputs> Rcontinuous;
+  Eigen::Matrix<double, Outputs, Outputs> Rcontinuous;
 
   /**
-   * Steady-state error covariance matrix (continuous).
+   * The steady-state error covariance matrix.
    */
-  const Eigen::Matrix<double, States, States> PsteadyState;
+  Eigen::Matrix<double, States, States> PsteadyState;
 
   /**
    * Construct the container for the observer coefficients.
    *
-   * @param Qcontinuous  Continuous process noise covariance matrix.
-   * @param Rcontinuous  Continuous measurement noise covariance matrix.
-   * @param PsteadyState Continuous steady-state error covariance matrix.
+   * @param Qcontinuous The continuous process noise covariance matrix.
+   * @param Rcontinuous The continuous measurement noise covariance matrix.
+   * @param PsteadyState The steady-state error covariance matrix.
    */
-  PeriodVariantKalmanFilterCoeffs(
+  PeriodVariantObserverCoeffs(
       const Eigen::Matrix<double, States, States>& Qcontinuous,
       const Eigen::Matrix<double, Outputs, Outputs>& Rcontinuous,
       const Eigen::Matrix<double, States, States>& PsteadyState);
@@ -48,4 +48,4 @@ struct PeriodVariantKalmanFilterCoeffs final {
 
 }  // namespace frc
 
-#include "frc/controller/PeriodVariantKalmanFilterCoeffs.inc"
+#include "frc/controller/PeriodVariantObserverCoeffs.inc"

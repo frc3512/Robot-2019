@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2018-2019 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -58,14 +58,14 @@ void StateSpaceObserver<States, Inputs, Outputs>::Reset() {
 template <int States, int Inputs, int Outputs>
 void StateSpaceObserver<States, Inputs, Outputs>::Predict(
     const Eigen::Matrix<double, Inputs, 1>& newU) {
-  m_Xhat = m_plant->UpdateX(Xhat(), newU);
+  m_Xhat = m_plant->CalculateX(Xhat(), newU);
 }
 
 template <int States, int Inputs, int Outputs>
 void StateSpaceObserver<States, Inputs, Outputs>::Correct(
     const Eigen::Matrix<double, Inputs, 1>& u,
     const Eigen::Matrix<double, Outputs, 1>& y) {
-  m_Xhat += K() * (y - m_plant->C() * Xhat() - m_plant->D() * u);
+  m_Xhat += K() * (y - m_plant->CalculateY(Xhat(), u));
 }
 
 template <int States, int Inputs, int Outputs>
