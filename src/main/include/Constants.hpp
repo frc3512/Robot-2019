@@ -75,7 +75,7 @@ constexpr int kLiftEncoderB = 9;
 // Climber Physical Constants
 constexpr auto kMaxV = 0.25_mps;  // m/sec
 constexpr auto kMaxA = 2.5_mps_sq;
-constexpr double kGearRatio = 50 / 1;
+constexpr double kGearRatio = 80 / 1;
 constexpr double kSprocketRadius = 0.0323342 / 2.0;
 constexpr double kDpP = (2.0 * kPi * kSprocketRadius) / 2048.0;
 constexpr double kRobotMass = 63.503;  // kg
@@ -93,24 +93,24 @@ constexpr int kPort = 3;
 constexpr int kEncoderA = 6;
 constexpr int kEncoderB = 7;
 
-constexpr auto kMaxV = 1.25_mps;
-constexpr auto kMaxA = 0.5_mps_sq;
-constexpr double kGearRatio = 200 / 1;
-constexpr double kMin = -1.60;
+constexpr auto kMaxV = 1.477996_mps;
+constexpr auto kMaxA = 7.782482_mps_sq;
+constexpr double kGearRatio = 302.22 / 1;
+constexpr double kMin = -1.495867;
 constexpr double kMax = 0.0;
 constexpr double kStallTorque = 0.71;
 constexpr double kStallCurrent = 134.0;
-constexpr double kLength = 0.508;   // Approx 20.0 IN
-constexpr double kMass = 6.803886;  // Approx 15 lbs.
+constexpr double kLength = 0.508;  // Approx 20.0 IN
+constexpr double kMass = 7.18;     // Approx 15 lbs.
 
 // Distance per pulse (converts ticks to radians)
-constexpr double kDpP = 2 * kPi / 2048 / 10;
+constexpr double kDpP = 2 * kPi / 2048;
 
 // Represents the height the four-bar offers when scoring in most goals
 constexpr double kOffset = 0.5334;
 
 // Setpoints
-constexpr double kBottomHatch = -0.883;
+constexpr double kBottomHatch = -1.02086;
 }  // namespace FourBarLift
 
 namespace Intake {
@@ -135,13 +135,12 @@ constexpr int kEncoderA = 4;
 constexpr int kEncoderB = 5;
 
 // Elevator Physical Constants
-constexpr auto kMaxV = 2.7_mps;        // m/sec
-constexpr auto kMaxA = 2.5_mps_sq;     // Reduced from 12 to please Rowe
-constexpr auto kClimbMaxV = 0.25_mps;  // m/sec
+constexpr auto kMaxV = 8.6_mps;
+constexpr auto kMaxA = 4.3_mps_sq;
+constexpr auto kClimbMaxV = 0.25_mps;
 constexpr auto kClimbMaxA = 2.5_mps_sq;
-constexpr double kCarriageMass = 7.07;           // kilograms
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
-constexpr double kGearRatio = 45 / 12 * 7 / 1 * 40 / 40;
+constexpr double kGearRatio = 8.00;
 constexpr double kNumMotors = 2.0;
 constexpr double kStallTorque = 2.41 * kNumMotors;    // N-m
 constexpr double kStallCurrent = 131.0 * kNumMotors;  // amps
@@ -150,7 +149,7 @@ constexpr double kFreeCurrent = 2.7 * kNumMotors;     // amps
 constexpr double kResistance = 12.0 / kStallCurrent;  // resistance of motor
 constexpr double kKt = kStallTorque / kStallCurrent;  // torque constant
 constexpr double kMin = 0.0;
-constexpr double kMax = 1.32;
+constexpr double kMax = 0.8;
 
 // Distance per Pulse
 constexpr double kDpP = (2.0 * kPi * kDrumRadius) * 2.0 / 2048.0;
@@ -163,18 +162,18 @@ constexpr double kOffset = 0.18415;
 constexpr double kFloorHeight = 0.0;
 
 constexpr double kBottomHatch = 0.0;  // 0.46482;
-constexpr double kMiddleHatch = 1.17602 - FourBarLift::kOffset - kOffset;
-constexpr double kTopHatch = 1.88722 - FourBarLift::kOffset - kOffset;
+constexpr double kMiddleHatch = 1.11602 - FourBarLift::kOffset - kOffset;
+constexpr double kTopHatch = 1.83722 - FourBarLift::kOffset - kOffset;
 
 constexpr double kBottomCargo = 0.0;
-constexpr double kMiddleCargo = 1.39192 - FourBarLift::kOffset - kOffset;
+constexpr double kMiddleCargo = 1.33192 - FourBarLift::kOffset - kOffset;
 // 0.06 compensates for the physical limitations of the elevator
-constexpr double kTopCargo = 2.10312 - FourBarLift::kOffset - kOffset - 0.11;
+constexpr double kTopCargo = 2.03312 - FourBarLift::kOffset - kOffset - 0.11;
 
-constexpr double kCargoShip = 1.0541 - FourBarLift::kOffset - kOffset;
+constexpr double kCargoShip = 0.9941 - FourBarLift::kOffset - kOffset;
 
-constexpr double kHab3 = 0.48;
-constexpr double kHab2 = 0.1498;
+constexpr double kHab3 = 0.42;    // 0.48
+constexpr double kHab2 = 0.0898;  // 0.1498
 }  // namespace Elevator
 
 constexpr auto kDt_s = 0.00505_s;

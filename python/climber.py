@@ -36,7 +36,7 @@ class Climber(fct.System):
         # Radius of axle in meters
         r = 0.003175
         # Gear ratio
-        G = 50 / 1
+        G = 80 / 1
         return fct.models.elevator(fct.models.MOTOR_775PRO, num_motors, m, r, G)
 
     def design_controller_observer(self):

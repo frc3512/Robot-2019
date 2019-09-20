@@ -60,9 +60,7 @@ double ElevatorController::ControllerVoltage() const {
         // while climbing
         return m_controller.U(0) - 1.0;
     } else {
-        return m_controller.U(0) +
-               (std::pow(kCarriageMass, 2) * Constants::kGravity * kResistance *
-                kDrumRadius / (kGearRatio * kKt));
+        return m_controller.U(0);
     }
 }
 
@@ -88,8 +86,8 @@ double ElevatorController::PositionReference() {
 }
 
 void ElevatorController::Update() {
-    elevatorLogger.Log(EstimatedPosition(), PositionReference(),
-                       ControllerVoltage());
+    elevatorLogger.Log(EstimatedPosition(), EstimatedVelocity(),
+                       PositionReference(), ControllerVoltage(), m_Y(0, 0));
 
     frc::TrapezoidProfile::State references = {
         units::meter_t(m_nextR(0, 0)),

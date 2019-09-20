@@ -140,7 +140,8 @@ private:
     bool m_atReferences = false;
 
     CsvLogger elevatorLogger{"/home/lvuser/Elevator.csv",
-                             "Time,EstPos,PosRef,Voltage"};
+                             "Time (s),EstPos (m),Velocity (m/s),RefPos "
+                             "(m),Voltage (V),MeasuredPos (m)"};
 };
 
 }  // namespace frc3512

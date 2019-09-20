@@ -105,7 +105,7 @@ void FourBarLift::ProcessMessage(const CommandPacket& message) {
     }
     if (message.topic == "Climber/FourBarStart") {
         m_controller.SetClimbing(true);
-        SetGoal(-1.704);
+        SetGoal(-1.104);
     }
     if (message.topic == "Climber/Up") {
         m_controller.SetClimbing(false);

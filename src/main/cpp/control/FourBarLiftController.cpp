@@ -42,11 +42,7 @@ void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
 
 double FourBarLiftController::ControllerVoltage() const {
     if (!m_climbing) {
-        return m_loop.U(0) + (1 / 2) *
-                                 (Constants::Robot::kNominalVoltage * kMass *
-                                  Constants::kGravity * kLength) /
-                                 (kGearRatio * (kStallTorque / kStallCurrent)) *
-                                 std::cos(EstimatedAngle() + 1.5);
+        return m_loop.U(0);
     } else {
         // Feedforward compensates for unmodeled extra weight from lifting robot
         // while climbing
@@ -73,12 +69,16 @@ double FourBarLiftController::AngularVelocityError() const {
 }
 
 double FourBarLiftController::AngleReference() {
-    double angleRef = units::unit_cast<double>(m_profiledReference.position);
-    return angleRef;
+    return m_profiledReference.position.to<double>();
+}
+
+double FourBarLiftController::AngularVelocityReference() {
+    return m_profiledReference.velocity.to<double>();
 }
 
 void FourBarLiftController::Update() {
-    elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage());
+    elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage(),
+                       EstimatedAngularVelocity(), AngularVelocityReference());
 
     frc::TrapezoidProfile::State references = {
         units::meter_t(m_loop.NextR(0)),

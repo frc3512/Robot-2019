@@ -20,6 +20,7 @@ includeOtherLibs {
   frc/
   gtest/
   hal/
+  rev/
   wpi/
   cscore\.h$
 }

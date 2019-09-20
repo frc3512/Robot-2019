@@ -14,6 +14,7 @@ Climber::Climber(frc::PowerDistributionPanel& pdp)
     : PublishNode("Climber"), m_pdp(pdp) {
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kDpP);
+    m_lift.SetInverted(true);
     m_timer.Start();
     Subscribe(*this);
 }

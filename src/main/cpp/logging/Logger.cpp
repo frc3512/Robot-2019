@@ -57,4 +57,6 @@ void Logger::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         EnablePeriodic();
     }
+    Log(LogEvent("CommandPacket (" + message.topic + ")",
+                 LogEvent::VERBOSE_DEBUG));
 }

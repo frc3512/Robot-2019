@@ -4,8 +4,8 @@
 
 #include <frc/Encoder.h>
 #include <frc/Notifier.h>
-#include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
+#include <rev/SparkMax.h>
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
@@ -58,7 +58,7 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    frc::Spark m_grbx{Constants::FourBarLift::kPort};
+    rev::SparkMax m_grbx{Constants::FourBarLift::kPort};
 
     FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,

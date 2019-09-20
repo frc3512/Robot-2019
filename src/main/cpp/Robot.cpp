@@ -104,6 +104,7 @@ public:
         wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
         wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
         wpi::outs() << "Climber: " << m_climber.GetHeight() << "\n";
+        wpi::outs().flush();
     }
 
     void AutonomousPeriodic() override { TeleopPeriodic(); }

@@ -79,9 +79,14 @@ public:
     double AngularVelocityError() const;
 
     /**
-     * Returns the current reference set by the profile
+     * Returns the current angle reference.
      */
     double AngleReference();
+
+    /**
+     * Returns the current angular velocity reference.
+     */
+    double AngularVelocityReference();
 
     /**
      * Executes the control loop for a cycle.
@@ -111,7 +116,8 @@ private:
     bool m_climbing = false;
 
     CsvLogger elevatorLogger{"/home/lvuser/FourBarLift.csv",
-                             "Time,EstPos,PosRef,Voltage"};
+                             "Time (s),EstPos (rad),RefPos (rad),Voltage "
+                             "(V),EstVel (rad/s),RefVel (rad/s)"};
 };
 
 }  // namespace frc3512

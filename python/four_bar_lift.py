@@ -22,8 +22,8 @@ class FourBarLift(fct.System):
 
         fct.System.__init__(
             self,
-            np.array([[-12.0]]),
-            np.array([[12.0]]),
+            np.array([[-9.0]]),
+            np.array([[9.0]]),
             dt,
             np.zeros((2, 1)),
             np.zeros((1, 1)),
@@ -32,20 +32,16 @@ class FourBarLift(fct.System):
     def create_model(self, states, inputs):
         # Number of motors
         num_motors = 1.0
-        # Mass of arm in kg
-        m = 2
-        # Length of arm in m
-        l = 0.4572
-        # Arm moment of inertia in kg-m^2
-        J = 2 / 3 * m * l ** 2
+        # Arm moment of inertia in kg-m^2 (from CAD)
+        J = 0.6975
         # Gear ratio
-        G = 420.0 / 1.0
+        G = 302.22 / 1.0
 
-        return fct.models.single_jointed_arm(fct.models.MOTOR_CIM, num_motors, J, G)
+        return fct.models.single_jointed_arm(fct.models.MOTOR_NEO, num_motors, J, G)
 
     def design_controller_observer(self):
-        q_pos = 0.01745
-        q_vel = 0.08726
+        q_pos = 0.21745
+        q_vel = 0.28726
         self.design_lqr([q_pos, q_vel], [12.0])
         self.design_two_state_feedforward([q_pos, q_vel], [12.0])
 

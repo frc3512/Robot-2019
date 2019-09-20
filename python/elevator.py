@@ -32,31 +32,31 @@ class Elevator(fct.System):
 
     def create_model(self, states, inputs):
         # Number of motors
-        num_motors = 2.0
+        num_motors = 1.0
         # Radius of pulley in meters
         r = 0.0181864
         # Gear ratio
-        G = 40 / 40
-        return fct.models.elevator(fct.models.MOTOR_775PRO, num_motors, self.m, r, G)
+        G = 8.0
+        return fct.models.elevator(fct.models.MOTOR_CIM, num_motors, self.m, r, G)
 
     def design_controller_observer(self):
-        q = [0.02, 0.4]
+        q = [0.1, 0.4]
         r = [12.0]
         self.design_lqr(q, r)
         self.design_two_state_feedforward(q, r)
 
         q_pos = 0.05
-        q_vel = 1.0
+        q_vel = 10.0
         r_pos = 0.0001
         self.design_kalman_filter([q_pos, q_vel], [r_pos])
 
 
 def main():
     dt = 0.00505
-    m = 5.0  # 6.803886
+    m = 9.785262
     elevator = Elevator(m, dt)
     elevator.export_cpp_coeffs("Elevator", "control/")
-    m = 5.4  # 51.4
+    m = 8.381376
     elevator = Elevator(m, dt)
     elevator.export_cpp_coeffs("ElevatorClimb", "control/")
 
