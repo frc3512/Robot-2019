@@ -62,7 +62,7 @@ void PublishNode::RunFramework() {
             // then pops that amount elements
             size_t msgLength = m_queue.pop_front();
             wpi::SmallVector<char, 32> message;
-            for (int i = 0; i < msgLength; i++) {
+            for (size_t i = 0; i < msgLength; i++) {
                 message.push_back(m_queue.pop_front());
             }
 

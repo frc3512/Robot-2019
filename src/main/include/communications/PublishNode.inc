@@ -22,7 +22,7 @@ void PublishNode::PushMessage(P p) {
 
     std::lock_guard<std::mutex> lock(m_mutex);
     m_queue.push_back(len);
-    for (int j = 0; j < len; j++) {
+    for (size_t j = 0; j < len; j++) {
         m_queue.push_back(ptr[j]);
     }
     m_ready.notify_one();
