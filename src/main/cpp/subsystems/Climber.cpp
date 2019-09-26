@@ -104,12 +104,7 @@ void Climber::SubsystemPeriodic() {
                 m_thirdLevel = true;
                 CommandPacket message{"ThirdLevel", true};
                 Publish(message);
-            }
-            if (m_elevatorStatusPacket.atGoal &&
-                m_elevatorStatusPacket.distance > 0.3) {
-                CommandPacket message0{"FourBarStart", true};
-                Publish(message0);
-                m_state = State::kFourBarDescend;
+                m_state = State::kThirdLevel;
             }
             if (m_buttonPacket.topic == "Robot/AppendageStick2" &&
                 m_buttonPacket.button == 8 && m_buttonPacket.pressed) {
@@ -117,7 +112,24 @@ void Climber::SubsystemPeriodic() {
                 m_thirdLevel = false;
                 CommandPacket message{"SecondLevel", true};
                 Publish(message);
+                m_state = State::kSecondLevel;
             }
+            break;
+        }
+        case State::kThirdLevel: {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            wpi::outs() << "ThirdLevel\n";
+            if (m_elevatorStatusPacket.atGoal &&
+                m_elevatorStatusPacket.distance > 0.3) {
+                CommandPacket message0{"FourBarStart", true};
+                Publish(message0);
+                m_state = State::kFourBarDescend;
+            }
+            break;
+        }
+        case State::kSecondLevel: {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            wpi::outs() << "SecondLevel\n";
             if (m_elevatorStatusPacket.atGoal &&
                 m_elevatorStatusPacket.distance > 0.1) {
                 CommandPacket message0{"FourBarStart", true};
