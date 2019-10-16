@@ -37,16 +37,16 @@ class Elevator(fct.System):
         r = 0.0181864
         # Gear ratio
         G = 8.0
-        return fct.models.elevator(fct.models.MOTOR_CIM, num_motors, self.m, r, G)
+        return fct.models.elevator(fct.models.MOTOR_NEO, num_motors, self.m, r, G)
 
     def design_controller_observer(self):
-        q = [0.1, 0.4]
+        q = [0.3, 3.0]
         r = [12.0]
         self.design_lqr(q, r)
         self.design_two_state_feedforward(q, r)
 
         q_pos = 0.05
-        q_vel = 10.0
+        q_vel = 100.0
         r_pos = 0.0001
         self.design_kalman_filter([q_pos, q_vel], [r_pos])
 

@@ -63,9 +63,14 @@ double ClimberController::PositionReference() {
     return positionRef;
 }
 
+double ClimberController::VelocityReference() {
+    return m_profiledReference.velocity.to<double>();
+}
+
 void ClimberController::Update() {
     climberLogger.Log(EstimatedPosition(), PositionReference(),
-                      ControllerVoltage());
+                      ControllerVoltage(), EstimatedVelocity(),
+                      VelocityReference());
 
     frc::TrapezoidProfile::State references = {
         units::meter_t(m_loop.NextR(0)),

@@ -8,6 +8,8 @@
 #include <frc/Notifier.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
+#include <frc/Timer.h>
+#include <rev/CANSparkMax.h>
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
@@ -66,7 +68,8 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    frc::Spark m_grbx{Constants::Elevator::kPort};
+    frc::Timer m_timer;
+    rev::CANSparkMax m_grbx{9, rev::CANSparkMax::MotorType::kBrushless};
 
     ElevatorController m_controller;
     frc::Encoder m_encoder{Constants::Elevator::kEncoderA,

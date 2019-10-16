@@ -40,10 +40,10 @@ class FourBarLift(fct.System):
         return fct.models.single_jointed_arm(fct.models.MOTOR_NEO, num_motors, J, G)
 
     def design_controller_observer(self):
-        q_pos = 0.21745
-        q_vel = 0.28726
-        self.design_lqr([q_pos, q_vel], [12.0])
-        self.design_two_state_feedforward([q_pos, q_vel], [12.0])
+        q_pos = 0.01245  # 0.21745
+        q_vel = 0.109726  # 0.28726
+        self.design_lqr([q_pos, q_vel], [9.0])
+        self.design_two_state_feedforward([q_pos, q_vel], [9.0])
 
         q_pos = 0.01745
         q_vel = 0.1745329

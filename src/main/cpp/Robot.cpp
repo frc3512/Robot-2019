@@ -85,12 +85,10 @@ public:
             }
             if (m_appendageStick2.GetRawButtonPressed(i)) {
                 ButtonPacket message{"AppendageStick2", i, true};
-                wpi::outs() << "h\n";
                 Publish(message);
             }
             if (m_appendageStick2.GetRawButtonReleased(i)) {
                 ButtonPacket message{"AppendageStick2", i, false};
-                wpi::outs() << "r\n";
                 Publish(message);
             }
         }

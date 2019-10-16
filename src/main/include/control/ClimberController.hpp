@@ -78,9 +78,14 @@ public:
     double VelocityError() const;
 
     /**
-     * Returns the current reference set by the profile
+     * Returns the current position reference set by the profile.
      */
     double PositionReference();
+
+    /**
+     * Returns the current velocity reference set by the profile.
+     */
+    double VelocityReference();
 
     /**
      * Executes the control loop for a cycle.
@@ -110,7 +115,7 @@ private:
     bool m_errorExceeded = false;
 
     CsvLogger climberLogger{"/home/lvuser/Climber.csv",
-                            "Time,EstPos,PosRef,Voltage"};
+                            "Time,EstPos,PosRef,Voltage,EstVel,VelRef"};
 };
 
 }  // namespace frc3512

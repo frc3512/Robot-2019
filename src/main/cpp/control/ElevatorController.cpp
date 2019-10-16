@@ -85,9 +85,14 @@ double ElevatorController::PositionReference() {
     return positionRef;
 }
 
+double ElevatorController::VelocityReference() {
+    return m_profiledReference.velocity.to<double>();
+}
+
 void ElevatorController::Update() {
     elevatorLogger.Log(EstimatedPosition(), EstimatedVelocity(),
-                       PositionReference(), ControllerVoltage(), m_Y(0, 0));
+                       PositionReference(), ControllerVoltage(),
+                       VelocityReference());
 
     frc::TrapezoidProfile::State references = {
         units::meter_t(m_nextR(0, 0)),

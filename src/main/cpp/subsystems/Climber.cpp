@@ -142,8 +142,11 @@ void Climber::SubsystemPeriodic() {
         case State::kFourBarDescend: {
             std::lock_guard<std::mutex> lock(m_cacheMutex);
             wpi::outs() << "FourBarDescend\n";
+            wpi::outs() << "Goal: " << m_fourBarLiftStatusPacket.atGoal << "\n";
+            wpi::outs() << "Distance: " << m_fourBarLiftStatusPacket.distance
+                        << "\n";
             if (m_fourBarLiftStatusPacket.atGoal &&
-                m_fourBarLiftStatusPacket.distance < -1.0) {
+                m_fourBarLiftStatusPacket.distance < -0.7) {
                 CommandPacket message1{"ClimbingProfile", false};
                 Publish(message1);
                 if (m_thirdLevel) {

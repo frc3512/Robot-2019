@@ -128,7 +128,7 @@ constexpr int kClawPort = 2;
 
 namespace Elevator {
 // Motor Ports
-constexpr int kPort = 4;
+constexpr int kPort = 9;
 
 // Encoder Ports
 constexpr int kEncoderA = 4;
