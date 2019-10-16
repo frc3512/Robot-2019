@@ -27,8 +27,9 @@ for f in files:
     if not match:
         continue
 
-    # If file is empty or only has header (that is, has no data), ignore it
-    if num_lines(f) <= 1:
+    # If file is empty or only has header (that is, has no data), ignore it. We
+    # ignore the case of one line of data because it might be truncated.
+    if num_lines(f) <= 2:
         continue
 
     # If the file is a CSV with the correct name pattern, add it to the filtered
@@ -49,7 +50,7 @@ for key in filtered.keys():
 
     # Retrieve data from remaining rows of file
     print(f"Plotting {name}")
-    data = np.genfromtxt(name, delimiter=",", skip_header=1)
+    data = np.genfromtxt(name, delimiter=",", skip_header=1, skip_footer=1)
     plt.plot(data[:, 0], data[:, 1:])
 
     # First label is x axis label (time). The remainder are dataset names.
