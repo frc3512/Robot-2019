@@ -36,7 +36,7 @@ class Elevator(fct.System):
         # Radius of pulley in meters
         r = 0.0181864
         # Gear ratio
-        G = 8.0
+        G = 12.5
         return fct.models.elevator(fct.models.MOTOR_NEO, num_motors, self.m, r, G)
 
     def design_controller_observer(self):
