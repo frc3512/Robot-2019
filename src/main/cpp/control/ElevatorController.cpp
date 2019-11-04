@@ -81,8 +81,7 @@ double ElevatorController::VelocityError() const {
 }
 
 double ElevatorController::PositionReference() {
-    double positionRef = units::unit_cast<double>(m_profiledReference.position);
-    return positionRef;
+    return m_profiledReference.position.to<double>();
 }
 
 double ElevatorController::VelocityReference() {
