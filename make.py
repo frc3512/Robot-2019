@@ -7,10 +7,6 @@ import subprocess
 import sys
 from urllib.request import urlretrieve
 
-VERSION = "2019.4.1"
-MAVEN_URL = "http://first.wpi.edu/FRC/roborio/maven/release"
-REV_MAVEN_URL = "http://www.revrobotics.com/content/sw/max/sdk/maven"
-
 
 def dl_progress(count, block_size, total_size):
     percent = min(int(count * block_size * 100 / total_size), 100)
@@ -68,49 +64,41 @@ def main():
     if not os.path.exists("build/"):
         os.makedirs("build/")
 
-    WPI_URL = MAVEN_URL + "/edu/wpi/first"
-    download_lib(WPI_URL + "/wpilibc", "wpilibc-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/wpilibc", "wpilibc-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/wpilibc", "wpilibc-cpp", VERSION, "headers")
-    download_lib(WPI_URL + "/cameraserver", "cameraserver-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/cameraserver", "cameraserver-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/cameraserver", "cameraserver-cpp", VERSION, "headers")
-    download_lib(WPI_URL + "/ntcore", "ntcore-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/ntcore", "ntcore-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/ntcore", "ntcore-cpp", VERSION, "headers")
-    download_lib(WPI_URL + "/hal", "hal-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/hal", "hal-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/hal", "hal-cpp", VERSION, "headers")
-    download_lib(WPI_URL + "/ni-libraries", "netcomm", "2019.12.1", "linuxathena")
-    download_lib(WPI_URL + "/ni-libraries", "chipobject", "2019.12.1", "linuxathena")
-    download_lib(WPI_URL + "/cscore", "cscore-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/cscore", "cscore-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/cscore", "cscore-cpp", VERSION, "headers")
-    download_lib(WPI_URL + "/wpiutil", "wpiutil-cpp", VERSION, "linuxx86-64")
-    download_lib(WPI_URL + "/wpiutil", "wpiutil-cpp", VERSION, "linuxathena")
-    download_lib(WPI_URL + "/wpiutil", "wpiutil-cpp", VERSION, "headers")
-
-    OPENCV_URL = MAVEN_URL + "/edu/wpi/first/thirdparty/frc2019"
-    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.4-5", "linuxathena")
-    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.4-5", "linuxx86-64")
-    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.4-5", "headers")
-
+    WPI_MAVEN_URL = "http://first.wpi.edu/FRC/roborio/maven/release"
+    REV_MAVEN_URL = "http://www.revrobotics.com/content/sw/max/sdk/maven"
+    WPI_URL = WPI_MAVEN_URL + "/edu/wpi/first"
+    OPENCV_URL = WPI_MAVEN_URL + "/edu/wpi/first/thirdparty/frc2019"
     REV_URL = REV_MAVEN_URL + "/com/revrobotics/frc"
-    REV_LOCAL = f"file://{Path.home()}/releases/maven/release/com/revrobotics/frc"
-    # download_lib(REV_URL, "SparkMax-cpp", "1.4.1", "linuxx86-64static")
-    download_lib(REV_LOCAL, "SparkMax-cpp", "1.4.1", "linuxx86-64static")
-    download_lib(REV_URL, "SparkMax-cpp", "1.4.1", "linuxathenastatic")
-    download_lib(REV_URL, "SparkMax-cpp", "1.4.1", "headers")
-    # download_lib(REV_URL, "SparkMax-driver", "1.4.1", "linuxx86-64static")
-    download_lib(REV_LOCAL, "SparkMax-driver", "1.4.1", "linuxx86-64static")
-    download_lib(REV_URL, "SparkMax-driver", "1.4.1", "linuxathenastatic")
-    download_lib(REV_URL, "SparkMax-driver", "1.4.1", "headers")
+    REV_LOCAL_URL = f"file://{Path.home()}/releases/maven/release/com/revrobotics/frc"
 
+    WPI_VERSION = "2019.4.1"
+
+    if args.target == "build":
+        classifier = "linuxathena"
+    else:
+        classifier = "linuxx86-64"
+        REV_URL = REV_LOCAL_URL
+
+    download_lib(WPI_URL + "/wpilibc", "wpilibc-cpp", WPI_VERSION, classifier)
+    download_lib(WPI_URL + "/cameraserver", "cameraserver-cpp", WPI_VERSION, classifier)
+    download_lib(WPI_URL + "/ntcore", "ntcore-cpp", WPI_VERSION, classifier)
+    download_lib(WPI_URL + "/hal", "hal-cpp", WPI_VERSION, classifier)
+    download_lib(WPI_URL + "/cscore", "cscore-cpp", WPI_VERSION, classifier)
+    download_lib(WPI_URL + "/wpiutil", "wpiutil-cpp", WPI_VERSION, classifier)
+    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.4-5", classifier)
+
+    if args.target == "build":
+        download_lib(WPI_URL + "/ni-libraries", "netcomm", "2019.12.1", classifier)
+        download_lib(WPI_URL + "/ni-libraries", "chipobject", "2019.12.1", classifier)
+
+    download_lib(REV_URL, "SparkMax-cpp", "1.4.1", classifier + "static")
+    download_lib(REV_URL, "SparkMax-driver", "1.4.1", classifier + "static")
+
+    # Generate pubsub messages
     if not os.path.exists("build/generated") or os.path.getmtime(
         "msgs"
     ) > os.path.getmtime("build/generated"):
         print("Generating PubSub messages...", end="")
-        # Generate messages
         subprocess.run(
             [
                 sys.executable,
@@ -123,9 +111,11 @@ def main():
         )
         subprocess.run(["touch", "build/generated"])
         print(" done.")
+
     nproc = subprocess.check_output("nproc", encoding="utf-8").strip()
     make_athena = ["make", "-f", "mk/Makefile-linuxathena"]
     make_x86_64 = ["make", "-f", "mk/Makefile-linuxx86-64"]
+
     if args.target == "build":
         subprocess.run(make_athena + ["build", f"-j{nproc}"])
     elif args.target == "deploy":
