@@ -15,10 +15,10 @@ void ClimberController::Enable() { m_loop.Enable(); }
 void ClimberController::Disable() { m_loop.Disable(); }
 
 void ClimberController::SetGoal(double goal) {
-    m_positionProfile =
-        frc::TrapezoidProfile{constraints,
-                              {units::meter_t{goal}, 0_mps},
-                              {units::meter_t{EstimatedPosition()}, 0_mps}};
+    m_positionProfile = frc::TrapezoidProfile<units::meters>{
+        constraints,
+        {units::meter_t{goal}, 0_mps},
+        {units::meter_t{EstimatedPosition()}, 0_mps}};
     m_goal = {units::meter_t{goal}, 0_mps};
 }
 
@@ -66,10 +66,11 @@ void ClimberController::Update() {
                       ControllerVoltage(), EstimatedVelocity(),
                       VelocityReference());
 
-    frc::TrapezoidProfile::State references = {
+    frc::TrapezoidProfile<units::meters>::State references = {
         units::meter_t(m_loop.NextR(0)),
         units::meters_per_second_t(m_loop.NextR(1))};
-    frc::TrapezoidProfile profile{constraints, m_goal, references};
+    frc::TrapezoidProfile<units::meters> profile{constraints, m_goal,
+                                                 references};
     m_profiledReference = profile.Calculate(Constants::kDt);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);

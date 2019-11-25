@@ -105,17 +105,19 @@ public:
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_y;
-    frc::TrapezoidProfile::State m_goal;
+    frc::TrapezoidProfile<units::meters>::State m_goal;
 
-    frc::TrapezoidProfile::Constraints scoringConstraints{
+    frc::TrapezoidProfile<units::meters>::Constraints scoringConstraints{
         Constants::Elevator::kMaxV, Constants::Elevator::kMaxA};
-    frc::TrapezoidProfile::Constraints climbingConstraints{
+    frc::TrapezoidProfile<units::meters>::Constraints climbingConstraints{
         Constants::Elevator::kClimbMaxV, Constants::Elevator::kClimbMaxA};
-    frc::TrapezoidProfile::Constraints m_activeConstraints = scoringConstraints;
+    frc::TrapezoidProfile<units::meters>::Constraints m_activeConstraints =
+        scoringConstraints;
 
-    frc::TrapezoidProfile m_positionProfile{scoringConstraints, {0_m, 0_mps}};
+    frc::TrapezoidProfile<units::meters> m_positionProfile{scoringConstraints,
+                                                           {0_m, 0_mps}};
 
-    frc::TrapezoidProfile::State m_profiledReference;
+    frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_scorePlant = [=] {
         auto motor = frc::DCMotor::NEO();

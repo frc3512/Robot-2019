@@ -26,10 +26,10 @@ void ElevatorController::SetClimbingIndex() {
 }
 
 void ElevatorController::SetGoal(double goal) {
-    m_positionProfile =
-        frc::TrapezoidProfile{m_activeConstraints,
-                              {units::meter_t{goal}, 0_mps},
-                              {units::meter_t{EstimatedPosition()}, 0_mps}};
+    m_positionProfile = frc::TrapezoidProfile<units::meters>{
+        m_activeConstraints,
+        {units::meter_t{goal}, 0_mps},
+        {units::meter_t{EstimatedPosition()}, 0_mps}};
     m_goal = {units::meter_t{goal}, 0_mps};
 }
 
@@ -97,10 +97,11 @@ void ElevatorController::Update() {
                        PositionReference(), ControllerVoltage(),
                        VelocityReference());
 
-    frc::TrapezoidProfile::State references = {
+    frc::TrapezoidProfile<units::meters>::State references = {
         units::meter_t(m_nextR(0, 0)),
         units::meters_per_second_t(m_nextR(1, 0))};
-    frc::TrapezoidProfile profile{m_activeConstraints, m_goal, references};
+    frc::TrapezoidProfile<units::meters> profile{m_activeConstraints, m_goal,
+                                                 references};
     m_profiledReference = profile.Calculate(Constants::kDt);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);

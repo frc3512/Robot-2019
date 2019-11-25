@@ -117,8 +117,8 @@ constexpr int kPort = 3;
 constexpr int kEncoderA = 6;
 constexpr int kEncoderB = 7;
 
-constexpr auto kMaxV = 1.477996_mps;
-constexpr auto kMaxA = 7.782482_mps_sq;
+constexpr auto kMaxV = 1.477996_rad_per_s;
+constexpr auto kMaxA = 7.782482_rad_per_s / 1_s;
 constexpr double kGearRatio = 302.22 / 1;
 constexpr double kMin = -1.495867;
 constexpr double kMax = 0.0;

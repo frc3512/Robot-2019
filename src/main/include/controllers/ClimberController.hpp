@@ -104,13 +104,14 @@ public:
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_y;
-    frc::TrapezoidProfile::State m_goal;
+    frc::TrapezoidProfile<units::meters>::State m_goal;
 
-    frc::TrapezoidProfile::Constraints constraints{Constants::Climber::kMaxV,
-                                                   Constants::Climber::kMaxA};
-    frc::TrapezoidProfile m_positionProfile{constraints, {0_m, 0_mps}};
+    frc::TrapezoidProfile<units::meters>::Constraints constraints{
+        Constants::Climber::kMaxV, Constants::Climber::kMaxA};
+    frc::TrapezoidProfile<units::meters> m_positionProfile{constraints,
+                                                           {0_m, 0_mps}};
 
-    frc::TrapezoidProfile::State m_profiledReference;
+    frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = [=] {
         auto motor = frc::DCMotor::Vex775Pro();

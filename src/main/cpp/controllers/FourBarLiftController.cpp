@@ -14,15 +14,15 @@ void FourBarLiftController::Enable() { m_loop.Enable(); }
 void FourBarLiftController::Disable() { m_loop.Disable(); }
 
 void FourBarLiftController::SetGoal(double goal) {
-    m_angleProfile =
-        frc::TrapezoidProfile{constraints,
-                              {units::meter_t{goal}, 0_mps},
-                              {units::meter_t{EstimatedAngle()}, 0_mps}};
-    m_goal = {units::meter_t{goal}, 0_mps};
+    m_angleProfile = frc::TrapezoidProfile<units::radians>{
+        constraints,
+        {units::radian_t{goal}, 0_rad_per_s},
+        {units::radian_t{EstimatedAngle()}, 0_rad_per_s}};
+    m_goal = {units::radian_t{goal}, 0_rad_per_s};
 }
 
-void FourBarLiftController::SetReferences(units::meter_t angle,
-                                          units::meters_per_second_t velocity) {
+void FourBarLiftController::SetReferences(
+    units::radian_t angle, units::radians_per_second_t velocity) {
     double angleRef = units::unit_cast<double>(angle);
     double velocityRef = units::unit_cast<double>(velocity);
     Eigen::Matrix<double, 2, 1> nextR;
@@ -80,10 +80,11 @@ void FourBarLiftController::Update() {
     elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage(),
                        EstimatedAngularVelocity(), AngularVelocityReference());
 
-    frc::TrapezoidProfile::State references = {
-        units::meter_t(m_loop.NextR(0)),
-        units::meters_per_second_t(m_loop.NextR(1))};
-    frc::TrapezoidProfile profile{constraints, m_goal, references};
+    frc::TrapezoidProfile<units::radians>::State references = {
+        units::radian_t(m_loop.NextR(0)),
+        units::radians_per_second_t(m_loop.NextR(1))};
+    frc::TrapezoidProfile<units::radians> profile{constraints, m_goal,
+                                                  references};
     m_profiledReference = profile.Calculate(Constants::kDt);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);

@@ -18,7 +18,7 @@ namespace frc3512 {
 
 class FourBarLiftController {
 public:
-    // State tolerances in meters and meters/sec respectively.
+    // State tolerances in radians and radians/sec respectively.
     static constexpr double kAngleTolerance = 0.05;
     static constexpr double kAngularVelocityTolerance = 2.0;
 
@@ -39,8 +39,8 @@ public:
      * @param angularVelocity  Angular velocity of the carriage in radians per
      *                         second.
      */
-    void SetReferences(units::meter_t position,
-                       units::meters_per_second_t angularVelocity);
+    void SetReferences(units::radian_t angle,
+                       units::radians_per_second_t angularVelocity);
 
     bool AtReferences() const;
 
@@ -49,7 +49,7 @@ public:
     /**
      * Sets the current encoder measurement.
      *
-     * @param measuredAngle Angle of the carriage in meters.
+     * @param measuredAngle Angle of the carriage in radians.
      */
     void SetMeasuredAngle(double measuredAngle);
 
@@ -105,13 +105,14 @@ public:
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_y;
-    frc::TrapezoidProfile::State m_goal;
+    frc::TrapezoidProfile<units::radians>::State m_goal;
 
-    frc::TrapezoidProfile::Constraints constraints{
+    frc::TrapezoidProfile<units::radians>::Constraints constraints{
         Constants::FourBarLift::kMaxV, Constants::FourBarLift::kMaxA};
-    frc::TrapezoidProfile m_angleProfile{constraints, {0_m, 0_mps}};
+    frc::TrapezoidProfile<units::radians> m_angleProfile{constraints,
+                                                         {0_rad, 0_rad_per_s}};
 
-    frc::TrapezoidProfile::State m_profiledReference;
+    frc::TrapezoidProfile<units::radians>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = [=] {
         auto motor = frc::DCMotor::NEO();
