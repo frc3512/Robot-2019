@@ -13,6 +13,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <drake/math/discrete_algebraic_riccati_equation.h>
+#include <units/units.h>
 
 #include "frc/MatrixUtil.h"
 #include "frc/system/NumericalJacobian.h"
@@ -33,8 +34,10 @@ class ExtendedKalmanFilter {
    *                           the derivative of the state vector.
    * @param h                  A vector-valued function of x and u that returns
    *                           the measurement vector.
+   * @param dt                 Nominal discretization timestep.
    * @param stateStdDevs       Standard deviations of model states.
    * @param measurementStdDevs Standard deviations of measurements.
+   * @param initSteadyStateP   Whether to initialize with steady-state P.
    */
   ExtendedKalmanFilter(std::function<Vector<States>(const Vector<States>&,
                                                     const Vector<Inputs>&)>
@@ -42,24 +45,32 @@ class ExtendedKalmanFilter {
                        std::function<Vector<Outputs>(const Vector<States>&,
                                                      const Vector<Inputs>&)>
                            h,
+                       units::second_t dt,
                        const std::array<double, States>& stateStdDevs,
-                       const std::array<double, Outputs>& measurementStdDevs)
+                       const std::array<double, Outputs>& measurementStdDevs,
+                       bool findSteadyStateP = false)
       : m_f(f), m_h(h) {
     m_Q = MakeCovMatrix(stateStdDevs);
     m_R = MakeCovMatrix(measurementStdDevs);
 
     Reset();
 
-    const Eigen::Matrix<double, States, States> A =
-        NumericalJacobianX<States, States, Inputs>(
-            m_f, m_xHat, Eigen::Matrix<double, Inputs, 1>::Zero());
-    const Eigen::Matrix<double, Outputs, States> C =
-        NumericalJacobianX<Outputs, States, Inputs>(
-            m_h, m_xHat, Eigen::Matrix<double, Inputs, 1>::Zero());
+    if (findSteadyStateP) {
+      const Eigen::Matrix<double, States, States> A =
+          NumericalJacobianX<States, States, Inputs>(
+              [this](const auto& x, const auto& u, units::second_t dt) {
+                return RungeKutta(m_f, x, u, dt);
+              },
+              m_xHat, Vector<Inputs>::Zero(), dt);
+      const Eigen::Matrix<double, Outputs, States> C =
+          NumericalJacobianX<Outputs, States, Inputs>(m_h, m_xHat,
+                                                      Vector<Inputs>::Zero());
 
-    // FIXME: Use CARE solver instead since A is from continuous system?
-    m_initP = drake::math::DiscreteAlgebraicRiccatiEquation(
-        A.transpose(), C.transpose(), m_Q, m_R);
+      m_initP = drake::math::DiscreteAlgebraicRiccatiEquation(
+          A.transpose(), C.transpose(), m_Q, m_R);
+    } else {
+      m_initP = Eigen::Matrix<double, States, States>::Zero();
+    }
     m_P = m_initP;
   }
 
@@ -106,7 +117,11 @@ class ExtendedKalmanFilter {
    */
   void Predict(const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
     const Eigen::Matrix<double, States, States> A =
-        NumericalJacobianX<States, States, Inputs>(m_f, m_xHat, u);
+        NumericalJacobianX<States, States, Inputs>(
+            [this](const auto& x, const auto& u, units::second_t dt) {
+              return RungeKutta(m_f, x, u, dt);
+            },
+            m_xHat, u, dt);
 
     m_xHat = RungeKutta(m_f, m_xHat, u, dt);
     m_P = A * m_P * A.transpose() + m_Q;

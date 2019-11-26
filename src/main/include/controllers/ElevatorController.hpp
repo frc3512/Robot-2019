@@ -155,9 +155,9 @@ private:
         m_climbPlant, {0.3, 3.0}, {12.0}, Constants::kDt};
 
     frc::KalmanFilter<2, 1, 1> m_scoreObserver{
-        m_scorePlant, {0.05, 100.0}, {0.0001}};
+        m_scorePlant, Constants::kDt, {0.05, 100.0}, {0.0001}};
     frc::KalmanFilter<2, 1, 1> m_climbObserver{
-        m_climbPlant, {0.05, 100.0}, {0.0001}};
+        m_climbPlant, Constants::kDt, {0.05, 100.0}, {0.0001}};
 
     bool m_isEnabled = false;
     bool m_climbing = false;

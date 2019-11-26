@@ -162,6 +162,7 @@ Eigen::Matrix<double, N, N> MakeCovMatrix(
  * Returns a discretized version of the provided continuous process noise
  * covariance matrix.
  *
+ * @param A  Continuous system matrix.
  * @param Q  Continuous process noise covariance matrix.
  * @param dt Discretization timestep.
  */

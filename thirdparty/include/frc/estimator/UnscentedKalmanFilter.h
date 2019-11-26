@@ -12,6 +12,7 @@
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
+#include <units/units.h>
 
 #include "frc/MatrixUtil.h"
 #include "frc/estimator/MerweScaledSigmaPoints.h"

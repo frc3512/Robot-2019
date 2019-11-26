@@ -129,7 +129,8 @@ private:
     }();
     frc::LinearQuadraticRegulator<2, 1, 1> m_controller{
         m_plant, {0.02, 0.4}, {12.0}, Constants::kDt};
-    frc::KalmanFilter<2, 1, 1> m_observer{m_plant, {0.05, 1.0}, {0.0001}};
+    frc::KalmanFilter<2, 1, 1> m_observer{
+        m_plant, Constants::kDt, {0.05, 1.0}, {0.0001}};
     frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer};
 
     bool m_atReferences = false;

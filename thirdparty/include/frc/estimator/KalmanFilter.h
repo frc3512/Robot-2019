@@ -12,6 +12,7 @@
 
 #include <Eigen/Core>
 #include <drake/math/discrete_algebraic_riccati_equation.h>
+#include <units/units.h>
 
 #include "frc/MatrixUtil.h"
 #include "frc/system/LinearSystem.h"
@@ -45,10 +46,11 @@ class KalmanFilter {
    * Constructs a state-space observer with the given plant.
    *
    * @param plant              The plant used for the prediction step.
+   * @param dt                 Nominal discretization timestep.
    * @param stateStdDevs       Standard deviations of model states.
    * @param measurementStdDevs Standard deviations of measurements.
    */
-  KalmanFilter(LinearSystem<States, Inputs, Outputs>& plant,
+  KalmanFilter(LinearSystem<States, Inputs, Outputs>& plant, units::second_t dt,
                const std::array<double, States>& stateStdDevs,
                const std::array<double, Outputs>& measurementStdDevs) {
     m_plant = &plant;
@@ -56,12 +58,14 @@ class KalmanFilter {
     m_contQ = MakeCovMatrix(stateStdDevs);
     m_contR = MakeCovMatrix(measurementStdDevs);
 
-    // This isn't exactly the steady-state P because these Q and R are for the
-    // continuous system, but they'll be close enough because the dt will vary
-    // anyway and change the steady-state P.
-    // FIXME: Use CARE solver instead since A is from continuous system?
+    m_discQ = DiscretizeProcessNoiseCov(m_plant->A(), m_contQ, dt);
+    m_discR = DiscretizeMeasurementNoiseCov(m_contR, dt);
+
+    // Discretize A with new timestep
+    auto discA = (plant.A() * dt.to<double>()).exp();
+
     m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
-        plant.A().transpose(), plant.C().transpose(), m_contQ, m_contR);
+        discA.transpose(), plant.C().transpose(), m_discQ, m_discR);
   }
 
   KalmanFilter(KalmanFilter&&) = default;
@@ -125,7 +129,11 @@ class KalmanFilter {
 
     m_discQ = DiscretizeProcessNoiseCov(m_plant->A(), m_contQ, dt);
     m_discR = DiscretizeMeasurementNoiseCov(m_contR, dt);
-    m_P = m_plant->A() * m_P * m_plant->A().transpose() + m_discQ;
+
+    // Discretize A with new timestep
+    auto discA = (m_plant->A() * dt.to<double>()).exp();
+
+    m_P = discA * m_P * discA.transpose() + m_discQ;
   }
 
   /**
