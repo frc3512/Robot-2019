@@ -178,14 +178,8 @@ class LinearQuadraticRegulator {
   // Current reference.
   Eigen::Matrix<double, States, 1> m_r;
 
-  // Computed controller output after being capped.
+  // Computed controller output.
   Eigen::Matrix<double, Inputs, 1> m_u;
-
-  // Minimum input matrix.
-  Eigen::Matrix<double, Inputs, 1> m_uMin;
-
-  // Maximum input matrix.
-  Eigen::Matrix<double, Inputs, 1> m_uMax;
 
   // Controller gain.
   Eigen::Matrix<double, Inputs, States> m_K;
