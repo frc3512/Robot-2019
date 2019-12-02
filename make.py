@@ -95,9 +95,12 @@ def main():
     download_lib(REV_URL, "SparkMax-driver", "1.4.1", classifier + "static")
 
     # Generate pubsub messages
-    if not os.path.exists("build/generated") or os.path.getmtime(
-        "msgs"
-    ) > os.path.getmtime("build/generated"):
+    if (
+        not os.path.exists("build/generated")
+        or os.path.getmtime("msgs") > os.path.getmtime("build/generated")
+        or os.path.getmtime("python/generate_messages.py")
+        > os.path.getmtime("build/generated")
+    ):
         print("Generating PubSub messages...", end="")
         subprocess.run(
             [
