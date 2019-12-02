@@ -49,7 +49,7 @@ bool PublishNode::GetRawButton(const HIDPacket& message, int joystick,
 
 void PublishNode::RunFramework() {
     while (m_isRunning) {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        std::unique_lock<wpi::mutex> lock(m_mutex);
 
         // Waits for queue to contain messages, but does not need to wait for
         // queue to contain number of contents equal to the size of a complete

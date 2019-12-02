@@ -220,11 +220,8 @@ def write_publishnodebase_header(output_dir, msg_names):
         output.write(
             """#pragma once
 
-#include <stdint.h>
-
-#include <mutex>
-
 #include <wpi/SmallVector.h>
+#include <wpi/mutex.h>
 
 """
         )
@@ -235,28 +232,28 @@ def write_publishnodebase_header(output_dir, msg_names):
 namespace frc3512 {
 
 class PublishNodeBase {
- public:
-  /**
-   * Deserialize the provided message and process it via the ProcessMessage()
-   * function corresponding to the message type.
-   *
-   * Do NOT provide an implementation for this function. messages.py generates
-   * one in PacketType.cpp.
-   *
-   * @param message The buffer containing the message to deserialize.
-   */
-  void DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message);
+public:
+    /**
+     * Deserialize the provided message and process it via the ProcessMessage()
+     * function corresponding to the message type.
+     *
+     * Do NOT provide an implementation for this function. generate_messages.py
+     * generates one in PublishNodeBase.cpp.
+     *
+     * @param message The buffer containing the message to deserialize.
+     */
+    void DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message);
 
 """
         )
         for msg_name in msg_names:
             output.write(
-                f"  virtual void ProcessMessage(const {msg_name}Packet& message);\n"
+                f"    virtual void ProcessMessage(const {msg_name}Packet& message) {{}}\n"
             )
         output.write(
             """
-  protected:
-    std::mutex m_mutex;
+protected:
+    wpi::mutex m_mutex;
 };
 
 }  // namespace frc3512
@@ -277,12 +274,9 @@ def write_publishnodebase_source(output_dir, msg_names):
     """
     with open("PublishNodeBase.cpp", "w") as output:
         output.write(
-            """
-#include "communications/PublishNodeBase.hpp"
+            """#include "communications/PublishNodeBase.hpp"
 
-using namespace frc3512;
-
-void PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message) {
+void frc3512::PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message) {
     // Checks the first byte of the message for its ID to determine
     // which packet to deserialize to, then processes it
     auto packetType = static_cast<PacketType>(message[0]);
@@ -307,11 +301,6 @@ void PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& m
 }
 """
         )
-        for msg_name in msg_names:
-            output.write("\n")
-            output.write(
-                f"void PublishNodeBase::ProcessMessage(const {msg_name}Packet& message) {{}}\n"
-            )
     os.rename(
         "PublishNodeBase.cpp", f"{output_dir}/cpp/communications/PublishNodeBase.cpp"
     )

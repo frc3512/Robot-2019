@@ -3,12 +3,12 @@
 #pragma once
 
 #include <atomic>
-#include <condition_variable>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include <frc/circular_buffer.h>
+#include <wpi/condition_variable.h>
 
 #include "communications/PublishNodeBase.hpp"
 
@@ -84,7 +84,7 @@ private:
 
     std::thread m_thread;
     std::atomic<bool> m_isRunning{true};
-    std::condition_variable m_ready;
+    wpi::condition_variable m_ready;
 
     /**
      * Blocks the thread until the queue receives at least one set of characters
