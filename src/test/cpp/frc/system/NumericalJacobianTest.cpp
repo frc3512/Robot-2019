@@ -23,7 +23,7 @@ Eigen::Matrix<double, 4, 1> AxBuFn(const Eigen::Matrix<double, 4, 1>& x,
 }
 
 // Test that we can recover A from AxBuFn() pretty accurately
-TEST(NumericalJacobian, Ax) {
+TEST(NumericalJacobianTest, Ax) {
   Eigen::Matrix<double, 4, 4> newA = frc::NumericalJacobianX<4, 4, 2>(
       AxBuFn, Eigen::Matrix<double, 4, 1>::Zero(),
       Eigen::Matrix<double, 2, 1>::Zero());
@@ -31,7 +31,7 @@ TEST(NumericalJacobian, Ax) {
 }
 
 // Test that we can recover B from AxBuFn() pretty accurately
-TEST(NumericalJacobian, Bu) {
+TEST(NumericalJacobianTest, Bu) {
   Eigen::Matrix<double, 4, 2> newB = frc::NumericalJacobianU<4, 4, 2>(
       AxBuFn, Eigen::Matrix<double, 4, 1>::Zero(),
       Eigen::Matrix<double, 2, 1>::Zero());
@@ -52,7 +52,7 @@ Eigen::Matrix<double, 3, 1> CxDuFn(const Eigen::Matrix<double, 4, 1>& x,
 }
 
 // Test that we can recover C from CxDuFn() pretty accurately
-TEST(NumericalJacobian, Cx) {
+TEST(NumericalJacobianTest, Cx) {
   Eigen::Matrix<double, 3, 4> newC = frc::NumericalJacobianX<3, 4, 2>(
       CxDuFn, Eigen::Matrix<double, 4, 1>::Zero(),
       Eigen::Matrix<double, 2, 1>::Zero());
@@ -60,7 +60,7 @@ TEST(NumericalJacobian, Cx) {
 }
 
 // Test that we can recover D from CxDuFn() pretty accurately
-TEST(NumericalJacobian, Du) {
+TEST(NumericalJacobianTest, Du) {
   Eigen::Matrix<double, 3, 2> newD = frc::NumericalJacobianU<3, 4, 2>(
       CxDuFn, Eigen::Matrix<double, 4, 1>::Zero(),
       Eigen::Matrix<double, 2, 1>::Zero());

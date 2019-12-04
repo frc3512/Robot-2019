@@ -15,7 +15,7 @@
 #include <drake/math/discrete_algebraic_riccati_equation.h>
 #include <units/units.h>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/system/NumericalJacobian.h"
 #include "frc/system/RungeKutta.h"
 
@@ -50,24 +50,30 @@ class ExtendedKalmanFilter {
                        const std::array<double, Outputs>& measurementStdDevs,
                        bool findSteadyStateP = false)
       : m_f(f), m_h(h) {
-    m_Q = MakeCovMatrix(stateStdDevs);
-    m_R = MakeCovMatrix(measurementStdDevs);
+    m_contQ = MakeCovMatrix(stateStdDevs);
+    m_contR = MakeCovMatrix(measurementStdDevs);
 
     Reset();
 
     if (findSteadyStateP) {
-      const Eigen::Matrix<double, States, States> A =
+      Eigen::Matrix<double, States, States> contA =
           NumericalJacobianX<States, States, Inputs>(
               [this](const auto& x, const auto& u, units::second_t dt) {
                 return RungeKutta(m_f, x, u, dt);
               },
               m_xHat, Vector<Inputs>::Zero(), dt);
-      const Eigen::Matrix<double, Outputs, States> C =
+      Eigen::Matrix<double, Outputs, States> C =
           NumericalJacobianX<Outputs, States, Inputs>(m_h, m_xHat,
                                                       Vector<Inputs>::Zero());
 
+      Eigen::Matrix<double, States, States> discA;
+      Eigen::Matrix<double, States, States> discQ;
+      DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
+
+      m_discR = DiscretizeR(m_contR, dt);
+
       m_initP = drake::math::DiscreteAlgebraicRiccatiEquation(
-          A.transpose(), C.transpose(), m_Q, m_R);
+          discA.transpose(), C.transpose(), discQ, m_discR);
     } else {
       m_initP = Eigen::Matrix<double, States, States>::Zero();
     }
@@ -116,15 +122,21 @@ class ExtendedKalmanFilter {
    * @param dt Timestep for prediction.
    */
   void Predict(const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
-    const Eigen::Matrix<double, States, States> A =
+    // Find continuous A
+    Eigen::Matrix<double, States, States> contA =
         NumericalJacobianX<States, States, Inputs>(
             [this](const auto& x, const auto& u, units::second_t dt) {
               return RungeKutta(m_f, x, u, dt);
             },
             m_xHat, u, dt);
 
+    // Find discrete A and Q
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, States> discQ;
+    DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
+
     m_xHat = RungeKutta(m_f, m_xHat, u, dt);
-    m_P = A * m_P * A.transpose() + m_Q;
+    m_P = discA * m_P * discA.transpose() + discQ;
   }
 
   /**
@@ -135,7 +147,7 @@ class ExtendedKalmanFilter {
    */
   void Correct(const Eigen::Matrix<double, Inputs, 1>& u,
                const Eigen::Matrix<double, Outputs, 1>& y) {
-    Correct(u, y, m_h, m_R);
+    Correct(u, y, m_h, m_discR);
   }
 
   /**
@@ -149,7 +161,7 @@ class ExtendedKalmanFilter {
    * @param y Measurement vector.
    * @param h A vector-valued function of x and u that returns
    *          the measurement vector.
-   * @param R Measurement noise covariance matrix.
+   * @param R Discrete measurement noise covariance matrix.
    */
   template <int Rows>
   void Correct(
@@ -188,8 +200,9 @@ class ExtendedKalmanFilter {
       m_h;
   Eigen::Matrix<double, States, 1> m_xHat;
   Eigen::Matrix<double, States, States> m_P;
-  Eigen::Matrix<double, States, States> m_Q;
-  Eigen::Matrix<double, Outputs, Outputs> m_R;
+  Eigen::Matrix<double, States, States> m_contQ;
+  Eigen::Matrix<double, Outputs, Outputs> m_contR;
+  Eigen::Matrix<double, Outputs, Outputs> m_discR;
 
   Eigen::Matrix<double, States, States> m_initP;
 };

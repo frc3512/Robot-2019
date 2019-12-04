@@ -11,7 +11,8 @@
 
 #include <Eigen/Core>
 #include <units/units.h>
-#include <unsupported/Eigen/MatrixFunctions>
+
+#include "frc/StateSpaceUtil.h"
 
 #if __cplusplus < 201703L
 namespace std {
@@ -246,19 +247,11 @@ class LinearSystem {
   Eigen::Matrix<double, States, 1> CalculateX(
       const Eigen::Matrix<double, States, 1>& x,
       const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) const {
-    // Matrices are blocked here to minimize matrix exponentiation calculations
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mcont;
-    Mcont.setZero();
-    Mcont.template block<States, States>(0, 0) = m_A * dt.to<double>();
-    Mcont.template block<States, Inputs>(0, States) = m_B * dt.to<double>();
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, Inputs> discB;
+    DiscretizeAB(m_A, m_B, dt, &discA, &discB);
 
-    // Discretize A and B with the given timestep
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mdisc = Mcont.exp();
-    Eigen::Matrix<double, States, States> A =
-        Mdisc.template block<States, States>(0, 0);
-    Eigen::Matrix<double, States, Inputs> B =
-        Mdisc.template block<States, Inputs>(0, States);
-    return A * x + B * ClampInput(u);
+    return discA * x + discB * ClampInput(u);
   }
 
   /**

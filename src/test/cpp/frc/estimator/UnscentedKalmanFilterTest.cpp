@@ -12,7 +12,7 @@
 
 #include <Eigen/Core>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/estimator/UnscentedKalmanFilter.h"
 #include "frc/system/plant/DCMotor.h"
 
@@ -72,7 +72,7 @@ Eigen::Matrix<double, 5, 1> GlobalMeasurementModel(
 }
 }  // namespace
 
-TEST(UnscentedKalmanFilter, Init) {
+TEST(UnscentedKalmanFilterTest, Init) {
   frc::UnscentedKalmanFilter<5, 2, 3> observer{
       Dynamics, LocalMeasurementModel,
       std::array<double, 5>{0.5, 0.5, 10.0, 1.0, 1.0},

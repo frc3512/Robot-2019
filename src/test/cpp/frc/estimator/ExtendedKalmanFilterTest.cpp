@@ -12,7 +12,7 @@
 
 #include <Eigen/Core>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/estimator/ExtendedKalmanFilter.h"
 #include "frc/system/plant/DCMotor.h"
 
@@ -72,7 +72,7 @@ Eigen::Matrix<double, 5, 1> GlobalMeasurementModel(
 }
 }  // namespace
 
-TEST(ExtendedKalmanFilter, Init) {
+TEST(ExtendedKalmanFilterTest, Init) {
   constexpr auto dt = 0.00505_s;
 
   frc::ExtendedKalmanFilter<5, 2, 3> observer{

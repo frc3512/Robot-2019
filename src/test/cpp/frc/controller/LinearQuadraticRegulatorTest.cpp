@@ -18,7 +18,7 @@
 
 namespace frc {
 
-TEST(LinearQuadraticRegulator, ElevatorGains) {
+TEST(LinearQuadraticRegulatorTest, ElevatorGains) {
   LinearSystem<2, 1, 1> plant = [] {
     auto motors = DCMotor::Vex775Pro(2);
 

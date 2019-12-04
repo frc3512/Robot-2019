@@ -14,7 +14,7 @@
 #include <Eigen/Core>
 #include <units/units.h>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/estimator/MerweScaledSigmaPoints.h"
 #include "frc/estimator/UnscentedTransform.h"
 #include "frc/system/RungeKutta.h"

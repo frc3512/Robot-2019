@@ -14,7 +14,7 @@
 #include <drake/math/discrete_algebraic_riccati_equation.h>
 #include <units/units.h>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/system/LinearSystem.h"
 
 namespace frc {
@@ -58,14 +58,14 @@ class KalmanFilter {
     m_contQ = MakeCovMatrix(stateStdDevs);
     m_contR = MakeCovMatrix(measurementStdDevs);
 
-    m_discQ = DiscretizeProcessNoiseCov(m_plant->A(), m_contQ, dt);
-    m_discR = DiscretizeMeasurementNoiseCov(m_contR, dt);
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, States> discQ;
+    DiscretizeAQ(plant.A(), m_contQ, dt, &discA, &discQ);
 
-    // Discretize A with new timestep
-    auto discA = (plant.A() * dt.to<double>()).exp();
+    auto discR = DiscretizeR(m_contR, dt);
 
     m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
-        discA.transpose(), plant.C().transpose(), m_discQ, m_discR);
+        discA.transpose(), plant.C().transpose(), discQ, discR);
   }
 
   KalmanFilter(KalmanFilter&&) = default;
@@ -127,13 +127,12 @@ class KalmanFilter {
   void Predict(const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
     m_plant->SetX(m_plant->CalculateX(m_plant->X(), u, dt));
 
-    m_discQ = DiscretizeProcessNoiseCov(m_plant->A(), m_contQ, dt);
-    m_discR = DiscretizeMeasurementNoiseCov(m_contR, dt);
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, States> discQ;
+    DiscretizeAQ(m_plant->A(), m_contQ, dt, &discA, &discQ);
 
-    // Discretize A with new timestep
-    auto discA = (m_plant->A() * dt.to<double>()).exp();
-
-    m_P = discA * m_P * discA.transpose() + m_discQ;
+    m_P = discA * m_P * discA.transpose() + discQ;
+    m_discR = DiscretizeR(m_contR, dt);
   }
 
   /**
@@ -202,11 +201,6 @@ class KalmanFilter {
    * Continuous measurement noise covariance matrix.
    */
   Eigen::Matrix<double, Outputs, Outputs> m_contR;
-
-  /**
-   * Discrete process noise covariance matrix.
-   */
-  Eigen::Matrix<double, States, States> m_discQ;
 
   /**
    * Discrete measurement noise covariance matrix.

@@ -14,7 +14,7 @@
 #include <drake/math/discrete_algebraic_riccati_equation.h>
 #include <units/units.h>
 
-#include "frc/MatrixUtil.h"
+#include "frc/StateSpaceUtil.h"
 #include "frc/system/LinearSystem.h"
 
 namespace frc {
@@ -62,18 +62,9 @@ class LinearQuadraticRegulator {
                            const std::array<double, Inputs>& Relems,
                            units::second_t dt)
       : m_A(A), m_B(B) {
-    // Matrices are blocked here to minimize matrix exponentiation calculations
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mcont;
-    Mcont.setZero();
-    Mcont.template block<States, States>(0, 0) = m_A * dt.to<double>();
-    Mcont.template block<States, Inputs>(0, States) = m_B * dt.to<double>();
-
-    // Discretize A and B with the given timestep
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mdisc = Mcont.exp();
-    Eigen::Matrix<double, States, States> discA =
-        Mdisc.template block<States, States>(0, 0);
-    Eigen::Matrix<double, States, Inputs> discB =
-        Mdisc.template block<States, Inputs>(0, States);
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, Inputs> discB;
+    DiscretizeAB(m_A, m_B, dt, &discA, &discB);
 
     Eigen::Matrix<double, States, States> Q = MakeCostMatrix(Qelems);
     Eigen::Matrix<double, Inputs, Inputs> R = MakeCostMatrix(Relems);
