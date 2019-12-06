@@ -3,6 +3,7 @@
 #pragma once
 
 #include <units/units.h>
+#include <wpi/math>
 
 namespace frc3512 {
 namespace Constants {
@@ -10,25 +11,7 @@ namespace Constants {
 /*
  * Math and Conversions
  */
-
 constexpr double kGravity = 9.80665;
-constexpr double kPi = 3.14159265358979323846;
-
-/**
- * Converts degrees to radians
- */
-template <class T>
-constexpr T deg2rad(const T& value) {
-    return value * kPi / 180;
-}
-
-/**
- * Converts radians to degrees
- */
-template <class T>
-constexpr T rad2deg(const T& value) {
-    return value * 180 / kPi;
-}
 
 namespace Robot {
 constexpr int kMjpegServerPort = 1180;
@@ -80,8 +63,8 @@ constexpr double kDriveGearRatio = 1.0 / 1.0;
 constexpr auto kMaxControlVoltage = 12_V;
 
 // Distance per Pulse
-constexpr double kDpP =
-    (2.0 * kPi * kWheelRadius.to<double>()) * kDriveGearRatio / 2048.0;
+constexpr double kDpP = (2.0 * wpi::math::pi * kWheelRadius.to<double>()) *
+                        kDriveGearRatio / 2048.0;
 
 // Solenoid Ports
 constexpr int kShifterPort = 1;
@@ -101,7 +84,7 @@ constexpr auto kMaxV = 0.25_mps;  // m/sec
 constexpr auto kMaxA = 2.5_mps_sq;
 constexpr double kGearRatio = 80 / 1;
 constexpr double kSprocketRadius = 0.0323342 / 2.0;
-constexpr double kDpP = (2.0 * kPi * kSprocketRadius) / 2048.0;
+constexpr double kDpP = (2.0 * wpi::math::pi * kSprocketRadius) / 2048.0;
 constexpr double kRobotMass = 63.503;  // kg
 
 // Setpoints
@@ -129,7 +112,7 @@ constexpr double kLength = 0.508;  // Approx 20.0 IN
 constexpr double kMass = 7.18;     // Approx 15 lbs.
 
 // Distance per pulse (converts ticks to radians)
-constexpr double kDpP = 2 * kPi / 2048;
+constexpr double kDpP = 2 * wpi::math::pi / 2048;
 
 // Represents the height the four-bar offers when scoring in most goals
 constexpr double kOffset = 0.5334;
@@ -176,7 +159,7 @@ constexpr double kMin = 0.0;
 constexpr double kMax = 0.8;
 
 // Distance per Pulse
-constexpr double kDpP = (2.0 * kPi * kDrumRadius) * 2.0 / 2048.0;
+constexpr double kDpP = (2.0 * wpi::math::pi * kDrumRadius) * 2.0 / 2048.0;
 
 // Setpoints
 
