@@ -34,10 +34,9 @@ class ExtendedKalmanFilter {
    *                           the derivative of the state vector.
    * @param h                  A vector-valued function of x and u that returns
    *                           the measurement vector.
-   * @param dt                 Nominal discretization timestep.
    * @param stateStdDevs       Standard deviations of model states.
    * @param measurementStdDevs Standard deviations of measurements.
-   * @param initSteadyStateP   Whether to initialize with steady-state P.
+   * @param dt                 Nominal discretization timestep.
    */
   ExtendedKalmanFilter(std::function<Vector<States>(const Vector<States>&,
                                                     const Vector<Inputs>&)>
@@ -45,33 +44,32 @@ class ExtendedKalmanFilter {
                        std::function<Vector<Outputs>(const Vector<States>&,
                                                      const Vector<Inputs>&)>
                            h,
-                       units::second_t dt,
                        const std::array<double, States>& stateStdDevs,
                        const std::array<double, Outputs>& measurementStdDevs,
-                       bool findSteadyStateP = false)
+                       units::second_t dt)
       : m_f(f), m_h(h) {
     m_contQ = MakeCovMatrix(stateStdDevs);
     m_contR = MakeCovMatrix(measurementStdDevs);
 
     Reset();
 
-    if (findSteadyStateP) {
-      Eigen::Matrix<double, States, States> contA =
-          NumericalJacobianX<States, States, Inputs>(
-              [this](const auto& x, const auto& u, units::second_t dt) {
-                return RungeKutta(m_f, x, u, dt);
-              },
-              m_xHat, Vector<Inputs>::Zero(), dt);
-      Eigen::Matrix<double, Outputs, States> C =
-          NumericalJacobianX<Outputs, States, Inputs>(m_h, m_xHat,
-                                                      Vector<Inputs>::Zero());
+    Eigen::Matrix<double, States, States> contA =
+        NumericalJacobianX<States, States, Inputs>(
+            [this](const auto& x, const auto& u, units::second_t dt) {
+              return RungeKutta(m_f, x, u, dt);
+            },
+            m_xHat, Vector<Inputs>::Zero(), dt);
+    Eigen::Matrix<double, Outputs, States> C =
+        NumericalJacobianX<Outputs, States, Inputs>(m_h, m_xHat,
+                                                    Vector<Inputs>::Zero());
 
-      Eigen::Matrix<double, States, States> discA;
-      Eigen::Matrix<double, States, States> discQ;
-      DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
+    Eigen::Matrix<double, States, States> discA;
+    Eigen::Matrix<double, States, States> discQ;
+    DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
 
-      m_discR = DiscretizeR(m_contR, dt);
+    m_discR = DiscretizeR(m_contR, dt);
 
+    if (IsStabilizable(discA.transpose(), C.transpose())) {
       m_initP = drake::math::DiscreteAlgebraicRiccatiEquation(
           discA.transpose(), C.transpose(), discQ, m_discR);
     } else {

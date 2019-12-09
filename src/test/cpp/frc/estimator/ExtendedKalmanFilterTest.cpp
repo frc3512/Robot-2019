@@ -76,9 +76,9 @@ TEST(ExtendedKalmanFilterTest, Init) {
   constexpr auto dt = 0.00505_s;
 
   frc::ExtendedKalmanFilter<5, 2, 3> observer{
-      Dynamics, LocalMeasurementModel, dt,
+      Dynamics, LocalMeasurementModel,
       std::array<double, 5>{0.5, 0.5, 10.0, 1.0, 1.0},
-      std::array<double, 3>{0.0001, 0.01, 0.01}};
+      std::array<double, 3>{0.0001, 0.01, 0.01}, dt};
   Eigen::Matrix<double, 2, 1> u;
   u << 12.0, 12.0;
   observer.Predict(u, dt);
