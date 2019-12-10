@@ -83,12 +83,10 @@ TEST(ExtendedKalmanFilterTest, Init) {
   u << 12.0, 12.0;
   observer.Predict(u, dt);
 
-  Eigen::Matrix<double, 3, 1> localY =
-      LocalMeasurementModel(observer.Xhat(), u);
+  auto localY = LocalMeasurementModel(observer.Xhat(), u);
   observer.Correct(u, localY);
 
-  Eigen::Matrix<double, 5, 1> globalY =
-      GlobalMeasurementModel(observer.Xhat(), u);
+  auto globalY = GlobalMeasurementModel(observer.Xhat(), u);
   auto R =
       frc::MakeCovMatrix(std::array<double, 5>{0.01, 0.01, 0.0001, 0.01, 0.01});
   observer.Correct<5>(u, globalY, GlobalMeasurementModel, R);
