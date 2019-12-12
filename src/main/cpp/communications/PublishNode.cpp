@@ -13,6 +13,7 @@ PublishNode::PublishNode(std::string nodeName) {
 
 PublishNode::~PublishNode() {
     m_isRunning = false;
+    m_ready.notify_all();
     m_thread.join();
 }
 
