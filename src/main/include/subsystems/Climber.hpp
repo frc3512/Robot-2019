@@ -138,8 +138,7 @@ private:
     frc::Encoder m_encoder{Constants::Climber::kLiftEncoderA,
                            Constants::Climber::kLiftEncoderB};
     frc::Notifier m_notifier{&Climber::Iterate, this};
-    CsvLogger climberLogger{"/home/lvuser/ClimberStuff.csv",
-                            "Time,Pos,Velo,Accel"};
+    CsvLogger climberLogger{"ClimberStuff.csv", "Time,Pos,Velo,Accel"};
 
     ElevatorStatusPacket m_elevatorStatusPacket;
     FourBarLiftStatusPacket m_fourBarLiftStatusPacket;

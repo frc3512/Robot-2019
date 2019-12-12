@@ -6,6 +6,9 @@
 #include <fstream>
 #include <memory>
 
+#include <frc/Filesystem.h>
+#include <wpi/SmallVector.h>
+#include <wpi/Twine.h>
 #include <wpi/raw_ostream.h>
 
 using namespace frc3512;
@@ -16,11 +19,10 @@ DSDisplay::DSDisplay(int port) : m_dsPort(port) {
     m_socket.setBlocking(false);
 
     // Retrieve stored autonomous index
-#ifdef __FRC_ROBORIO__
-    std::ifstream autonModeFile("/home/lvuser/autonMode.txt");
-#else
-    std::ifstream autonModeFile("autonMode.txt");
-#endif
+    wpi::SmallVector<char, 64> path;
+    frc::filesystem::GetOperatingDirectory(path);
+    wpi::Twine fullname = path + "/autonMode.txt";
+    std::ifstream autonModeFile(fullname.str());
     if (autonModeFile.is_open()) {
         if (autonModeFile >> m_curAutonMode) {
             wpi::outs() << "dsdisplay: restored auton " << m_curAutonMode
@@ -200,8 +202,7 @@ void DSDisplay::ReceiveFromDS() {
 
             // Open the file
 #ifdef __FRC_ROBORIO__
-            std::ifstream guiFile("/home/lvuser/GUISettings.txt",
-                                  std::ifstream::binary);
+            std::ifstream guiFile("GUISettings.txt", std::ifstream::binary);
 #else
             std::ifstream guiFile("GUISettings.txt", std::ifstream::binary);
 #endif
@@ -255,12 +256,10 @@ void DSDisplay::ReceiveFromDS() {
             packet << std::get<0>(m_autonModes[m_curAutonMode]);
 
             // Store newest autonomous choice to file for persistent storage
-#ifdef __FRC_ROBORIO__
-            std::ofstream autonModeFile("/home/lvuser/autonMode.txt",
-                                        std::fstream::trunc);
-#else
-            std::ofstream autonModeFile("autonMode.txt", std::fstream::trunc);
-#endif
+            wpi::SmallVector<char, 64> path;
+            frc::filesystem::GetOperatingDirectory(path);
+            wpi::Twine fullname = path + "/autonMode.txt";
+            std::ofstream autonModeFile(fullname.str(), std::fstream::trunc);
             if (autonModeFile.is_open()) {
                 // Selection is stored as ASCII number in file
                 char autonNum = '0' + m_curAutonMode;

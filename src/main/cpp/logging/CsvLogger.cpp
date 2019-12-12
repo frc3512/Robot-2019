@@ -2,20 +2,25 @@
 
 #include "logging/CsvLogger.hpp"
 
+#include <frc/Filesystem.h>
 #include <wpi/FileSystem.h>
 #include <wpi/raw_ostream.h>
 
 using namespace frc3512;
 
 CsvLogger::CsvLogger(const std::string& filename, std::string valueNames) {
+    wpi::SmallVector<char, 64> path;
+    frc::filesystem::GetOperatingDirectory(path);
+    wpi::Twine fullname = path + "/" + filename;
+
     m_startTime = std::chrono::steady_clock::now();
     int version = 0;
-    while (wpi::sys::fs::exists(filename + std::to_string(version))) {
+    while (wpi::sys::fs::exists(fullname + std::to_string(version))) {
         version++;
     }
-    m_logfile.open(filename + std::to_string(version));
+    m_logfile.open((fullname + std::to_string(version)).str());
     if (!m_logfile.is_open()) {
-        wpi::errs() << filename << " has failed to open.\n";
+        wpi::errs() << fullname << " has failed to open.\n";
     }
     m_logfile << valueNames << '\n';
     m_logfile.flush();

@@ -157,7 +157,7 @@ private:
     bool m_atReferences = false;
     bool m_climbing = false;
 
-    CsvLogger elevatorLogger{"/home/lvuser/FourBarLift.csv",
+    CsvLogger elevatorLogger{"FourBarLift.csv",
                              "Time (s),EstPos (rad),RefPos (rad),Voltage "
                              "(V),EstVel (rad/s),RefVel (rad/s)"};
 };

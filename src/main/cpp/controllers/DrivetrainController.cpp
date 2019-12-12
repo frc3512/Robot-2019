@@ -17,44 +17,24 @@ using namespace frc3512::Constants::Drivetrain;
 DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
                                            const std::array<double, 2>& Relems,
                                            units::second_t dt) {
-    constexpr int States = 5;
-    constexpr int Inputs = 2;
-
     m_y.setZero();
     Reset();
 
-    Eigen::Matrix<double, States, 1> x0;
-    x0.setZero();
-    Eigen::Matrix<double, States, 1> x1;
+    Eigen::Matrix<double, 5, 1> x0;
+    x0 << 0, 0, 0, 1e-9, 1e-9;
+    Eigen::Matrix<double, 5, 1> x1;
     x1 << 0, 0, 0, 1, 1;
-    Eigen::Matrix<double, Inputs, 1> u0;
+    Eigen::Matrix<double, 2, 1> u0;
     u0.setZero();
 
-    auto A0 = frc::NumericalJacobianX<States, States, Inputs>(Dynamics, x0, u0);
-    auto A1 = frc::NumericalJacobianX<States, States, Inputs>(Dynamics, x1, u0);
-    auto B = frc::NumericalJacobianU<States, States, Inputs>(Dynamics, x0, u0);
+    auto A0 = frc::NumericalJacobianX<5, 5, 2>(Dynamics, x0, u0);
+    auto A1 = frc::NumericalJacobianX<5, 5, 2>(Dynamics, x1, u0);
+    auto B = frc::NumericalJacobianU<5, 5, 2>(Dynamics, x0, u0);
 
-    // Matrices are blocked here to minimize matrix exponentiation calculations
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mcont;
-    Mcont.setZero();
-    Mcont.template block<States, States>(0, 0) = A0 * dt.to<double>();
-    Mcont.template block<States, Inputs>(0, States) = B * dt.to<double>();
-
-    // Discretize A and B with the given timestep
-    Eigen::Matrix<double, States + Inputs, States + Inputs> Mdisc = Mcont.exp();
-    Eigen::Matrix<double, States, States> discA0 =
-        Mdisc.template block<States, States>(0, 0);
-    Eigen::Matrix<double, States, Inputs> discB =
-        Mdisc.template block<States, Inputs>(0, States);
-
-    Eigen::Matrix<double, States, States> discA1 = (A1 * dt.to<double>()).exp();
-
-    m_K0 = frc::LinearQuadraticRegulator<5, 2, 3>(discA0, discB, Qelems, Relems,
-                                                  kDt)
-               .K();
-    m_K1 = frc::LinearQuadraticRegulator<5, 2, 3>(discA1, discB, Qelems, Relems,
-                                                  kDt)
-               .K();
+    m_K0 =
+        frc::LinearQuadraticRegulator<5, 2, 3>(A0, B, Qelems, Relems, dt).K();
+    m_K1 =
+        frc::LinearQuadraticRegulator<5, 2, 3>(A1, B, Qelems, Relems, dt).K();
 }
 
 void DrivetrainController::Enable() { m_isEnabled = true; }

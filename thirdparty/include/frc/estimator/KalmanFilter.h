@@ -59,13 +59,12 @@ class KalmanFilter {
     m_contR = MakeCovMatrix(measurementStdDevs);
 
     Eigen::Matrix<double, States, States> discA;
-    Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(plant.A(), m_contQ, dt, &discA, &discQ);
+    DiscretizeA(plant.A(), dt, &discA);
 
     auto discR = DiscretizeR(m_contR, dt);
 
     m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
-        discA.transpose(), plant.C().transpose(), discQ, discR);
+        discA.transpose(), plant.C().transpose(), m_contQ, discR);
   }
 
   KalmanFilter(KalmanFilter&&) = default;
@@ -128,10 +127,9 @@ class KalmanFilter {
     m_plant->SetX(m_plant->CalculateX(m_plant->X(), u, dt));
 
     Eigen::Matrix<double, States, States> discA;
-    Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(m_plant->A(), m_contQ, dt, &discA, &discQ);
+    DiscretizeA(m_plant->A(), dt, &discA);
 
-    m_P = discA * m_P * discA.transpose() + discQ;
+    m_P = discA * m_P * discA.transpose() + m_contQ;
     m_discR = DiscretizeR(m_contR, dt);
   }
 

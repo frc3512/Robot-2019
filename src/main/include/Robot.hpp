@@ -50,7 +50,7 @@ private:
     frc::Joystick m_appendageStick{kAppendageStickPort};
     frc::Joystick m_appendageStick2{kAppendageStick2Port};
 
-    LogFileSink fileSink{"/home/lvuser/Robot.log"};
+    LogFileSink fileSink{"Robot.log"};
 
     cs::UsbCamera camera{"Camera 1", 0};
     cs::MjpegServer server{"Server", kMjpegServerPort};

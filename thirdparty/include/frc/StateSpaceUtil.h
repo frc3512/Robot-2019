@@ -160,6 +160,20 @@ Eigen::Matrix<double, N, N> MakeCovMatrix(
 }
 
 /**
+ * Discretizes the given continuous A matrix.
+ *
+ * @param contA Continuous system matrix.
+ * @param dt    Discretization timestep.
+ * @param discA Storage for discrete system matrix.
+ */
+template <int States>
+void DiscretizeA(const Eigen::Matrix<double, States, States>& contA,
+                 units::second_t dt,
+                 Eigen::Matrix<double, States, States>* discA) {
+  *discA = (contA * dt.to<double>()).exp();
+}
+
+/**
  * Discretizes the given continuous A and B matrices.
  *
  * @param contA Continuous system matrix.

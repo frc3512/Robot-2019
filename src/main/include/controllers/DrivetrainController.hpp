@@ -145,13 +145,13 @@ private:
     double m_filteredVoltage = 12.0;
 
     // The loggers that generates the comma separated value files
-    CsvLogger velocityLogger{"/home/lvuser/DriveVelocities.csv",
+    CsvLogger velocityLogger{"DriveVelocities.csv",
                              "Time,LeftRate,RightRate,EstLeftVel,EstRightVel,"
                              "GoalV,GoalW,LeftVelRef,RightVelRef"};
-    CsvLogger voltageLogger{"/home/lvuser/DriveVoltages.csv",
+    CsvLogger voltageLogger{"DriveVoltages.csv",
                             "Time,LeftVolt,RightVolt,DSVoltage"};
     CsvLogger positionLogger{
-        "/home/lvuser/DrivePositions.csv",
+        "DrivePositions.csv",
         "Time,LeftPos,RightPos,EstX,EstY,EstTheta,GoalX,GoalY,GoalTheta"};
 
     Eigen::Matrix<double, 2, 1> Controller(

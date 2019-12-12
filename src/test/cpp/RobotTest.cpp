@@ -5,4 +5,4 @@
 #include "Robot.hpp"
 
 // Make sure robot initializes
-TEST(RobotTest, DISABLED_Init) { frc3512::Robot robot; }
+TEST(RobotTest, Init) { frc3512::Robot robot; }

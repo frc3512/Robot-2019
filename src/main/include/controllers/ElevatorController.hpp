@@ -166,7 +166,7 @@ private:
 
     bool m_atReferences = false;
 
-    CsvLogger elevatorLogger{"/home/lvuser/Elevator.csv",
+    CsvLogger elevatorLogger{"Elevator.csv",
                              "Time (s),EstPos (m),EstVel (m/s),RefPos "
                              "(m),Voltage (V),RefVel (m/s)"};
 };

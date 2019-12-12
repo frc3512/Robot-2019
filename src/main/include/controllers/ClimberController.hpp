@@ -152,7 +152,7 @@ private:
 
     bool m_atReferences = false;
 
-    CsvLogger climberLogger{"/home/lvuser/Climber.csv",
+    CsvLogger climberLogger{"Climber.csv",
                             "Time,EstPos,PosRef,Voltage,EstVel,VelRef"};
 };
 

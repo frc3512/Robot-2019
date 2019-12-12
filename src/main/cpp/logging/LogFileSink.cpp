@@ -2,10 +2,18 @@
 
 #include "logging/LogFileSink.hpp"
 
+#include <frc/Filesystem.h>
+#include <wpi/SmallVector.h>
+#include <wpi/Twine.h>
+
 using namespace frc3512;
 
 LogFileSink::LogFileSink(std::string filename) {
-    m_logfile.open(filename.c_str());
+    wpi::SmallVector<char, 64> path;
+    frc::filesystem::GetOperatingDirectory(path);
+    wpi::Twine fullname = path + "/" + filename;
+
+    m_logfile.open(fullname.str());
 }
 
 void LogFileSink::Log(LogEvent event) {

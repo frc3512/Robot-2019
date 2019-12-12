@@ -69,6 +69,27 @@ TEST(StateSpaceUtilTest, CovArray) {
 
 // Check that for a simple second-order system that we can easily analyze
 // analytically,
+TEST(DiscretizationTest, DiscretizeA) {
+  Eigen::Matrix<double, 2, 2> contA;
+  contA << 0, 1, 0, 0;
+
+  Eigen::Matrix<double, 2, 1> x0;
+  x0 << 1, 1;
+  Eigen::Matrix<double, 2, 2> discA;
+
+  frc::DiscretizeA(contA, 1_s, &discA);
+  Eigen::Matrix<double, 2, 1> x1Discrete = discA * x0;
+
+  // We now have pos = vel = 1 and accel = 0, which should give us:
+  Eigen::Matrix<double, 2, 1> x1Truth;
+  x1Truth(1, 0) = x0(1, 0);
+  x1Truth(0, 0) = x0(0, 0) + 1.0 * x0(1, 0);
+
+  EXPECT_EQ(x1Truth, x1Discrete);
+}
+
+// Check that for a simple second-order system that we can easily analyze
+// analytically,
 TEST(DiscretizationTest, DiscretizeAB) {
   Eigen::Matrix<double, 2, 2> contA;
   contA << 0, 1, 0, 0;
