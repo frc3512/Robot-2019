@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2017-2020 FRC Team 3512. All Rights Reserved.
 
 #include "Robot.hpp"
 
@@ -45,6 +45,8 @@ void Robot::DisabledInit() {
 void Robot::AutonomousInit() {
     CommandPacket message{"AutonomousInit", false};
     Publish(message);
+    m_drivetrain.SetWaypoints(
+        {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
 }
 
 void Robot::TeleopInit() {
@@ -83,6 +85,14 @@ void Robot::DisabledPeriodic() {
     wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
     wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
     wpi::outs() << "Climber: " << m_climber.GetHeight() << "\n";
+    wpi::outs() << "Drivetrain Left: "
+                << static_cast<double>(m_drivetrain.GetLeftDisplacement())
+                << "\n";
+    wpi::outs() << "Drivetrain Right: "
+                << static_cast<double>(m_drivetrain.GetRightDisplacement())
+                << "\n";
+    wpi::outs() << "Drivetrain Gyro: "
+                << static_cast<double>(m_drivetrain.GetAngle()) << "\n";
     wpi::outs().flush();
 }
 

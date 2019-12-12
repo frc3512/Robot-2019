@@ -1,17 +1,17 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <functional>
 #include <tuple>
 #include <vector>
 
 #include <Eigen/Core>
-#include <frc/estimator/UnscentedKalmanFilter.h>
-#include <frc/system/NumericalJacobian.h>
-#include <frc/system/plant/DCMotor.h>
+#include <frc/estimator/ExtendedKalmanFilter.h>
+#include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/Trajectory.h>
 #include <units/units.h>
 #include <wpi/mutex.h>
@@ -49,81 +49,121 @@ public:
     bool AtGoal();
 
     /**
-     * Sets the current encoder measurements.
+     * Set local measurements.
      *
-     * @param leftVelocity  Velocity of left side in meters.
-     * @param rightVelocity Velocity of right side in meters.
      * @param heading       Angle of the robot.
+     * @param leftVelocity  Velocity of left side in meters per second.
+     * @param rightVelocity Velocity of right side in meters per second.
      */
-    void SetMeasuredStates(double leftVelocity, double rightVelocity,
-                           double heading);
+    void SetMeasuredLocalOutputs(units::radian_t heading,
+                                 units::meters_per_second_t leftVelocity,
+                                 units::meters_per_second_t rightVelocity);
+
+    /**
+     * Set global measurements.
+     *
+     * @param x             X position of the robot in meters.
+     * @param y             Y position of the robot in meters.
+     * @param heading       Angle of the robot.
+     * @param leftVelocity  Velocity of left side in meters per second.
+     * @param rightVelocity Velocity of right side in meters per second.
+     */
+    void SetMeasuredGlobalOutputs(units::meter_t x, units::meter_t y,
+                                  units::radian_t heading,
+                                  units::meters_per_second_t leftVelocity,
+                                  units::meters_per_second_t rightVelocity);
+
+    /**
+     * Returns the estimated outputs based on the current state estimate.
+     *
+     * This provides only local measurements.
+     */
+    Eigen::Matrix<double, 3, 1> EstimatedLocalOutputs() const;
+
+    /**
+     * Returns the estimated outputs based on the current state estimate.
+     *
+     * This provides global measurements (including pose).
+     */
+    Eigen::Matrix<double, 5, 1> EstimatedGlobalOutputs() const;
 
     /**
      * Returns the control loop calculated voltage for the left side.
      */
-    double ControllerLeftVoltage() const;
+    units::volt_t ControllerLeftVoltage() const;
 
     /**
      * Returns the control loop calculated voltage for the left side.
      */
-    double ControllerRightVoltage() const;
+    units::volt_t ControllerRightVoltage() const;
 
     /**
      * Returns the estimated left velocity.
      */
-    double EstimatedLeftVelocity() const;
+    units::meters_per_second_t EstimatedLeftVelocity() const;
 
     /**
      * Returns the estimated right velocity.
      */
-    double EstimatedRightVelocity() const;
+    units::meters_per_second_t EstimatedRightVelocity() const;
 
     /**
      * Returns the error between the left velocity reference and the left
      * velocity estimate.
      */
-    double LeftVelocityError() const;
+    units::meters_per_second_t LeftVelocityError() const;
 
     /**
      * Returns the error between the right velocity reference and the right
      * velocity estimate.
      */
-    double RightVelocityError() const;
+    units::meters_per_second_t RightVelocityError() const;
 
     frc::Pose2d EstimatedPose() const;
 
-    double LeftVelocityReference();
+    units::meters_per_second_t LeftVelocityReference() const;
 
-    double RightVelocityReference();
+    units::meters_per_second_t RightVelocityReference() const;
 
     /**
      * Executes the control loop for a cycle.
+     *
+     * @param dt Timestep between each Update() call
      */
-    void Update();
+    void Update(units::second_t dt, units::second_t elaspedTime);
 
     /**
      * Resets any internal state.
      */
     void Reset();
 
+    /**
+     * Resets any internal state.
+     *
+     * @param initialPose Initial pose for state estimate.
+     */
+    void Reset(const frc::Pose2d& initialPose);
+
 private:
+    frc::LinearSystem<2, 2, 2> m_plant =
+        frc::IdentifyDrivetrainSystem(1.08, 0.0111, 1.07, 0.00692);
+
     // The current sensor measurements.
     Eigen::Matrix<double, 3, 1> m_y;
 
-    double m_leftPos = 0.0;
-    double m_rightPos = 0.0;
+    units::meter_t m_leftPos = 0_m;
+    units::meter_t m_rightPos = 0_m;
 
-    // Design observers
-    frc::UnscentedKalmanFilter<5, 2, 3> m_localObserver{
-        Dynamics, LocalMeasurementModel,
-        std::array<double, 5>{0.5, 0.5, 10.0, 1.0, 1.0},
-        std::array<double, 3>{0.0001, 0.01, 0.01}};
-    frc::UnscentedKalmanFilter<5, 2, 5> m_globalObserver{
-        Dynamics, GlobalMeasurementModel,
-        std::array<double, 5>{0.5, 0.5, 10.0, 1.0, 1.0},
-        std::array<double, 5>{0.5, 0.5, 0.0001, 0.01, 0.01}};
+    // Design observer
+    frc::ExtendedKalmanFilter<5, 2, 3> m_observer{
+        Dynamics,
+        LocalMeasurementModel,
+        {0.002, 0.002, 0.0001, 1.5, 1.5},
+        {0.0001, 0.01, 0.01},
+        Constants::kDt};
 
     // Design controller
+    Eigen::Matrix<double, 5, 2> m_B;
     Eigen::Matrix<double, 2, 5> m_K0;
     Eigen::Matrix<double, 2, 5> m_K1;
 
@@ -135,24 +175,23 @@ private:
 
     frc::Trajectory m_trajectory;
     frc::Pose2d m_goal;
-    std::chrono::steady_clock::time_point m_startTime =
-        std::chrono::steady_clock::now();
 
     wpi::mutex m_trajectoryMutex;
 
     bool m_atReferences = false;
     bool m_isEnabled = false;
-    double m_filteredVoltage = 12.0;
 
     // The loggers that generates the comma separated value files
     CsvLogger velocityLogger{"DriveVelocities.csv",
                              "Time,LeftRate,RightRate,EstLeftVel,EstRightVel,"
-                             "GoalV,GoalW,LeftVelRef,RightVelRef"};
+                             "LeftVelRef,RightVelRef"};
     CsvLogger voltageLogger{"DriveVoltages.csv",
                             "Time,LeftVolt,RightVolt,DSVoltage"};
-    CsvLogger positionLogger{
-        "DrivePositions.csv",
-        "Time,LeftPos,RightPos,EstX,EstY,EstTheta,GoalX,GoalY,GoalTheta"};
+    CsvLogger positionLogger{"DrivePositions.csv",
+                             "Time,EstX,EstY,EstTheta,GoalX,GoalY,GoalTheta"};
+    CsvLogger errorCovLogger{
+        "DriveErrorCov.csv",
+        "Time,X Cov,Y Cov,Heading Cov,Left Vel Cov,Right Vel Cov"};
 
     Eigen::Matrix<double, 2, 1> Controller(
         const Eigen::Matrix<double, 5, 1>& x,

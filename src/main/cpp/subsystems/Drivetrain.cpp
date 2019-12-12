@@ -7,6 +7,7 @@
 #include <string>
 
 #include <frc/DriverStation.h>
+#include <units/units.h>
 
 using namespace frc3512;
 using namespace frc3512::Constants::Drivetrain;
@@ -21,6 +22,9 @@ Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
     m_drive.SetRightSideInverted(false);
     m_leftEncoder.SetSamplesToAverage(10);
     m_rightEncoder.SetSamplesToAverage(10);
+    m_rightEncoder.SetReverseDirection(true);
+    m_leftEncoder.SetDistancePerPulse(kDpP);
+    m_rightEncoder.SetDistancePerPulse(kDpP);
     ShiftUp();
     EnablePeriodic();
 }
@@ -39,21 +43,33 @@ void Drivetrain::ShiftDown() { m_shifter.Set(false); }
 
 void Drivetrain::Shift() { m_shifter.Set(!m_shifter.Get()); }
 
-double Drivetrain::GetAngle() const { return m_gyro.GetAngle(); }
+units::radian_t Drivetrain::GetAngle() const {
+    return units::degree_t{-1.0 * m_gyro.GetAngle()};
+}
 
-double Drivetrain::GetAngularRate() const { return m_gyro.GetRate(); }
+units::radians_per_second_t Drivetrain::GetAngularRate() const {
+    return units::degrees_per_second_t{m_gyro.GetRate()};
+}
 
 void Drivetrain::ResetGyro() { m_gyro.Reset(); }
 
 void Drivetrain::CalibrateGyro() { m_gyro.Calibrate(); }
 
-double Drivetrain::GetLeftDisplacement() const { return m_leftEncoder.Get(); }
+units::meter_t Drivetrain::GetLeftDisplacement() const {
+    return units::meter_t{m_leftEncoder.GetDistance()};
+}
 
-double Drivetrain::GetRightDisplacement() const { return m_rightEncoder.Get(); }
+units::meter_t Drivetrain::GetRightDisplacement() const {
+    return units::meter_t{m_rightEncoder.GetDistance()};
+}
 
-double Drivetrain::GetLeftRate() const { return m_leftEncoder.GetRate(); }
+units::meters_per_second_t Drivetrain::GetLeftRate() const {
+    return units::meters_per_second_t{m_leftEncoder.GetRate()};
+}
 
-double Drivetrain::GetRightRate() const { return m_rightEncoder.GetRate(); }
+units::meters_per_second_t Drivetrain::GetRightRate() const {
+    return units::meters_per_second_t{m_rightEncoder.GetRate()};
+}
 
 void Drivetrain::ResetEncoders() {
     m_leftEncoder.Reset();
@@ -61,6 +77,7 @@ void Drivetrain::ResetEncoders() {
 }
 
 void Drivetrain::EnableController() {
+    m_lastTime = std::chrono::steady_clock::now();
     m_controllerThread.StartPeriodic(Constants::kDt);
     m_controller.Enable();
     m_drive.SetSafetyEnabled(false);
@@ -83,14 +100,22 @@ void Drivetrain::Reset() {
 }
 
 void Drivetrain::Iterate() {
-    m_controller.SetMeasuredStates(GetLeftRate(), GetRightRate(), GetAngle());
-    m_controller.Update();
+    m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftRate(),
+                                         GetRightRate());
+    auto now = std::chrono::steady_clock::now();
+    m_controller.Update(now - m_lastTime, now - m_startTime);
 
     // Set motor inputs
-    double batteryVoltage =
-        frc::DriverStation::GetInstance().GetBatteryVoltage();
+    auto batteryVoltage =
+        units::volt_t{frc::DriverStation::GetInstance().GetBatteryVoltage()};
     SetLeftManual(m_controller.ControllerLeftVoltage() / batteryVoltage);
     SetRightManual(m_controller.ControllerRightVoltage() / batteryVoltage);
+
+    m_lastTime = now;
+}
+
+void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
+    m_controller.SetWaypoints(waypoints);
 }
 
 void Drivetrain::ProcessMessage(const ButtonPacket& message) {
@@ -101,6 +126,14 @@ void Drivetrain::ProcessMessage(const ButtonPacket& message) {
 }
 
 void Drivetrain::ProcessMessage(const CommandPacket& message) {
+    if (message.topic == "Robot/DisabledInit" && !message.reply) {
+        DisableController();
+    }
+    if (message.topic == "Robot/AutonomousInit" && !message.reply) {
+        Reset();
+        EnableController();
+        m_startTime = std::chrono::steady_clock::now();
+    }
     if (message.topic == "Robot/TeleopInit" && !message.reply) {
         EnablePeriodic();
     }

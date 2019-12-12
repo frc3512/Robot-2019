@@ -169,11 +169,11 @@ void Climber::ProcessMessage(const CommandPacket& message) {
     if (message.topic == "Robot/AutonomousInit") {
         EnablePeriodic();
         Enable();
-        SetGoal(0.03);
+        SetGoal(0.02);
     } else if (message.topic == "Robot/TeleopInit") {
         EnablePeriodic();
         Enable();
-        SetGoal(0.03);
+        SetGoal(0.02);
     } else if (message.topic == "Climber/Down3") {
         SetGoal(kClimb3Height);
     } else if (message.topic == "Climber/Down2") {

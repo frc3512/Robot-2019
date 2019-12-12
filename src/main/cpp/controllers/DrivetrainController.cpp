@@ -5,10 +5,14 @@
 #include <algorithm>
 #include <cmath>
 
-#include <frc/DriverStation.h>
+#include <Eigen/QR>
+#include <frc/RobotController.h>
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/geometry/Pose2d.h>
+#include <frc/system/NumericalJacobian.h>
+#include <frc/system/plant/DCMotor.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
+#include <units/units.h>
 #include <wpi/MathExtras.h>
 
 using namespace frc3512;
@@ -30,10 +34,10 @@ DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
 
     auto A0 = frc::NumericalJacobianX<5, 5, 2>(Dynamics, x0, u0);
     auto A1 = frc::NumericalJacobianX<5, 5, 2>(Dynamics, x1, u0);
-    auto B = frc::NumericalJacobianU<5, 5, 2>(Dynamics, x0, u0);
+    m_B = frc::NumericalJacobianU<5, 5, 2>(Dynamics, x0, u0);
 
-    m_K0 = frc::LinearQuadraticRegulator<5, 2>(A0, B, Qelems, Relems, dt).K();
-    m_K1 = frc::LinearQuadraticRegulator<5, 2>(A1, B, Qelems, Relems, dt).K();
+    m_K0 = frc::LinearQuadraticRegulator<5, 2>(A0, m_B, Qelems, Relems, dt).K();
+    m_K1 = frc::LinearQuadraticRegulator<5, 2>(A1, m_B, Qelems, Relems, dt).K();
 }
 
 void DrivetrainController::Enable() { m_isEnabled = true; }
@@ -48,7 +52,6 @@ void DrivetrainController::SetWaypoints(
     m_goal = waypoints.back();
     m_trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
         waypoints, frc::TrajectoryConfig{kMaxV, kMaxA});
-    m_startTime = std::chrono::steady_clock::now();
 }
 
 bool DrivetrainController::AtGoal() {
@@ -57,85 +60,108 @@ bool DrivetrainController::AtGoal() {
     return m_goal == ref && m_atReferences;
 }
 
-void DrivetrainController::SetMeasuredStates(double leftVelocity,
-                                             double rightVelocity,
-                                             double heading) {
-    m_y << leftVelocity, rightVelocity, heading;
+void DrivetrainController::SetMeasuredLocalOutputs(
+    units::radian_t heading, units::meters_per_second_t leftVelocity,
+    units::meters_per_second_t rightVelocity) {
+    m_y << heading.to<double>(), leftVelocity.to<double>(),
+        rightVelocity.to<double>();
 }
 
-double DrivetrainController::ControllerLeftVoltage() const {
+void DrivetrainController::SetMeasuredGlobalOutputs(
+    units::meter_t x, units::meter_t y, units::radian_t heading,
+    units::meters_per_second_t leftVelocity,
+    units::meters_per_second_t rightVelocity) {
+    m_y << x.to<double>(), y.to<double>(), heading.to<double>(),
+        leftVelocity.to<double>(), rightVelocity.to<double>();
+}
+
+Eigen::Matrix<double, 3, 1> DrivetrainController::EstimatedLocalOutputs()
+    const {
+    return LocalMeasurementModel(m_observer.Xhat(),
+                                 Eigen::Matrix<double, 2, 1>::Zero());
+}
+
+Eigen::Matrix<double, 5, 1> DrivetrainController::EstimatedGlobalOutputs()
+    const {
+    return GlobalMeasurementModel(m_observer.Xhat(),
+                                  Eigen::Matrix<double, 2, 1>::Zero());
+}
+
+units::volt_t DrivetrainController::ControllerLeftVoltage() const {
     if (m_isEnabled) {
-        return m_cappedU(0, 0);
+        return units::volt_t{m_cappedU(0, 0)};
     } else {
-        return 0.0;
+        return 0_V;
     }
 }
 
-double DrivetrainController::ControllerRightVoltage() const {
+units::volt_t DrivetrainController::ControllerRightVoltage() const {
     if (m_isEnabled) {
-        return m_cappedU(1, 0);
+        return units::volt_t{m_cappedU(1, 0)};
     } else {
-        return 0.0;
+        return 0_V;
     }
 }
 
-double DrivetrainController::EstimatedLeftVelocity() const {
-    // TODO: use local or global depending on measurements available
-    auto& observer = m_localObserver;
-    return observer.Xhat(3);
+units::meters_per_second_t DrivetrainController::EstimatedLeftVelocity() const {
+    return units::meters_per_second_t{m_observer.Xhat(3)};
 }
 
-double DrivetrainController::EstimatedRightVelocity() const {
-    // TODO: use local or global depending on measurements available
-    auto& observer = m_localObserver;
-    return observer.Xhat(4);
+units::meters_per_second_t DrivetrainController::EstimatedRightVelocity()
+    const {
+    return units::meters_per_second_t{m_observer.Xhat(4)};
 }
 
-double DrivetrainController::LeftVelocityError() const {
-    // TODO: use local or global depending on measurements available
-    auto& observer = m_localObserver;
-    return m_r(3, 0) - observer.Xhat(3);
+units::meters_per_second_t DrivetrainController::LeftVelocityError() const {
+    return units::meters_per_second_t{m_r(3, 0) - m_observer.Xhat(3)};
 }
 
-double DrivetrainController::RightVelocityError() const {
-    // TODO: use local or global depending on measurements available
-    auto& observer = m_localObserver;
-    return m_r(4, 0) - observer.Xhat(4);
+units::meters_per_second_t DrivetrainController::RightVelocityError() const {
+    return units::meters_per_second_t{m_r(4, 0) - m_observer.Xhat(4)};
 }
 
 frc::Pose2d DrivetrainController::EstimatedPose() const {
     // TODO: use local or global depending on measurements available
-    const auto& observer = m_localObserver;
-    const auto& xHat = observer.Xhat();
+    const auto& xHat = m_observer.Xhat();
     return frc::Pose2d{units::meter_t{xHat(0, 0)}, units::meter_t{xHat(1, 0)},
                        units::radian_t{xHat(2, 0)}};
 }
 
-double DrivetrainController::LeftVelocityReference() { return m_nextR(3, 0); }
+units::meters_per_second_t DrivetrainController::LeftVelocityReference() const {
+    return units::meters_per_second_t{m_nextR(3, 0)};
+}
 
-double DrivetrainController::RightVelocityReference() { return m_nextR(4, 0); }
+units::meters_per_second_t DrivetrainController::RightVelocityReference()
+    const {
+    return units::meters_per_second_t{m_nextR(4, 0)};
+}
 
-void DrivetrainController::Update() {
+void DrivetrainController::Update(units::second_t dt,
+                                  units::second_t elaspedTime) {
     frc::Trajectory::State ref;
     {
         std::lock_guard lock(m_trajectoryMutex);
-        ref =
-            m_trajectory.Sample(std::chrono::steady_clock::now() - m_startTime);
+        ref = m_trajectory.Sample(elaspedTime);
     }
 
-    voltageLogger.Log(ControllerLeftVoltage(), ControllerRightVoltage(),
-                      frc::DriverStation::GetInstance().GetBatteryVoltage());
-    velocityLogger.Log(m_y(0, 0), m_y(1, 0), EstimatedLeftVelocity(),
-                       EstimatedRightVelocity(), ref.velocity.to<double>(),
-                       (ref.velocity * ref.curvature).to<double>(),
-                       LeftVelocityReference(), RightVelocityReference());
-    positionLogger.Log(m_leftPos, m_rightPos,
+    voltageLogger.Log(elaspedTime, ControllerLeftVoltage().to<double>(),
+                      ControllerRightVoltage().to<double>(),
+                      frc::RobotController::GetInputVoltage());
+    velocityLogger.Log(elaspedTime, m_y(1, 0), m_y(2, 0),
+                       EstimatedLeftVelocity().to<double>(),
+                       EstimatedRightVelocity().to<double>(),
+                       LeftVelocityReference().to<double>(),
+                       RightVelocityReference().to<double>());
+    positionLogger.Log(elaspedTime,
+                       EstimatedPose().Translation().X().to<double>(),
+                       EstimatedPose().Translation().Y().to<double>(),
+                       EstimatedPose().Rotation().Radians().to<double>(),
                        ref.pose.Translation().X().to<double>(),
                        ref.pose.Translation().Y().to<double>(),
-                       ref.pose.Rotation().Radians().to<double>(),
-                       m_goal.Translation().X().to<double>(),
-                       m_goal.Translation().Y().to<double>(),
-                       m_goal.Rotation().Radians().to<double>());
+                       ref.pose.Rotation().Radians().to<double>());
+    errorCovLogger.Log(elaspedTime, m_observer.P(0, 0), m_observer.P(1, 1),
+                       m_observer.P(2, 2), m_observer.P(3, 3),
+                       m_observer.P(4, 4));
 
     // clang-format off
     // v = (v_r + v_l) / 2     (1)
@@ -161,9 +187,12 @@ void DrivetrainController::Update() {
     m_nextR(3, 0) = vl.to<double>();
     m_nextR(4, 0) = vr.to<double>();
 
-    // TODO: use local or global depending on measurements available
-    auto& observer = m_localObserver;
-    auto u = Controller(observer.Xhat(), m_nextR);
+    // Compute feedforward
+    auto xdot = (m_nextR - m_r) / dt.to<double>();
+    auto uff = m_B.householderQr().solve(
+        xdot - Dynamics(m_r, Eigen::Matrix<double, 2, 1>::Zero()));
+
+    auto u = Controller(m_observer.Xhat(), m_nextR) + uff;
 
     double Vl = u(0, 0);
     double Vr = u(1, 0);
@@ -173,33 +202,35 @@ void DrivetrainController::Update() {
         Vl = Vl * 12.0 / max;
     }
 
-    const double batteryVoltage =
-        frc::DriverStation::GetInstance().GetBatteryVoltage();
-
-    m_filteredVoltage =
-        kAlpha * m_filteredVoltage + (1 - kAlpha) * batteryVoltage;
-
-    Vr = std::clamp(Vr / m_filteredVoltage, -1.0, 1.0);
-    Vl = std::clamp(Vl / m_filteredVoltage, -1.0, 1.0);
-
-    Vr = Vr * batteryVoltage;
-    Vl = Vl * batteryVoltage;
-
     m_cappedU << Vl, Vr;
 
-    observer.Correct(m_cappedU, m_y);
+    m_observer.Correct(m_cappedU, m_y);
 
-    auto error = m_r - observer.Xhat();
-    m_atReferences = std::abs(error(0, 0)) < kVelocityTolerance &&
-                     std::abs(error(1, 0)) < kVelocityTolerance;
+    auto error = m_r - m_observer.Xhat();
+    m_atReferences = std::abs(error(3, 0)) < kVelocityTolerance &&
+                     std::abs(error(4, 0)) < kVelocityTolerance;
 
     m_r = m_nextR;
-    observer.Predict(m_cappedU, kDt);
+    m_observer.Predict(m_cappedU, dt);
 }
 
 void DrivetrainController::Reset() {
-    m_localObserver.Reset();
-    m_globalObserver.Reset();
+    m_observer.Reset();
+    m_r.setZero();
+    m_nextR.setZero();
+}
+
+void DrivetrainController::Reset(const frc::Pose2d& initialPose) {
+    m_observer.Reset();
+
+    Eigen::Matrix<double, 5, 1> xHat;
+    xHat(0, 0) = initialPose.Translation().X().to<double>();
+    xHat(1, 0) = initialPose.Translation().Y().to<double>();
+    xHat(2, 0) = initialPose.Rotation().Radians().to<double>();
+    xHat(3, 0) = 0.0;
+    xHat(4, 0) = 0.0;
+    m_observer.SetXhat(xHat);
+
     m_r.setZero();
     m_nextR.setZero();
 }
@@ -242,7 +273,7 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
 Eigen::Matrix<double, 5, 1> DrivetrainController::Dynamics(
     const Eigen::Matrix<double, 5, 1>& x,
     const Eigen::Matrix<double, 2, 1>& u) {
-    auto motors = frc::DCMotor::CIM(2);
+    auto motors = frc::DCMotor::MiniCIM(2);
 
     // constexpr double Glow = 15.32;       // Low gear ratio
     constexpr double Ghigh = 7.08;       // High gear ratio
@@ -259,20 +290,22 @@ Eigen::Matrix<double, 5, 1> DrivetrainController::Dynamics(
 
     units::meters_per_second_t vl{x(3, 0)};
     units::meters_per_second_t vr{x(4, 0)};
-    units::volt_t Vl{u(0, 0)};
-    units::volt_t Vr{u(1, 0)};
+
+    Eigen::Matrix<double, 2, 2> A;
+    A(0, 0) = k1.to<double>() * C1.to<double>();
+    A(0, 1) = k2.to<double>() * C1.to<double>();
+    A(1, 0) = k2.to<double>() * C1.to<double>();
+    A(1, 1) = k1.to<double>() * C1.to<double>();
+    Eigen::Matrix<double, 2, 2> B;
+    B << k1.to<double>() * C2.to<double>(), k2.to<double>() * C2.to<double>(),
+        k2.to<double>() * C2.to<double>(), k1.to<double>() * C2.to<double>();
 
     Eigen::Matrix<double, 5, 1> result;
     auto v = 0.5 * (vl + vr);
     result(0, 0) = v.to<double>() * std::cos(x(2, 0));
     result(1, 0) = v.to<double>() * std::sin(x(2, 0));
     result(2, 0) = ((vr - vl) / (2.0 * rb)).to<double>();
-    result(3, 0) =
-        k1.to<double>() * ((C1 * vl).to<double>() + (C2 * Vl).to<double>()) +
-        k2.to<double>() * ((C1 * vr).to<double>() + (C2 * Vr).to<double>());
-    result(4, 0) =
-        k2.to<double>() * ((C1 * vl).to<double>() + (C2 * Vl).to<double>()) +
-        k1.to<double>() * ((C1 * vr).to<double>() + (C2 * Vr).to<double>());
+    result.block<2, 1>(3, 0) = A * x.block<2, 1>(3, 0) + B * u;
     return result;
 }
 
@@ -289,5 +322,5 @@ Eigen::Matrix<double, 5, 1> DrivetrainController::GlobalMeasurementModel(
     const Eigen::Matrix<double, 5, 1>& x,
     const Eigen::Matrix<double, 2, 1>& u) {
     static_cast<void>(u);
-    return x;
+    return x.block<5, 1>(0, 0);
 }

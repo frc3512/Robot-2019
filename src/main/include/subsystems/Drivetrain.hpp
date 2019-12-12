@@ -1,6 +1,8 @@
-// Copyright (c) 2016-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
+
+#include <vector>
 
 #include <frc/ADXRS450_Gyro.h>
 #include <frc/Encoder.h>
@@ -63,17 +65,13 @@ public:
 
     /**
      * Returns gyro angle.
-     *
-     * @return angle in degrees
      */
-    double GetAngle() const;
+    units::radian_t GetAngle() const;
 
     /**
      * Returns gyro angular rate.
-     *
-     * @return angular rate in degrees per second
      */
-    double GetAngularRate() const;
+    units::radians_per_second_t GetAngularRate() const;
 
     /**
      * Resets gyro.
@@ -87,21 +85,17 @@ public:
 
     /**
      * Returns left encoder displacement.
-     *
-     * @return displacement
      */
-    double GetLeftDisplacement() const;
+    units::meter_t GetLeftDisplacement() const;
 
     /**
      * Returns right encoder displacement.
-     *
-     * @return displacement
      */
-    double GetRightDisplacement() const;
+    units::meter_t GetRightDisplacement() const;
 
-    double GetLeftRate() const;
+    units::meters_per_second_t GetLeftRate() const;
 
-    double GetRightRate() const;
+    units::meters_per_second_t GetRightRate() const;
 
     void ResetEncoders();
 
@@ -114,6 +108,8 @@ public:
     void Reset();
 
     void Iterate();
+
+    void SetWaypoints(const std::vector<frc::Pose2d>& waypoints);
 
     void ProcessMessage(const ButtonPacket& message) override;
 
@@ -141,9 +137,14 @@ private:
     frc::Solenoid m_shifter{Constants::Drivetrain::kShifterPort};
 
     DrivetrainController m_controller{
-        std::array<double, 5>{0.0625, 0.125, 10.0, 0.95, 0.95},
-        std::array<double, 2>{12.0, 12.0}, Constants::kDt};
+        {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, Constants::kDt};
     frc::Notifier m_controllerThread{&Drivetrain::Iterate, this};
+
+    std::chrono::steady_clock::time_point m_lastTime =
+        std::chrono::steady_clock::time_point::min();
+
+    std::chrono::steady_clock::time_point m_startTime =
+        std::chrono::steady_clock::time_point::min();
 };
 
 }  // namespace frc3512
