@@ -71,7 +71,7 @@ TEST(DiscretizationTest, DiscretizeSlowModelAQ) {
   Eigen::Matrix<double, 2, 2> contQ;
   contQ << 1, 0, 0, 1;
 
-  constexpr auto dt = 5.05_ms;
+  constexpr auto dt = 1_s;
 
   Eigen::Matrix<double, 2, 2> discQIntegrated = frc::RungeKuttaTimeVarying<
       std::function<Eigen::Matrix<double, 2, 2>(
@@ -126,7 +126,7 @@ TEST(DiscretizationTest, DiscretizeFastModelAQ) {
       << discQIntegrated;
 }
 
-// Test that the "fast" discretization produces nearly identical results.
+// Test that the Taylor series discretization produces nearly identical results.
 TEST(DiscretizationTest, DiscretizeSlowModelAQTaylor) {
   Eigen::Matrix<double, 2, 2> contA;
   contA << 0, 1, 0, 0;
@@ -137,7 +137,7 @@ TEST(DiscretizationTest, DiscretizeSlowModelAQTaylor) {
   Eigen::Matrix<double, 2, 2> contQ;
   contQ << 1, 0, 0, 1;
 
-  constexpr auto dt = 5.05_ms;
+  constexpr auto dt = 1_s;
 
   Eigen::Matrix<double, 2, 2> discQTaylor;
   Eigen::Matrix<double, 2, 2> discA;
@@ -177,7 +177,7 @@ TEST(DiscretizationTest, DiscretizeSlowModelAQTaylor) {
   }
 }
 
-// Test that the "fast" discretization produces nearly identical results.
+// Test that the Taylor series discretization produces nearly identical results.
 TEST(DISABLED_DiscretizationTest, DiscretizeFastModelAQTaylor) {
   Eigen::Matrix<double, 2, 2> contA;
   contA << 0, 1, 0, -1406.29;

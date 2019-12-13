@@ -65,3 +65,29 @@ TEST(StateSpaceUtilTest, CovArray) {
   EXPECT_NEAR(mat(1, 2), 0.0, 1e-3);
   EXPECT_NEAR(mat(2, 2), 9.0, 1e-3);
 }
+
+TEST(StateSpaceUtilTest, IsStabilizable) {
+  Eigen::Matrix<double, 2, 2> A;
+  Eigen::Matrix<double, 2, 1> B;
+  B << 0, 1;
+
+  // First eigenvalue is uncontrollable and unstable.
+  // Second eigenvalue is controllable and stable.
+  A << 1.2, 0, 0, 0.5;
+  EXPECT_FALSE(frc::IsStabilizable(A, B));
+
+  // First eigenvalue is uncontrollable and marginally stable.
+  // Second eigenvalue is controllable and stable.
+  A << 1, 0, 0, 0.5;
+  EXPECT_FALSE(frc::IsStabilizable(A, B));
+
+  // First eigenvalue is uncontrollable and stable.
+  // Second eigenvalue is controllable and stable.
+  A << 0.2, 0, 0, 0.5;
+  EXPECT_TRUE(frc::IsStabilizable(A, B));
+
+  // First eigenvalue is uncontrollable and stable.
+  // Second eigenvalue is controllable and unstable.
+  A << 0.2, 0, 0, 1.2;
+  EXPECT_TRUE(frc::IsStabilizable(A, B));
+}

@@ -12,6 +12,8 @@
 #include <type_traits>
 
 #include <Eigen/Core>
+#include <Eigen/Eigenvalues>
+#include <Eigen/QR>
 
 #if __cplusplus < 201703L
 namespace std {
@@ -160,14 +162,39 @@ Eigen::Matrix<double, N, N> MakeCovMatrix(
 /**
  * Returns true if (A, B) is a stabilizable pair.
  *
- * (A,B) is stabilizable if and only if the uncontrollable eigenvalues of
- * A, if any, have absolute values less than one, where an eigenvalue is
- * uncontrollable if rank(lambda * I - A, B) < n.
+ * (A,B) is stabilizable if and only if the uncontrollable eigenvalues of A, if
+ * any, have absolute values less than one, where an eigenvalue is
+ * uncontrollable if rank(lambda * I - A, B) < n where n is number of states.
  *
  * @param A System matrix.
  * @param B Input matrix.
  */
-bool IsStabilizable(const Eigen::Ref<const Eigen::MatrixXd>& A,
-                    const Eigen::Ref<const Eigen::MatrixXd>& B);
+template <int States, int Inputs>
+bool IsStabilizable(const Eigen::Matrix<double, States, States>& A,
+                    const Eigen::Matrix<double, States, Inputs>& B) {
+  Eigen::EigenSolver<Eigen::Matrix<double, States, States>> es(A);
+
+  for (int i = 0; i < States; ++i) {
+    if (es.eigenvalues()[i].real() * es.eigenvalues()[i].real() +
+            es.eigenvalues()[i].imag() * es.eigenvalues()[i].imag() <
+        1) {
+      continue;
+    }
+
+    Eigen::Matrix<std::complex<double>, States, States + Inputs> E;
+    E << es.eigenvalues()[i] * Eigen::Matrix<std::complex<double>, States,
+                                             States>::Identity() -
+             A,
+        B;
+
+    Eigen::ColPivHouseholderQR<
+        Eigen::Matrix<std::complex<double>, States, States + Inputs>>
+        qr(E);
+    if (qr.rank() < States) {
+      return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace frc

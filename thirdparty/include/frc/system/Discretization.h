@@ -167,17 +167,4 @@ Eigen::Matrix<double, Outputs, Outputs> DiscretizeR(
   return R / dt.to<double>();
 }
 
-/**
- * Returns true if (A, B) is a stabilizable pair.
- *
- * (A,B) is stabilizable if and only if the uncontrollable eigenvalues of
- * A, if any, have absolute values less than one, where an eigenvalue is
- * uncontrollable if rank(lambda * I - A, B) < n.
- *
- * @param A System matrix.
- * @param B Input matrix.
- */
-bool IsStabilizable(const Eigen::Ref<const Eigen::MatrixXd>& A,
-                    const Eigen::Ref<const Eigen::MatrixXd>& B);
-
 }  // namespace frc
