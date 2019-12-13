@@ -21,8 +21,7 @@ DSDisplay::DSDisplay(int port) : m_dsPort(port) {
     // Retrieve stored autonomous index
     wpi::SmallVector<char, 64> path;
     frc::filesystem::GetOperatingDirectory(path);
-    wpi::Twine fullname = path + "/autonMode.txt";
-    std::ifstream autonModeFile(fullname.str());
+    std::ifstream autonModeFile((path + "/autonMode.txt").str());
     if (autonModeFile.is_open()) {
         if (autonModeFile >> m_curAutonMode) {
             wpi::outs() << "dsdisplay: restored auton " << m_curAutonMode
@@ -258,8 +257,8 @@ void DSDisplay::ReceiveFromDS() {
             // Store newest autonomous choice to file for persistent storage
             wpi::SmallVector<char, 64> path;
             frc::filesystem::GetOperatingDirectory(path);
-            wpi::Twine fullname = path + "/autonMode.txt";
-            std::ofstream autonModeFile(fullname.str(), std::fstream::trunc);
+            std::ofstream autonModeFile((path + "/autonMode.txt").str(),
+                                        std::fstream::trunc);
             if (autonModeFile.is_open()) {
                 // Selection is stored as ASCII number in file
                 char autonNum = '0' + m_curAutonMode;

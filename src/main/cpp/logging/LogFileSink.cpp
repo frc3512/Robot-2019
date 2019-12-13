@@ -11,9 +11,8 @@ using namespace frc3512;
 LogFileSink::LogFileSink(std::string filename) {
     wpi::SmallVector<char, 64> path;
     frc::filesystem::GetOperatingDirectory(path);
-    wpi::Twine fullname = path + "/" + filename;
 
-    m_logfile.open(fullname.str());
+    m_logfile.open((path + "/" + filename).str());
 }
 
 void LogFileSink::Log(LogEvent event) {
