@@ -201,55 +201,7 @@ void DiscretizeAB(const Eigen::Matrix<double, States, States>& contA,
 }
 
 /**
- * Returns a discretized version of the provided continuous process noise
- * covariance matrix.
- *
- * @param A  Continuous system matrix.
- * @param Q  Continuous process noise covariance matrix.
- * @param dt Discretization timestep.
- */
-template <int States>
-Eigen::Matrix<double, States, States> DiscretizeQ(
-    const Eigen::Matrix<double, States, States>& A,
-    const Eigen::Matrix<double, States, States>& Q, units::second_t dt) {
-  // Make Q symmetric if it isn't already
-  Eigen::Matrix<double, States, States> Qtemp = (Q + Q.transpose()) / 2.0;
-
-  Eigen::Matrix<double, 2 * States, 2 * States> M;
-  M.setZero();
-
-  // Set up the matrix M = [[-A, Q], [0, A.T]]
-  M.template block<States, States>(0, 0) = -A;
-  M.template block<States, States>(0, States) = Qtemp;
-  M.template block<States, States>(States, States) = A.transpose();
-
-  Eigen::Matrix<double, 2 * States, 2 * States> phi =
-      (M * dt.to<double>()).exp();
-
-  // Phi12 = phi[0:States,        States:2*States]
-  // Phi22 = phi[States:2*States, States:2*States]
-  Eigen::Matrix<double, States, States> phi12 =
-      phi.block(0, States, States, States);
-  Eigen::Matrix<double, States, States> phi22 =
-      phi.block(States, States, States, States);
-
-  Qtemp = phi22.transpose() * phi12;
-
-  // Make Q symmetric if it isn't already
-  return (Qtemp + Qtemp.transpose()) / 2.0;
-}
-
-/**
  * Discretizes the given continuous A and Q matrices.
- *
- * Rather than solving a 2N x 2N matrix exponential like in DiscretizeQ() (which
- * is expensive), we take advantage of the structure of the block matrix of A
- * and Q.
- *
- * The exponential of A*t, which is only N x N, is relatively cheap.
- * 2) The upper-right quarter of the 2N x 2N matrix, which we can approximate
- *    using a taylor series to several terms and still be substantially cheaper
- *    than taking the big exponential.
  *
  * @param contA Continuous system matrix.
  * @param contQ Continuous process noise covariance matrix.
@@ -263,6 +215,60 @@ void DiscretizeAQ(const Eigen::Matrix<double, States, States>& contA,
                   units::second_t dt,
                   Eigen::Matrix<double, States, States>* discA,
                   Eigen::Matrix<double, States, States>* discQ) {
+  // Make Q symmetric if it isn't already
+  Eigen::Matrix<double, States, States> Qtemp =
+      (contQ + contQ.transpose()) / 2.0;
+
+  Eigen::Matrix<double, 2 * States, 2 * States> M;
+  M.setZero();
+
+  // Set up the matrix M = [[-A, Q], [0, A.T]]
+  M.template block<States, States>(0, 0) = -contA;
+  M.template block<States, States>(0, States) = Qtemp;
+  M.template block<States, States>(States, States) = contA.transpose();
+
+  Eigen::Matrix<double, 2 * States, 2 * States> phi =
+      (M * dt.to<double>()).exp();
+
+  // Phi12 = phi[0:States,        States:2*States]
+  // Phi22 = phi[States:2*States, States:2*States]
+  Eigen::Matrix<double, States, States> phi12 =
+      phi.block(0, States, States, States);
+  Eigen::Matrix<double, States, States> phi22 =
+      phi.block(States, States, States, States);
+
+  *discA = phi22.transpose();
+
+  Qtemp = *discA * phi12;
+
+  // Make Q symmetric if it isn't already
+  *discQ = (Qtemp + Qtemp.transpose()) / 2.0;
+}
+
+/**
+ * Discretizes the given continuous A and Q matrices.
+ *
+ * Rather than solving a 2N x 2N matrix exponential like in DiscretizeAQ()
+ * (which is expensive), we take advantage of the structure of the block matrix
+ * of A and Q.
+ *
+ * The exponential of A*t, which is only N x N, is relatively cheap.
+ * 2) The upper-right quarter of the 2N x 2N matrix, which we can approximate
+ *    using a taylor series to several terms and still be substantially cheaper
+ *    than taking the big exponential.
+ *
+ * @param contA Continuous system matrix.
+ * @param contQ Continuous process noise covariance matrix.
+ * @param dt    Discretization timestep.
+ * @param discA Storage for discrete system matrix.
+ * @param discQ Storage for discrete process noise covariance matrix.
+ */
+template <int States>
+void DiscretizeAQTaylor(const Eigen::Matrix<double, States, States>& contA,
+                        const Eigen::Matrix<double, States, States>& contQ,
+                        units::second_t dt,
+                        Eigen::Matrix<double, States, States>* discA,
+                        Eigen::Matrix<double, States, States>* discQ) {
   // Make Q symmetric if it isn't already
   Eigen::Matrix<double, States, States> Qtemp =
       (contQ + contQ.transpose()) / 2.0;

@@ -64,13 +64,14 @@ class ExtendedKalmanFilter {
                                                     Vector<Inputs>::Zero());
 
     Eigen::Matrix<double, States, States> discA;
-    DiscretizeA(contA, dt, &discA);
+    Eigen::Matrix<double, States, States> discQ;
+    DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
 
     m_discR = DiscretizeR(m_contR, dt);
 
     if (IsStabilizable(discA.transpose(), C.transpose())) {
       m_initP = drake::math::DiscreteAlgebraicRiccatiEquation(
-          discA.transpose(), C.transpose(), m_contQ, m_discR);
+          discA.transpose(), C.transpose(), discQ, m_discR);
     } else {
       m_initP = Eigen::Matrix<double, States, States>::Zero();
     }
