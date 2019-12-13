@@ -15,6 +15,7 @@
 #include <units/units.h>
 
 #include "frc/StateSpaceUtil.h"
+#include "frc/system/Discretization.h"
 #include "frc/system/LinearSystem.h"
 
 namespace frc {

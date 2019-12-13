@@ -7,6 +7,7 @@
 
 #include "frc/StateSpaceUtil.h"
 
+#include <Eigen/Eigenvalues>
 #include <Eigen/QR>
 
 namespace frc {
