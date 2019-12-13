@@ -6,4 +6,5 @@
 build/
 *.swp
 *.csv*
+*.log
 !plot_csvs.py
