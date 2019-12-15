@@ -61,7 +61,7 @@ class KalmanFilter {
 
     Eigen::Matrix<double, States, States> discA;
     Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(plant.A(), m_contQ, dt, &discA, &discQ);
+    DiscretizeAQTaylor(plant.A(), m_contQ, dt, &discA, &discQ);
 
     auto discR = DiscretizeR(m_contR, dt);
 
@@ -130,7 +130,7 @@ class KalmanFilter {
 
     Eigen::Matrix<double, States, States> discA;
     Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(m_plant->A(), m_contQ, dt, &discA, &discQ);
+    DiscretizeAQTaylor(m_plant->A(), m_contQ, dt, &discA, &discQ);
 
     m_P = discA * m_P * discA.transpose() + discQ;
     m_discR = DiscretizeR(m_contR, dt);

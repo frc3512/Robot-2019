@@ -66,7 +66,7 @@ class ExtendedKalmanFilter {
 
     Eigen::Matrix<double, States, States> discA;
     Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
+    DiscretizeAQTaylor(contA, m_contQ, dt, &discA, &discQ);
 
     m_discR = DiscretizeR(m_contR, dt);
 
@@ -132,7 +132,7 @@ class ExtendedKalmanFilter {
     // Find discrete A and Q
     Eigen::Matrix<double, States, States> discA;
     Eigen::Matrix<double, States, States> discQ;
-    DiscretizeAQ(contA, m_contQ, dt, &discA, &discQ);
+    DiscretizeAQTaylor(contA, m_contQ, dt, &discA, &discQ);
 
     m_xHat = RungeKutta(m_f, m_xHat, u, dt);
     m_P = discA * m_P * discA.transpose() + discQ;

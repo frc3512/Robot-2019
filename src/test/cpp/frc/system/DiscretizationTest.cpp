@@ -178,9 +178,9 @@ TEST(DiscretizationTest, DiscretizeSlowModelAQTaylor) {
 }
 
 // Test that the Taylor series discretization produces nearly identical results.
-TEST(DISABLED_DiscretizationTest, DiscretizeFastModelAQTaylor) {
+TEST(DiscretizationTest, DiscretizeFastModelAQTaylor) {
   Eigen::Matrix<double, 2, 2> contA;
-  contA << 0, 1, 0, -1406.29;
+  contA << 0, 1, 0, -1500;
 
   Eigen::Matrix<double, 2, 1> contB;
   contB << 0, 1;
@@ -215,7 +215,7 @@ TEST(DISABLED_DiscretizationTest, DiscretizeFastModelAQTaylor) {
   frc::DiscretizeAB(contA, contB, dt, &discA, &discB);
   frc::DiscretizeAQTaylor(contA, contQ, dt, &discATaylor, &discQTaylor);
 
-  EXPECT_LT((discQIntegrated - discQTaylor).norm(), 1e-10)
+  EXPECT_LT((discQIntegrated - discQTaylor).norm(), 1e-3)
       << "Expected these to be nearly equal:\ndiscQTaylor:\n"
       << discQTaylor << "\ndiscQIntegrated:\n"
       << discQIntegrated;

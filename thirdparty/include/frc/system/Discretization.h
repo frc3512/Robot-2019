@@ -69,16 +69,14 @@ void DiscretizeAQ(const Eigen::Matrix<double, States, States>& contA,
                   units::second_t dt,
                   Eigen::Matrix<double, States, States>* discA,
                   Eigen::Matrix<double, States, States>* discQ) {
-  // Make Q symmetric if it isn't already
-  Eigen::Matrix<double, States, States> Qtemp =
-      (contQ + contQ.transpose()) / 2.0;
-
-  Eigen::Matrix<double, 2 * States, 2 * States> M;
-  M.setZero();
+  // Make continuous Q symmetric if it isn't already
+  Eigen::Matrix<double, States, States> Q = (contQ + contQ.transpose()) / 2.0;
 
   // Set up the matrix M = [[-A, Q], [0, A.T]]
+  Eigen::Matrix<double, 2 * States, 2 * States> M;
   M.template block<States, States>(0, 0) = -contA;
-  M.template block<States, States>(0, States) = Qtemp;
+  M.template block<States, States>(0, States) = Q;
+  M.template block<States, States>(States, 0).setZero();
   M.template block<States, States>(States, States) = contA.transpose();
 
   Eigen::Matrix<double, 2 * States, 2 * States> phi =
@@ -93,10 +91,10 @@ void DiscretizeAQ(const Eigen::Matrix<double, States, States>& contA,
 
   *discA = phi22.transpose();
 
-  Qtemp = *discA * phi12;
+  Q = *discA * phi12;
 
-  // Make Q symmetric if it isn't already
-  *discQ = (Qtemp + Qtemp.transpose()) / 2.0;
+  // Make discrete Q symmetric if it isn't already
+  *discQ = (Q + Q.transpose()) / 2.0;
 }
 
 /**
@@ -106,7 +104,7 @@ void DiscretizeAQ(const Eigen::Matrix<double, States, States>& contA,
  * (which is expensive), we take advantage of the structure of the block matrix
  * of A and Q.
  *
- * The exponential of A*t, which is only N x N, is relatively cheap.
+ * 1) The exponential of A*t, which is only N x N, is relatively cheap.
  * 2) The upper-right quarter of the 2N x 2N matrix, which we can approximate
  *    using a taylor series to several terms and still be substantially cheaper
  *    than taking the big exponential.
@@ -123,35 +121,32 @@ void DiscretizeAQTaylor(const Eigen::Matrix<double, States, States>& contA,
                         units::second_t dt,
                         Eigen::Matrix<double, States, States>* discA,
                         Eigen::Matrix<double, States, States>* discQ) {
-  // Make Q symmetric if it isn't already
-  Eigen::Matrix<double, States, States> Qtemp =
-      (contQ + contQ.transpose()) / 2.0;
+  // Make continuous Q symmetric if it isn't already
+  Eigen::Matrix<double, States, States> Q = (contQ + contQ.transpose()) / 2.0;
 
-  Eigen::Matrix<double, States, States> lastTerm = Qtemp;
+  Eigen::Matrix<double, States, States> lastTerm = Q;
   double lastCoeff = dt.to<double>();
-  const Eigen::Matrix<double, States, States> At = contA.transpose();
-  Eigen::Matrix<double, States, States> Atn = At;
+
+  // A^T^n
+  Eigen::Matrix<double, States, States> Atn = contA.transpose();
+
   Eigen::Matrix<double, States, States> phi12 = lastTerm * lastCoeff;
-  Eigen::Matrix<double, States, States> phi22 = At.Identity() + Atn * lastCoeff;
 
-  // i = 6 i.e. 6th order should be enough precision
+  // i = 6 i.e. 5th order should be enough precision
   for (int i = 2; i < 6; ++i) {
-    Eigen::Matrix<double, States, States> nextTerm =
-        -contA * lastTerm + Qtemp * Atn;
+    lastTerm = -contA * lastTerm + Q * Atn;
     lastCoeff *= dt.to<double>() / static_cast<double>(i);
-    phi12 += nextTerm * lastCoeff;
 
-    lastTerm = nextTerm;
+    phi12 += lastTerm * lastCoeff;
 
-    Atn *= At;
-    phi22 += lastCoeff * Atn;
+    Atn *= contA.transpose();
   }
-  *discA = phi22.transpose();
 
-  Qtemp = *discA * phi12;
+  DiscretizeA(contA, dt, discA);
+  Q = *discA * phi12;
 
-  // Make Q symmetric if it isn't already
-  *discQ = (Qtemp + Qtemp.transpose()) / 2.0;
+  // Make discrete Q symmetric if it isn't already
+  *discQ = (Q + Q.transpose()) / 2.0;
 }
 
 /**
