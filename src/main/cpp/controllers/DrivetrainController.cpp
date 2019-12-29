@@ -9,6 +9,7 @@
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
+#include <wpi/MathExtras.h>
 
 using namespace frc3512;
 using namespace frc3512::Constants;
@@ -217,12 +218,11 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
     double kvpos1 = m_K1(0, 3);
 
     double v = (x(3, 0) + x(4, 0)) / 2.0;
-    double sign = v >= 0 ? 1 : -1;
 
     Eigen::Matrix<double, 2, 5> K;
     K(0, 0) = kx;
     K(1, 0) = kx;
-    K(0, 1) = (ky0 + (ky1 - ky0) * std::sqrt(v)) * sign;
+    K(0, 1) = (ky0 + (ky1 - ky0) * std::sqrt(v)) * wpi::sgn(v);
     K(1, 1) = -K(0, 1);
     K(0, 2) = ktheta1 * std::sqrt(v);
     K(1, 2) = -K(0, 2);
