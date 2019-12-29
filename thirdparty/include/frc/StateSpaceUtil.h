@@ -34,6 +34,18 @@ void CovMatrixImpl(Matrix& result, T elem, Ts... elems) {
     CovMatrixImpl(result, elems...);
   }
 }
+
+template <typename Matrix, typename T, typename... Ts>
+void WhiteNoiseVectorImpl(Matrix& result, T elem, Ts... elems) {
+  std::random_device rd;
+  std::mt19937 gen{rd()};
+  std::normal_distribution<> distr{0.0, elem};
+
+  result(result.rows() - (sizeof...(Ts) + 1)) = distr(gen);
+  if constexpr (sizeof...(Ts) > 0) {
+    WhiteNoiseVectorImpl(result, elems...);
+  }
+}
 }  // namespace detail
 
 /**
@@ -120,6 +132,14 @@ Eigen::Matrix<double, N, N> MakeCovMatrix(
   for (size_t i = 0; i < N; ++i) {
     diag(i) = std::pow(stdDevs[i], 2);
   }
+  return result;
+}
+
+template <typename... Ts, typename = std::enable_if_t<
+                              std::conjunction_v<std::is_same<double, Ts>...>>>
+Eigen::Matrix<double, sizeof...(Ts), 1> MakeWhiteNoiseVector(Ts... stdDevs) {
+  Eigen::Matrix<double, sizeof...(Ts), 1> result;
+  detail::WhiteNoiseVectorImpl(result, stdDevs...);
   return result;
 }
 

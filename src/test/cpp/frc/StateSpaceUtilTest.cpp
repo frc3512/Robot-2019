@@ -66,7 +66,12 @@ TEST(StateSpaceUtilTest, CovArray) {
   EXPECT_NEAR(mat(2, 2), 9.0, 1e-3);
 }
 
-TEST(StateSpaceUtilTest, WhiteNoiseVector) {
+TEST(StateSpaceUtilTest, WhiteNoiseVectorParameterPack) {
+  Eigen::Matrix<double, 2, 1> vec = frc::MakeWhiteNoiseVector(2.0, 3.0);
+  static_cast<void>(vec);
+}
+
+TEST(StateSpaceUtilTest, WhiteNoiseVectorArray) {
   Eigen::Matrix<double, 2, 1> vec = frc::MakeWhiteNoiseVector<2>({2.0, 3.0});
   static_cast<void>(vec);
 }
