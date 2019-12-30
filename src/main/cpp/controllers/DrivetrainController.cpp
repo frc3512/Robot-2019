@@ -32,10 +32,8 @@ DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
     auto A1 = frc::NumericalJacobianX<5, 5, 2>(Dynamics, x1, u0);
     auto B = frc::NumericalJacobianU<5, 5, 2>(Dynamics, x0, u0);
 
-    m_K0 =
-        frc::LinearQuadraticRegulator<5, 2, 3>(A0, B, Qelems, Relems, dt).K();
-    m_K1 =
-        frc::LinearQuadraticRegulator<5, 2, 3>(A1, B, Qelems, Relems, dt).K();
+    m_K0 = frc::LinearQuadraticRegulator<5, 2>(A0, B, Qelems, Relems, dt).K();
+    m_K1 = frc::LinearQuadraticRegulator<5, 2>(A1, B, Qelems, Relems, dt).K();
 }
 
 void DrivetrainController::Enable() { m_isEnabled = true; }

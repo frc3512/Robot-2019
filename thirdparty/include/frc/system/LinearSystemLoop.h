@@ -42,10 +42,9 @@ class LinearSystemLoop {
    * @param controller State-space controller.
    * @param observer   State-space observer.
    */
-  LinearSystemLoop(
-      LinearSystem<States, Inputs, Outputs>& plant,
-      LinearQuadraticRegulator<States, Inputs, Outputs>& controller,
-      KalmanFilter<States, Inputs, Outputs>& observer);
+  LinearSystemLoop(LinearSystem<States, Inputs, Outputs>& plant,
+                   LinearQuadraticRegulator<States, Inputs>& controller,
+                   KalmanFilter<States, Inputs, Outputs>& observer);
 
   virtual ~LinearSystemLoop() = default;
 
@@ -128,7 +127,7 @@ class LinearSystemLoop {
   /**
    * Return the controller used internally.
    */
-  const LinearQuadraticRegulator<States, Inputs, Outputs>& Controller() const;
+  const LinearQuadraticRegulator<States, Inputs>& Controller() const;
 
   /**
    * Return the observer used internally.
@@ -179,7 +178,7 @@ class LinearSystemLoop {
 
  protected:
   LinearSystem<States, Inputs, Outputs>& m_plant;
-  LinearQuadraticRegulator<States, Inputs, Outputs>& m_controller;
+  LinearQuadraticRegulator<States, Inputs>& m_controller;
   KalmanFilter<States, Inputs, Outputs>& m_observer;
 
   // Reference to go to in the next cycle (used by feedforward controller).

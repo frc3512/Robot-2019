@@ -149,9 +149,9 @@ private:
         return frc::ElevatorSystem(motor, m, r, G);
     }();
 
-    frc::LinearQuadraticRegulator<2, 1, 1> m_scoreController{
+    frc::LinearQuadraticRegulator<2, 1> m_scoreController{
         m_scorePlant, {0.3, 3.0}, {12.0}, Constants::kDt};
-    frc::LinearQuadraticRegulator<2, 1, 1> m_climbController{
+    frc::LinearQuadraticRegulator<2, 1> m_climbController{
         m_climbPlant, {0.3, 3.0}, {12.0}, Constants::kDt};
 
     frc::KalmanFilter<2, 1, 1> m_scoreObserver{

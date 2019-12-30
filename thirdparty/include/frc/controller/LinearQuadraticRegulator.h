@@ -29,7 +29,7 @@ namespace frc {
  * For more on the underlying math, read
  * https://file.tavsys.net/control/state-space-guide.pdf.
  */
-template <int States, int Inputs, int Outputs>
+template <int States, int Inputs>
 class LinearQuadraticRegulator {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -42,6 +42,7 @@ class LinearQuadraticRegulator {
    * @param Relems The maximum desired control effort for each input.
    * @param dt     Discretization timestep.
    */
+  template <int Outputs>
   LinearQuadraticRegulator(const LinearSystem<States, Inputs, Outputs>& plant,
                            const std::array<double, States>& Qelems,
                            const std::array<double, Inputs>& Relems,

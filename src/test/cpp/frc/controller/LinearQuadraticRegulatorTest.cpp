@@ -33,7 +33,7 @@ TEST(LinearQuadraticRegulatorTest, ElevatorGains) {
 
     return ElevatorSystem(motors, m, r, G);
   }();
-  LinearQuadraticRegulator<2, 1, 1> controller{
+  LinearQuadraticRegulator<2, 1> controller{
       plant, {0.02, 0.4}, {12.0}, 0.00505_s};
 
   EXPECT_NEAR(522.15314269, controller.K(0, 0), 1e-6);

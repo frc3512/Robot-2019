@@ -144,7 +144,7 @@ private:
 
         return frc::ElevatorSystem(motor, m, r, G);
     }();
-    frc::LinearQuadraticRegulator<2, 1, 1> m_controller{
+    frc::LinearQuadraticRegulator<2, 1> m_controller{
         m_plant, {0.02, 0.4}, {12.0}, Constants::kDt};
     frc::KalmanFilter<2, 1, 1> m_observer{
         m_plant, Constants::kDt, {0.05, 1.0}, {0.0001}};

@@ -12,7 +12,7 @@ namespace frc {
 template <int States, int Inputs, int Outputs>
 LinearSystemLoop<States, Inputs, Outputs>::LinearSystemLoop(
     LinearSystem<States, Inputs, Outputs>& plant,
-    LinearQuadraticRegulator<States, Inputs, Outputs>& controller,
+    LinearQuadraticRegulator<States, Inputs>& controller,
     KalmanFilter<States, Inputs, Outputs>& observer)
     : m_plant(plant), m_controller(controller), m_observer(observer) {
   Reset();
@@ -85,7 +85,7 @@ LinearSystemLoop<States, Inputs, Outputs>::Plant() const {
 }
 
 template <int States, int Inputs, int Outputs>
-const LinearQuadraticRegulator<States, Inputs, Outputs>&
+const LinearQuadraticRegulator<States, Inputs>&
 LinearSystemLoop<States, Inputs, Outputs>::Controller() const {
   return m_controller;
 }

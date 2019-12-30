@@ -148,7 +148,7 @@ private:
 
         return frc::SingleJointedArmSystem(motor, J, G);
     }();
-    frc::LinearQuadraticRegulator<2, 1, 1> m_controller{
+    frc::LinearQuadraticRegulator<2, 1> m_controller{
         m_plant, {0.01245, 0.109726}, {9.0}, Constants::kDt};
     frc::KalmanFilter<2, 1, 1> m_observer{
         m_plant, Constants::kDt, {0.21745, 0.28726}, {0.01}};
