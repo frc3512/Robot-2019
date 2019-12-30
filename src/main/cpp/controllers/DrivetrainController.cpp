@@ -216,26 +216,26 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
     double kvpos1 = m_K1(0, 3);
 
     double v = (x(3, 0) + x(4, 0)) / 2.0;
+    double sqrtAbsV = std::sqrt(std::abs(v));
 
     Eigen::Matrix<double, 2, 5> K;
     K(0, 0) = kx;
+    K(0, 1) = (ky0 + (ky1 - ky0) * sqrtAbsV) * wpi::sgn(v);
+    K(0, 2) = ktheta1 * sqrtAbsV;
+    K(0, 3) = kvpos0 + (kvpos1 - kvpos0) * sqrtAbsV;
+    K(0, 4) = kvneg0 - (kvpos1 - kvpos0) * sqrtAbsV;
     K(1, 0) = kx;
-    K(0, 1) = (ky0 + (ky1 - ky0) * std::sqrt(v)) * wpi::sgn(v);
     K(1, 1) = -K(0, 1);
-    K(0, 2) = ktheta1 * std::sqrt(v);
     K(1, 2) = -K(0, 2);
-    K(0, 3) = kvpos0 + (kvpos1 - kvpos0) * std::sqrt(v);
-    K(1, 3) = kvneg0 - (kvpos1 - kvpos0) * std::sqrt(v);
-    K(0, 4) = K(1, 3);
+    K(1, 3) = K(0, 4);
     K(1, 4) = K(0, 3);
 
-    double heading = x(2, 0);
     Eigen::Matrix<double, 5, 5> inRobotFrame =
         Eigen::Matrix<double, 5, 5>::Identity();
-    inRobotFrame(0, 0) = std::cos(heading);
-    inRobotFrame(0, 1) = std::sin(heading);
-    inRobotFrame(1, 0) = -std::sin(heading);
-    inRobotFrame(1, 1) = std::cos(heading);
+    inRobotFrame(0, 0) = std::cos(x(2, 0));
+    inRobotFrame(0, 1) = std::sin(x(2, 0));
+    inRobotFrame(1, 0) = -std::sin(x(2, 0));
+    inRobotFrame(1, 1) = std::cos(x(2, 0));
     return K * inRobotFrame * (r - x);
 }
 
