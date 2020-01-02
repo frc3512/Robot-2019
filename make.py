@@ -38,7 +38,7 @@ def download_file(maven_url, filename, dest_dir):
         print(" done.")
 
 
-def download_lib(maven_url, artifact_name, version, classifier):
+def download_lib(maven_url, artifact_name, version, classifier, headers=True):
     maven_url += f"/{artifact_name}/{version}"
 
     # Download libs
@@ -47,9 +47,10 @@ def download_lib(maven_url, artifact_name, version, classifier):
     download_file(maven_url, filename, "build")
 
     # Download headers
-    filename = f"{artifact_name}-{version}-headers.zip"
-    zip_name = f"build/{filename}"
-    download_file(maven_url, filename, "build")
+    if headers:
+        filename = f"{artifact_name}-{version}-headers.zip"
+        zip_name = f"build/{filename}"
+        download_file(maven_url, filename, "build")
 
 
 def main():
@@ -64,20 +65,18 @@ def main():
     if not os.path.exists("build/"):
         os.makedirs("build/")
 
-    WPI_MAVEN_URL = "http://first.wpi.edu/FRC/roborio/maven/release"
+    WPI_MAVEN_URL = "https://frcmaven.wpi.edu/artifactory/release"
     REV_MAVEN_URL = "http://www.revrobotics.com/content/sw/max/sdk/maven"
     WPI_URL = WPI_MAVEN_URL + "/edu/wpi/first"
-    OPENCV_URL = WPI_MAVEN_URL + "/edu/wpi/first/thirdparty/frc2019"
+    OPENCV_URL = WPI_MAVEN_URL + "/edu/wpi/first/thirdparty/frc2020"
     REV_URL = REV_MAVEN_URL + "/com/revrobotics/frc"
-    REV_LOCAL_URL = f"file://{Path.home()}/releases/maven/release/com/revrobotics/frc"
 
-    WPI_VERSION = "2019.4.1"
+    WPI_VERSION = "2020.1.2"
 
     if args.target == "build":
         classifier = "linuxathena"
     else:
         classifier = "linuxx86-64"
-        REV_URL = REV_LOCAL_URL
 
     download_lib(WPI_URL + "/wpilibc", "wpilibc-cpp", WPI_VERSION, classifier)
     download_lib(WPI_URL + "/cameraserver", "cameraserver-cpp", WPI_VERSION, classifier)
@@ -85,14 +84,19 @@ def main():
     download_lib(WPI_URL + "/hal", "hal-cpp", WPI_VERSION, classifier)
     download_lib(WPI_URL + "/cscore", "cscore-cpp", WPI_VERSION, classifier)
     download_lib(WPI_URL + "/wpiutil", "wpiutil-cpp", WPI_VERSION, classifier)
-    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.4-5", classifier)
+    download_lib(OPENCV_URL + "/opencv", "opencv-cpp", "3.4.7-2", classifier)
 
     if args.target == "build":
-        download_lib(WPI_URL + "/ni-libraries", "netcomm", "2019.12.1", classifier)
-        download_lib(WPI_URL + "/ni-libraries", "chipobject", "2019.12.1", classifier)
+        download_lib(WPI_URL + "/ni-libraries", "chipobject", "2020.9.2", classifier)
+        download_lib(WPI_URL + "/ni-libraries", "netcomm", "2020.9.2", classifier)
+        download_lib(
+            WPI_URL + "/ni-libraries", "runtime", "2020.10.1", classifier, False
+        )
+        download_lib(WPI_URL + "/ni-libraries", "visa", "2020.10.1", classifier)
 
-    download_lib(REV_URL, "SparkMax-cpp", "1.4.1", classifier + "static")
-    download_lib(REV_URL, "SparkMax-driver", "1.4.1", classifier + "static")
+    classifier += "static"
+    download_lib(REV_URL, "SparkMax-cpp", "1.5.1", classifier)
+    download_lib(REV_URL, "SparkMax-driver", "1.5.1", classifier)
 
     # Generate pubsub messages
     if (

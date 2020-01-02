@@ -2,7 +2,7 @@
 # commands ran.
 
 CFLAGS := -O2 -Wall -s -std=c11
-CPPFLAGS := -O2 -Wall -s -std=c++14
+CPPFLAGS := -O2 -Wall -s -std=c++17
 
 SRCDIR := src/main
 TESTDIR := src/test

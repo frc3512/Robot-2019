@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-#include <frc/circular_buffer.h>
+#include <wpi/circular_buffer.h>
 #include <wpi/condition_variable.h>
 
 #include "communications/PublishNodeBase.hpp"
@@ -80,7 +80,7 @@ private:
 
     std::string m_nodeName;
     std::vector<PublishNode*> m_subList;
-    frc::circular_buffer<char> m_queue{kNodeQueueSize};
+    wpi::circular_buffer<char> m_queue{kNodeQueueSize};
 
     std::thread m_thread;
     std::atomic<bool> m_isRunning{true};

@@ -12,7 +12,7 @@
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
-#include <units/units.h>
+#include <units.h>
 
 #include "frc/StateSpaceUtil.h"
 #include "frc/estimator/MerweScaledSigmaPoints.h"

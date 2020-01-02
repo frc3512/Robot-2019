@@ -4,7 +4,7 @@
 
 using namespace frc3512;
 
-void SubsystemBase::EnablePeriodic() { m_notifier.StartPeriodic(0.02); }
+void SubsystemBase::EnablePeriodic() { m_notifier.StartPeriodic(20_ms); }
 
 void SubsystemBase::DisablePeriodic() { m_notifier.Stop(); }
 

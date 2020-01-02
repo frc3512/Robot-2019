@@ -27,7 +27,7 @@ double FourBarLift::GetHeight() { return m_encoder.GetDistance(); }
 
 void FourBarLift::Enable() {
     m_controller.Enable();
-    m_thread.StartPeriodic(0.005);
+    m_thread.StartPeriodic(5_ms);
 }
 
 void FourBarLift::Disable() {

@@ -61,7 +61,7 @@ void Drivetrain::ResetEncoders() {
 }
 
 void Drivetrain::EnableController() {
-    m_controllerThread.StartPeriodic(Constants::kDt.to<double>());
+    m_controllerThread.StartPeriodic(Constants::kDt);
     m_controller.Enable();
     m_drive.SetSafetyEnabled(false);
 }

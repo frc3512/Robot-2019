@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include <Eigen/Core>
-#include <units/units.h>
+#include <units.h>
 
 #include "frc/StateSpaceUtil.h"
 

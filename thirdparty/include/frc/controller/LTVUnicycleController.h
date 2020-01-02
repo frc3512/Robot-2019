@@ -10,7 +10,7 @@
 #include <array>
 
 #include <Eigen/Core>
-#include <units/units.h>
+#include <units.h>
 
 #include "frc/geometry/Pose2d.h"
 #include "frc/kinematics/ChassisSpeeds.h"

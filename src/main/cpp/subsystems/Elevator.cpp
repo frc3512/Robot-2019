@@ -27,7 +27,7 @@ double Elevator::GetHeight() { return m_encoder.GetDistance(); }
 
 void Elevator::Enable() {
     m_controller.Enable();
-    m_thread.StartPeriodic(0.005);
+    m_thread.StartPeriodic(5_ms);
     m_isEnabled = true;
 }
 

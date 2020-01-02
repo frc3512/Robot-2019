@@ -31,7 +31,7 @@ double Climber::GetVelocity() { return m_encoder.GetRate(); }
 
 void Climber::Enable() {
     m_controller.Enable();
-    m_notifier.StartPeriodic(0.005);
+    m_notifier.StartPeriodic(5_ms);
 }
 
 void Climber::Disable() {

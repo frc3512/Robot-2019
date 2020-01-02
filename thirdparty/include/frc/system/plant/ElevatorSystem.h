@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <units/units.h>
+#include <units.h>
 
 #include "frc/system/LinearSystem.h"
 #include "frc/system/plant/DCMotor.h"
