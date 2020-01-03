@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2019 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2019-2020 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -57,6 +57,10 @@ DCMotor DCMotor::BanebotsRS550(int numMotors) {
 
 DCMotor DCMotor::NEO(int numMotors) {
   return DCMotor(12_V, 2.6_Nm, 105_A, 1.8_A, 5676_rpm, numMotors);
+}
+
+DCMotor DCMotor::NEO550(int numMotors) {
+  return DCMotor(12_V, 0.97_Nm, 100_A, 1.4_A, 11000_rpm, numMotors);
 }
 
 }  // namespace frc
