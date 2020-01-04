@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2019 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2019-2020 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -186,7 +186,8 @@ class ExtendedKalmanFilter {
     //
     // K^T = S^T.solve(CP^T)
     // K = (S^T.solve(CP^T))^T
-    auto K = S.transpose().ldlt().solve(C * m_P.transpose()).transpose();
+    Eigen::Matrix<double, States, Rows> K =
+        S.transpose().ldlt().solve(C * m_P.transpose()).transpose();
 
     m_xHat += K * (y - h(m_xHat, u));
     m_P = (Eigen::Matrix<double, States, States>::Identity() - K * C) * m_P;
