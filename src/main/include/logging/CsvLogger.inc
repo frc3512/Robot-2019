@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,13 @@ namespace frc3512 {
 template <class... doubles>
 void CsvLogger::Log(double value, doubles... values) {
     m_logfile << Timestamp() << ',';
+
+    LogImpl(value, values...);
+}
+
+template <class... doubles>
+void CsvLogger::Log(units::second_t t, double value, doubles... values) {
+    m_logfile << t.to<double>() << ',';
 
     LogImpl(value, values...);
 }

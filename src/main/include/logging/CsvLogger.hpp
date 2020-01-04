@@ -1,10 +1,12 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
 #include <chrono>
 #include <fstream>
 #include <string>
+
+#include <units/units.h>
 
 namespace frc3512 {
 
@@ -17,6 +19,9 @@ public:
 
     template <class... doubles>
     void Log(double value, doubles... values);
+
+    template <class... doubles>
+    void Log(units::second_t t, double value, doubles... values);
 
 private:
     template <class... doubles>
