@@ -24,6 +24,7 @@ includeOtherLibs {
   units/
   wpi/
   cscore\.h$
+  units\.h$
 }
 
 generatedFileExclude {
