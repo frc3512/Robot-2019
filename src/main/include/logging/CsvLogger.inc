@@ -15,7 +15,7 @@ template <class... doubles>
 void CsvLogger::Log(units::second_t t, double value, doubles... values) {
     m_logfile << t.to<double>() << ',';
 
-    LogImpl(value, values...);
+    WriteValues(value, values...);
 }
 
 template <class... doubles>
