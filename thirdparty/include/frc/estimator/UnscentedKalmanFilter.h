@@ -53,6 +53,19 @@ class UnscentedKalmanFilter {
   }
 
   /**
+   * Returns the error covariance matrix P.
+   */
+  const Eigen::Matrix<double, States, States>& P() const { return m_P; }
+
+  /**
+   * Returns an element of the error covariance matrix P.
+   *
+   * @param i Row of P.
+   * @param j Column of P.
+   */
+  double P(int i, int j) const { return m_P(i, j); }
+
+  /**
    * Returns the state estimate x-hat.
    */
   const Eigen::Matrix<double, States, 1>& Xhat() const { return m_xHat; }
