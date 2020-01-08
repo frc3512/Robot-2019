@@ -20,10 +20,12 @@ void CsvLogger::Log(units::second_t t, double value, doubles... values) {
 
 template <class... doubles>
 void CsvLogger::WriteValues(double value, doubles... values) {
-    m_logfile << value << ',';
+    m_logfile << value;
     if constexpr (sizeof...(values) > 0) {
+        m_logfile << ',';
         WriteValues(values...);
     } else {
+        m_logfile << '\n';
         m_logfile.flush();
     }
 }
