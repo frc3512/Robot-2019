@@ -29,8 +29,8 @@ LDFLAGS := \
 	-Lbuild/cscore-cpp-$(VERSION)-linuxx86-64/linux/x86-64/shared \
 	-Wl,-rpath,build/cscore-cpp-$(VERSION)-linuxx86-64/linux/x86-64/shared \
 	-lcscore \
-	-Lbuild/opencv-cpp-3.4.4-5-linuxx86-64/linux/x86-64/shared \
-	-Wl,-rpath,build/opencv-cpp-3.4.4-5-linuxx86-64/linux/x86-64/shared \
+	-Lbuild/opencv-cpp-3.4.7-2-linuxx86-64/linux/x86-64/shared \
+	-Wl,-rpath,build/opencv-cpp-3.4.7-2-linuxx86-64/linux/x86-64/shared \
 	-l:libopencv_imgproc.so.3.4 \
 	-l:libopencv_imgcodecs.so.3.4 \
 	-l:libopencv_core.so.3.4 \
