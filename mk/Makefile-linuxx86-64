@@ -48,8 +48,7 @@ LDFLAGS := \
 	-Lbuild/SparkMax-driver-1.5.1-linuxx86-64static/linux/x86-64/static \
 	-lSparkMaxDriver \
 	-lpthread \
-	-lgtest \
-	-lgtest_main
+	-lgtest
 
 include mk/Makefile-common
 
