@@ -15,7 +15,7 @@
 #include "frc/system/RungeKutta.h"
 
 TEST(StateSpaceUtilTest, CostParameterPack) {
-  auto mat = frc::MakeCostMatrix(1.0, 2.0, 3.0);
+  Eigen::Matrix<double, 3, 3> mat = frc::MakeCostMatrix(1.0, 2.0, 3.0);
   EXPECT_NEAR(mat(0, 0), 1.0, 1e-3);
   EXPECT_NEAR(mat(0, 1), 0.0, 1e-3);
   EXPECT_NEAR(mat(0, 2), 0.0, 1e-3);
@@ -28,7 +28,7 @@ TEST(StateSpaceUtilTest, CostParameterPack) {
 }
 
 TEST(StateSpaceUtilTest, CostArray) {
-  auto mat = frc::MakeCostMatrix<3>({1.0, 2.0, 3.0});
+  Eigen::Matrix<double, 3, 3> mat = frc::MakeCostMatrix<3>({1.0, 2.0, 3.0});
   EXPECT_NEAR(mat(0, 0), 1.0, 1e-3);
   EXPECT_NEAR(mat(0, 1), 0.0, 1e-3);
   EXPECT_NEAR(mat(0, 2), 0.0, 1e-3);
@@ -41,7 +41,7 @@ TEST(StateSpaceUtilTest, CostArray) {
 }
 
 TEST(StateSpaceUtilTest, CovParameterPack) {
-  auto mat = frc::MakeCovMatrix(1.0, 2.0, 3.0);
+  Eigen::Matrix<double, 3, 3> mat = frc::MakeCovMatrix(1.0, 2.0, 3.0);
   EXPECT_NEAR(mat(0, 0), 1.0, 1e-3);
   EXPECT_NEAR(mat(0, 1), 0.0, 1e-3);
   EXPECT_NEAR(mat(0, 2), 0.0, 1e-3);
@@ -54,7 +54,7 @@ TEST(StateSpaceUtilTest, CovParameterPack) {
 }
 
 TEST(StateSpaceUtilTest, CovArray) {
-  auto mat = frc::MakeCovMatrix<3>({1.0, 2.0, 3.0});
+  Eigen::Matrix<double, 3, 3> mat = frc::MakeCovMatrix<3>({1.0, 2.0, 3.0});
   EXPECT_NEAR(mat(0, 0), 1.0, 1e-3);
   EXPECT_NEAR(mat(0, 1), 0.0, 1e-3);
   EXPECT_NEAR(mat(0, 2), 0.0, 1e-3);
@@ -64,6 +64,11 @@ TEST(StateSpaceUtilTest, CovArray) {
   EXPECT_NEAR(mat(0, 2), 0.0, 1e-3);
   EXPECT_NEAR(mat(1, 2), 0.0, 1e-3);
   EXPECT_NEAR(mat(2, 2), 9.0, 1e-3);
+}
+
+TEST(StateSpaceUtilTest, WhiteNoiseVector) {
+  Eigen::Matrix<double, 2, 1> vec = frc::MakeWhiteNoiseVector<2>({2.0, 3.0});
+  static_cast<void>(vec);
 }
 
 TEST(StateSpaceUtilTest, IsStabilizable) {
