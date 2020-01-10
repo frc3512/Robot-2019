@@ -4,6 +4,7 @@
 
 #include <frc/Filesystem.h>
 #include <wpi/FileSystem.h>
+#include <wpi/SmallVector.h>
 #include <wpi/raw_ostream.h>
 
 using namespace frc3512;
