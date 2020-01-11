@@ -65,8 +65,13 @@ class KalmanFilter {
 
     auto discR = DiscretizeR(m_contR, dt);
 
-    m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
-        discA.transpose(), plant.C().transpose(), discQ, discR);
+    if (IsStabilizable<States, Outputs>(discA.transpose(),
+                                        plant.C().transpose())) {
+      m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
+          discA.transpose(), plant.C().transpose(), discQ, discR);
+    } else {
+      m_P = Eigen::Matrix<double, States, States>::Zero();
+    }
   }
 
   KalmanFilter(KalmanFilter&&) = default;
