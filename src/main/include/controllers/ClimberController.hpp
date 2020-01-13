@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -131,7 +131,7 @@ private:
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = [=] {
-        auto motor = frc::DCMotor::Vex775Pro();
+        constexpr auto motor = frc::DCMotor::Vex775Pro();
 
         // Robot mass
         constexpr auto m = 63.503_kg;

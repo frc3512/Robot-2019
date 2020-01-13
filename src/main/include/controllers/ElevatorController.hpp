@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -120,7 +120,7 @@ private:
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_scorePlant = [=] {
-        auto motor = frc::DCMotor::NEO();
+        constexpr auto motor = frc::DCMotor::NEO();
 
         // Carriage mass
         constexpr auto m = 9.785262_kg;

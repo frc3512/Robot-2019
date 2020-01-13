@@ -4851,6 +4851,7 @@ using namespace angle;
 using namespace angular_velocity;
 using namespace area;
 using namespace current;
+using namespace dimensionless;
 using namespace impedance;
 using namespace length;
 using namespace mass;

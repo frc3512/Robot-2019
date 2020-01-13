@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -138,10 +138,10 @@ private:
     frc::TrapezoidProfile<units::radians>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = [=] {
-        auto motor = frc::DCMotor::NEO();
+        constexpr auto motor = frc::DCMotor::NEO();
 
         // Arm moment of inertia
-        auto J = 0.6975_kg_sq_m;
+        constexpr auto J = 0.6975_kg_sq_m;
 
         // Gear ratio
         constexpr double G = 302.22;

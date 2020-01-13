@@ -54,59 +54,88 @@ class DCMotor {
    * @param freeSpeed      Angular velocity under no load.
    * @param numMotors      Number of motors in a gearbox.
    */
-  DCMotor(units::volt_t nominalVoltage, units::newton_meter_t stallTorque,
-          units::ampere_t stallCurrent, units::ampere_t freeCurrent,
-          units::radians_per_second_t freeSpeed, int numMotors = 1);
+  constexpr DCMotor(units::volt_t nominalVoltage,
+                    units::newton_meter_t stallTorque,
+                    units::ampere_t stallCurrent, units::ampere_t freeCurrent,
+                    units::radians_per_second_t freeSpeed, int numMotors = 1)
+      : nominalVoltage(nominalVoltage),
+        stallTorque(stallTorque * numMotors),
+        stallCurrent(stallCurrent),
+        freeCurrent(freeCurrent),
+        freeSpeed(freeSpeed),
+        R(nominalVoltage / stallCurrent),
+        Kv(freeSpeed / (nominalVoltage - R * freeCurrent)),
+        Kt(stallTorque * numMotors / stallCurrent) {}
 
   /**
    * Returns instance of CIM.
    */
-  static DCMotor CIM(int numMotors = 1);
+  static constexpr DCMotor CIM(int numMotors = 1) {
+    return DCMotor(12_V, 2.42_Nm, 133_A, 2.7_A, 5310_rpm, numMotors);
+  }
 
   /**
    * Returns instance of MiniCIM.
    */
-  static DCMotor MiniCIM(int numMotors = 1);
+  static constexpr DCMotor MiniCIM(int numMotors = 1) {
+    return DCMotor(12_V, 1.41_Nm, 89_A, 3_A, 5840_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Bag motor.
    */
-  static DCMotor Bag(int numMotors = 1);
+  static constexpr DCMotor Bag(int numMotors = 1) {
+    return DCMotor(12_V, 0.43_Nm, 53_A, 1.8_A, 13180_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Vex 775 Pro.
    */
-  static DCMotor Vex775Pro(int numMotors = 1);
+  static constexpr DCMotor Vex775Pro(int numMotors = 1) {
+    return DCMotor(12_V, 0.71_Nm, 134_A, 0.7_A, 18730_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Andymark RS 775-125.
    */
-  static DCMotor RS775_125(int numMotors = 1);
+  static constexpr DCMotor RS775_125(int numMotors = 1) {
+    return DCMotor(12_V, 0.28_Nm, 18_A, 1.6_A, 5800_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Banebots RS 775.
    */
-  static DCMotor BanebotsRS775(int numMotors = 1);
+  static constexpr DCMotor BanebotsRS775(int numMotors = 1) {
+    return DCMotor(12_V, 0.72_Nm, 97_A, 2.7_A, 13050_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Andymark 9015.
    */
-  static DCMotor Andymark9015(int numMotors = 1);
+  static constexpr DCMotor Andymark9015(int numMotors = 1) {
+    return DCMotor(12_V, 0.36_Nm, 71_A, 3.7_A, 14270_rpm, numMotors);
+  }
 
   /**
    * Returns instance of Banebots RS 550.
    */
-  static DCMotor BanebotsRS550(int numMotors = 1);
+  static constexpr DCMotor BanebotsRS550(int numMotors = 1) {
+    return DCMotor(12_V, 0.38_Nm, 84_A, 0.4_A, 19000_rpm, numMotors);
+  }
 
   /**
    * Returns instance of NEO brushless motor.
    */
-  static DCMotor NEO(int numMotors = 1);
+  static constexpr DCMotor NEO(int numMotors = 1) {
+    return DCMotor(12_V, 2.6_Nm, 105_A, 1.8_A, 5676_rpm, numMotors);
+  }
 
   /**
    * Returns instance of NEO 550 brushless motor.
    */
-  static DCMotor NEO550(int numMotors = 1);
+  static constexpr DCMotor NEO550(int numMotors = 1) {
+    return DCMotor(12_V, 0.97_Nm, 100_A, 1.4_A, 11000_rpm, numMotors);
+  }
 };
 
 }  // namespace frc

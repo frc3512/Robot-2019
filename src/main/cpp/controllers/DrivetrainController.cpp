@@ -273,20 +273,20 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
 Eigen::Matrix<double, 5, 1> DrivetrainController::Dynamics(
     const Eigen::Matrix<double, 5, 1>& x,
     const Eigen::Matrix<double, 2, 1>& u) {
-    auto motors = frc::DCMotor::MiniCIM(2);
+    constexpr auto motors = frc::DCMotor::MiniCIM(2);
 
-    // constexpr double Glow = 15.32;       // Low gear ratio
-    constexpr double Ghigh = 7.08;       // High gear ratio
-    constexpr auto rb = 0.8382_m / 2.0;  // Robot radius
-    constexpr auto r = 0.0746125_m;      // Wheel radius
-    constexpr auto m = 63.503_kg;        // Robot mass
-    constexpr auto J = 5.6_kg_sq_m;      // Robot moment of inertia
+    // constexpr units::dimensionless_t Glow = 15.32;  // Low gear ratio
+    constexpr units::dimensionless_t Ghigh = 7.08;  // High gear ratio
+    constexpr auto rb = 0.8382_m / 2.0;             // Robot radius
+    constexpr auto r = 0.0746125_m;                 // Wheel radius
+    constexpr auto m = 63.503_kg;                   // Robot mass
+    constexpr auto J = 5.6_kg_sq_m;                 // Robot moment of inertia
 
-    auto C1 = -std::pow(Ghigh, 2) * motors.Kt /
-              (motors.Kv * motors.R * units::math::pow<2>(r));
-    auto C2 = Ghigh * motors.Kt / (motors.R * r);
-    auto k1 = (1 / m + units::math::pow<2>(rb) / J);
-    auto k2 = (1 / m - units::math::pow<2>(rb) / J);
+    constexpr auto C1 =
+        -1.0 * Ghigh * Ghigh * motors.Kt / (motors.Kv * motors.R * r * r);
+    constexpr auto C2 = Ghigh * motors.Kt / (motors.R * r);
+    constexpr auto k1 = (1 / m + rb * rb / J);
+    constexpr auto k2 = (1 / m - rb * rb / J);
 
     units::meters_per_second_t vl{x(3, 0)};
     units::meters_per_second_t vr{x(4, 0)};
