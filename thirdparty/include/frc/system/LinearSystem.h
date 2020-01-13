@@ -13,6 +13,7 @@
 #include <units.h>
 
 #include "frc/StateSpaceUtil.h"
+#include "frc/system/Discretization.h"
 
 #if __cplusplus < 201703L
 namespace std {
