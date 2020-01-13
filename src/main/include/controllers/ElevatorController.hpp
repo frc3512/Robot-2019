@@ -5,13 +5,13 @@
 #include <Eigen/Core>
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/estimator/KalmanFilter.h>
+#include <frc/logging/CSVLogFile.h>
 #include <frc/system/LinearSystem.h>
 #include <frc/system/plant/DCMotor.h>
 #include <frc/system/plant/ElevatorSystem.h>
 #include <frc/trajectory/TrapezoidProfile.h>
 
 #include "Constants.hpp"
-#include "logging/CsvLogger.hpp"
 
 namespace frc3512 {
 
@@ -166,9 +166,8 @@ private:
 
     bool m_atReferences = false;
 
-    CsvLogger elevatorLogger{"Elevator.csv",
-                             "Time (s),EstPos (m),EstVel (m/s),RefPos "
-                             "(m),Voltage (V),RefVel (m/s)"};
+    frc::CSVLogFile elevatorLogger{"Elevator",   "EstPos (m)",  "EstVel (m/s)",
+                                   "RefPos (m)", "Voltage (V)", "RefVel (m/s)"};
 };
 
 }  // namespace frc3512

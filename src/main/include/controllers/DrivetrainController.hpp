@@ -11,12 +11,12 @@
 
 #include <Eigen/Core>
 #include <frc/estimator/ExtendedKalmanFilter.h>
+#include <frc/logging/CSVLogFile.h>
 #include <frc/trajectory/Trajectory.h>
 #include <units/units.h>
 #include <wpi/mutex.h>
 
 #include "Constants.hpp"
-#include "logging/CsvLogger.hpp"
 
 namespace frc3512 {
 
@@ -129,7 +129,7 @@ public:
      *
      * @param dt Timestep between each Update() call
      */
-    void Update(units::second_t dt, units::second_t elaspedTime);
+    void Update(units::second_t dt, units::second_t elapsedTime);
 
     /**
      * Resets any internal state.
@@ -178,16 +178,19 @@ private:
     bool m_isEnabled = false;
 
     // The loggers that generates the comma separated value files
-    CsvLogger velocityLogger{"DriveVelocities.csv",
-                             "Time,LeftRate,RightRate,EstLeftVel,EstRightVel,"
-                             "LeftVelRef,RightVelRef"};
-    CsvLogger voltageLogger{"DriveVoltages.csv",
-                            "Time,LeftVolt,RightVolt,DSVoltage"};
-    CsvLogger positionLogger{"DrivePositions.csv",
-                             "Time,EstX,EstY,EstTheta,GoalX,GoalY,GoalTheta"};
-    CsvLogger errorCovLogger{
-        "DriveErrorCov.csv",
-        "Time,X Cov,Y Cov,Heading Cov,Left Vel Cov,Right Vel Cov"};
+    frc::CSVLogFile velocityLogger{
+        "DriveVelocities",  "LeftRate (m/s)",    "RightRate (m/s)",
+        "EstLeftVel (m/s)", "EstRightVel (m/s)", "GoalV (V)",
+        "GoalW (V)",        "LeftVelRef (m/s)",  "RightVelRef (m/s)"};
+    frc::CSVLogFile voltageLogger{"DriveVoltage", "Time (s)", "LeftVolt (V)",
+                                  "RightVolt (V)", "DSVoltage (V)"};
+    frc::CSVLogFile positionLogger{
+        "DrivePositions", "LeftPos (m)", "RightPos (m)",
+        "EstX (m)",       "EstY (m)",    "EstTheta (rad)",
+        "GoalX (m)",      "GoalY (m)",   "GoalTheta (rad)"};
+    frc::CSVLogFile errorCovLogger{"DriveErrorCov",      "X Cov (m^2)",
+                                   "Y Cov (m^2)",        "Heading Cov (m^2)",
+                                   "Left Vel Cov (m^2)", "Right Vel Cov (m^2)"};
 
     Eigen::Matrix<double, 2, 1> Controller(
         const Eigen::Matrix<double, 5, 1>& x,

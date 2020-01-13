@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Finds latest versions of the CSVs for each subsystem, then plots the data."""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
 
 
-def num_lines(filename):
-    with open(filename) as f:
+def num_lines(csv_group):
+    with open(csv_group) as f:
         i = 0
         for i, l in enumerate(f):
             pass
@@ -18,9 +17,11 @@ def num_lines(filename):
 # Get list of files in current directory
 files = [os.path.join(dp, f) for dp, dn, fn in os.walk(".") for f in fn]
 
-# Maps subsystem name to tuple of filename and number suffix
+# Maps subsystem name to tuple of csv_group and date
 filtered = {}
-file_rgx = re.compile(r"^\./(?P<name>[A-Za-z]+)\.csv(?P<num>[0-9]*)$")
+file_rgx = re.compile(
+    r"^\./(?P<name>[A-Za-z]+)-(?P<date>\d{4}-\d{2}-\d{2}-\d{2}_\d{2}_\d{2})\.csv$"
+)
 for f in files:
     match = file_rgx.search(f)
     if not match:
@@ -32,25 +33,24 @@ for f in files:
         continue
 
     # If the file is a CSV with the correct name pattern, add it to the filtered
-    # list
+    # list. Files with newer dates override old ones in lexographic ordering.
     name = match.group("name")
-    num = int(match.group("num"))
-    if name not in filtered or filtered[name][1] < num:
-        filtered[name] = (f, num)
+    if name not in filtered or filtered[name] < name:
+        filtered[name] = f
 
 # Plot datasets
-for filename in filtered.keys():
+for csv_group in filtered.keys():
     plt.figure()
-    plt.title(filename)
-    name = filtered[filename][0]
+    plt.title(csv_group)
+    filename = filtered[csv_group]
 
     # Get labels from first row of file
-    with open(name) as f:
-        labels = f.readline().rstrip().split(",")
+    with open(filename) as f:
+        labels = [x.strip('"') for x in f.readline().rstrip().split(",")]
 
     # Retrieve data from remaining rows of file
-    print(f"Plotting {name}")
-    data = np.genfromtxt(name, delimiter=",", skip_header=1, skip_footer=1)
+    print(f"Plotting {filename}")
+    data = np.genfromtxt(filename, delimiter=",", skip_header=1, skip_footer=1)
     plt.plot(data[:, 0], data[:, 1:])
 
     # First label is x axis label (time). The remainder are dataset names.

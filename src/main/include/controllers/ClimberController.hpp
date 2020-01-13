@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/estimator/KalmanFilter.h>
+#include <frc/logging/CSVLogFile.h>
 #include <frc/system/LinearSystem.h>
 #include <frc/system/LinearSystemLoop.h>
 #include <frc/system/plant/DCMotor.h>
@@ -12,7 +13,6 @@
 #include <frc/trajectory/TrapezoidProfile.h>
 
 #include "Constants.hpp"
-#include "logging/CsvLogger.hpp"
 
 namespace frc3512 {
 
@@ -152,8 +152,8 @@ private:
 
     bool m_atReferences = false;
 
-    CsvLogger climberLogger{"Climber.csv",
-                            "Time,EstPos,PosRef,Voltage,EstVel,VelRef"};
+    frc::CSVLogFile climberLogger{"Climber",      "EstPos (m)",
+                                  "PosRef (m)",   "Voltage (V)",
+                                  "EstVel (m/s)", "VelRef (m/s)"};
 };
-
 }  // namespace frc3512

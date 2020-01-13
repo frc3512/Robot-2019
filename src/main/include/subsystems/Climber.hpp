@@ -1,4 +1,4 @@
-// Copyright (c) 2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,6 @@
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
 #include "controllers/ClimberController.hpp"
-#include "logging/CsvLogger.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {
@@ -138,7 +137,6 @@ private:
     frc::Encoder m_encoder{Constants::Climber::kLiftEncoderA,
                            Constants::Climber::kLiftEncoderB};
     frc::Notifier m_notifier{&Climber::Iterate, this};
-    CsvLogger climberLogger{"ClimberStuff.csv", "Time,Pos,Velo,Accel"};
 
     ElevatorStatusPacket m_elevatorStatusPacket;
     FourBarLiftStatusPacket m_fourBarLiftStatusPacket;

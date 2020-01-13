@@ -137,29 +137,29 @@ units::meters_per_second_t DrivetrainController::RightVelocityReference()
 }
 
 void DrivetrainController::Update(units::second_t dt,
-                                  units::second_t elaspedTime) {
+                                  units::second_t elapsedTime) {
     frc::Trajectory::State ref;
     {
         std::lock_guard lock(m_trajectoryMutex);
-        ref = m_trajectory.Sample(elaspedTime);
+        ref = m_trajectory.Sample(elapsedTime);
     }
 
-    voltageLogger.Log(elaspedTime, ControllerLeftVoltage().to<double>(),
+    voltageLogger.Log(elapsedTime, ControllerLeftVoltage().to<double>(),
                       ControllerRightVoltage().to<double>(),
                       frc::RobotController::GetInputVoltage());
-    velocityLogger.Log(elaspedTime, m_y(1, 0), m_y(2, 0),
+    velocityLogger.Log(elapsedTime, m_y(1, 0), m_y(2, 0),
                        EstimatedLeftVelocity().to<double>(),
                        EstimatedRightVelocity().to<double>(),
                        LeftVelocityReference().to<double>(),
                        RightVelocityReference().to<double>());
-    positionLogger.Log(elaspedTime,
+    positionLogger.Log(elapsedTime,
                        EstimatedPose().Translation().X().to<double>(),
                        EstimatedPose().Translation().Y().to<double>(),
                        EstimatedPose().Rotation().Radians().to<double>(),
                        ref.pose.Translation().X().to<double>(),
                        ref.pose.Translation().Y().to<double>(),
                        ref.pose.Rotation().Radians().to<double>());
-    errorCovLogger.Log(elaspedTime, m_observer.P(0, 0), m_observer.P(1, 1),
+    errorCovLogger.Log(elapsedTime, m_observer.P(0, 0), m_observer.P(1, 1),
                        m_observer.P(2, 2), m_observer.P(3, 3),
                        m_observer.P(4, 4));
 
