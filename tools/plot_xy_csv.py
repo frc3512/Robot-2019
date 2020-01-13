@@ -52,7 +52,7 @@ with open(filename) as f:
 print(f"Plotting {filename}")
 data = np.genfromtxt(filename, delimiter=",", skip_header=1, skip_footer=1)
 plt.plot(data[:, 1], data[:, 2])
-plt.plot(data[:, 4], data[:, 5])
+plt.plot(data[:, 3], data[:, 4])
 
 # First label is x axis label (time). The remainder are dataset names.
 plt.xlabel("X (m)")

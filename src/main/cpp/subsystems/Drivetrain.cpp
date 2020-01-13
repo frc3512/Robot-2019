@@ -6,7 +6,6 @@
 #include <limits>
 #include <string>
 
-#include <frc/DriverStation.h>
 #include <units/units.h>
 
 using namespace frc3512;
@@ -18,13 +17,19 @@ Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
 
     m_leftGrbx.Set(0.0);
     m_rightGrbx.Set(0.0);
+
     m_leftGrbx.SetInverted(true);
+
     m_drive.SetRightSideInverted(false);
+
     m_leftEncoder.SetSamplesToAverage(10);
     m_rightEncoder.SetSamplesToAverage(10);
+
     m_rightEncoder.SetReverseDirection(true);
+
     m_leftEncoder.SetDistancePerPulse(kDpP);
     m_rightEncoder.SetDistancePerPulse(kDpP);
+
     ShiftUp();
     EnablePeriodic();
 }
@@ -44,7 +49,7 @@ void Drivetrain::ShiftDown() { m_shifter.Set(false); }
 void Drivetrain::Shift() { m_shifter.Set(!m_shifter.Get()); }
 
 units::radian_t Drivetrain::GetAngle() const {
-    return units::degree_t{-1.0 * m_gyro.GetAngle()};
+    return units::degree_t{-m_gyro.GetAngle()};
 }
 
 units::radians_per_second_t Drivetrain::GetAngularRate() const {
@@ -100,16 +105,15 @@ void Drivetrain::Reset() {
 }
 
 void Drivetrain::Iterate() {
-    m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftRate(),
-                                         GetRightRate());
+    m_controller.SetMeasuredLocalOutputs(
+        GetLeftDisplacement(), GetRightDisplacement(), GetAngularRate());
     auto now = std::chrono::steady_clock::now();
     m_controller.Update(now - m_lastTime, now - m_startTime);
 
     // Set motor inputs
-    auto batteryVoltage =
-        units::volt_t{frc::DriverStation::GetInstance().GetBatteryVoltage()};
-    SetLeftManual(m_controller.ControllerLeftVoltage() / batteryVoltage);
-    SetRightManual(m_controller.ControllerRightVoltage() / batteryVoltage);
+    auto u = m_controller.GetInputs();
+    SetLeftManual(u(0, 0) / 12.0);
+    SetRightManual(u(1, 0) / 12.0);
 
     m_lastTime = now;
 }

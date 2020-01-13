@@ -48,12 +48,6 @@ constexpr double kPositionTolerance = 0.05;  // meters
 constexpr double kVelocityTolerance = 2.0;   // meters/second
 constexpr double kAngleTolerance = 0.05;     // radians
 
-// Drive trapezoid profile constants
-constexpr auto kMaxV = 5.461_mps;              // m/sec
-constexpr auto kMaxA = 1.0922_mps_sq;          // 3.0;           // sec
-constexpr auto kMaxRotateRate = 4.52_mps;      // rad/sec
-constexpr auto kMaxRotateAccel = 4.52_mps_sq;  // sec
-
 // Physical Robot Constants
 constexpr auto kWheelbaseWidth = 0.6096_m;  // 24.0;
 constexpr auto kLength = 0.9398_m;          // 37.0;  // Approximate
@@ -61,6 +55,16 @@ constexpr auto kWidth = 0.8382_m;           // 33.0;   // Approximate
 constexpr auto kWheelRadius = 0.0746125_m;  // 2.9375;  // 2.947
 constexpr double kDriveGearRatio = 1.0 / 1.0;
 constexpr auto kMaxControlVoltage = 12_V;
+
+// System Characterization
+constexpr auto kLinearV = 3.62_V / 1_mps;
+constexpr auto kLinearA = 2.5_V / 1_mps_sq;
+constexpr auto kAngularV = 10.41_V / 1_rad;
+constexpr auto kAngularA = 1.0_V / 1_rad_per_s / 1_s;
+
+// Drive trapezoid profile constants
+constexpr auto kMaxV = 12_V / kLinearV;  // m/s
+constexpr auto kMaxA = 12_V / kLinearA;  // m/s^2
 
 // Distance per Pulse
 constexpr double kDpP = (2.0 * wpi::math::pi * kWheelRadius.to<double>()) *
