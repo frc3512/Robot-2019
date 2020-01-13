@@ -15,15 +15,6 @@
 #include "frc/StateSpaceUtil.h"
 #include "frc/system/Discretization.h"
 
-#if __cplusplus < 201703L
-namespace std {
-template <class T>
-constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
-  return (v < lo) ? lo : (hi < v) ? hi : v;
-}
-}  // namespace std
-#endif
-
 namespace frc {
 
 /**
@@ -276,7 +267,8 @@ class LinearSystem {
    * @param u Input vector to clamp.
    * @return Clamped input vector.
    */
-  auto ClampInput(const Eigen::Matrix<double, Inputs, 1>& u) const {
+  Eigen::Matrix<double, Inputs, 1> ClampInput(
+      const Eigen::Matrix<double, Inputs, 1>& u) const {
     Eigen::Matrix<double, Inputs, 1> result;
     for (int i = 0; i < Inputs; ++i) {
       result(i, 0) = std::clamp(u(i, 0), m_uMin(i, 0), m_uMax(i, 0));
