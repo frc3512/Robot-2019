@@ -121,12 +121,14 @@ private:
     // Left gearbox used in position PID
     frc::Spark m_leftGrbx{Constants::Drivetrain::kLeftMasterPort};
     frc::Encoder m_leftEncoder{Constants::Drivetrain::kLeftEncoderA,
-                               Constants::Drivetrain::kLeftEncoderB};
+                               Constants::Drivetrain::kLeftEncoderB, false,
+                               frc::Encoder::EncodingType::k1X};
 
     // Right gearbox used in position PID
     frc::Spark m_rightGrbx{Constants::Drivetrain::kRightMasterPort};
     frc::Encoder m_rightEncoder{Constants::Drivetrain::kRightEncoderA,
-                                Constants::Drivetrain::kRightEncoderB};
+                                Constants::Drivetrain::kRightEncoderB, false,
+                                frc::Encoder::EncodingType::k1X};
 
     frc::DifferentialDrive m_drive{m_leftGrbx, m_rightGrbx};
 
