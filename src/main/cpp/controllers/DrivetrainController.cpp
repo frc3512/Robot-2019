@@ -62,17 +62,21 @@ bool DrivetrainController::AtGoal() {
 
 void DrivetrainController::SetMeasuredLocalOutputs(
     units::radian_t heading, units::meters_per_second_t leftVelocity,
-    units::meters_per_second_t rightVelocity) {
+    units::meters_per_second_t rightVelocity, units::meter_t leftPosition,
+    units::meter_t rightPosition) {
     m_y << heading.to<double>(), leftVelocity.to<double>(),
-        rightVelocity.to<double>();
+        rightVelocity.to<double>(), leftPosition.to<double>(),
+        rightPosition.to<double>();
 }
 
 void DrivetrainController::SetMeasuredGlobalOutputs(
     units::meter_t x, units::meter_t y, units::radian_t heading,
     units::meters_per_second_t leftVelocity,
-    units::meters_per_second_t rightVelocity) {
+    units::meters_per_second_t rightVelocity, units::meter_t leftPosition,
+    units::meter_t rightPosition) {
     m_y << x.to<double>(), y.to<double>(), heading.to<double>(),
-        leftVelocity.to<double>(), rightVelocity.to<double>();
+        leftVelocity.to<double>(), rightVelocity.to<double>(),
+        leftPosition.to<double>(), rightPosition.to<double>();
 }
 
 Eigen::Matrix<double, 3, 1> DrivetrainController::EstimatedLocalOutputs()

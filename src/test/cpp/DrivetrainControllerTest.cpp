@@ -17,9 +17,12 @@ TEST(DrivetrainControllerTest, ReachesReference) {
     controller.Reset(frc::Pose2d{0_m, 0_m, 0_rad});
     controller.Enable();
 
-    controller.SetMeasuredLocalOutputs(0_rad, 0_mps, 0_mps);
+    controller.SetMeasuredLocalOutputs(0_rad, 0_mps, 0_mps, 0_m, 0_m);
     controller.SetWaypoints(
         {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
+
+    auto leftPosition = 0_m;
+    auto rightPosition = 0_m;
 
     auto currentTime = 0_s;
     while (!controller.AtGoal() && currentTime < 10_s) {
@@ -31,8 +34,11 @@ TEST(DrivetrainControllerTest, ReachesReference) {
             controller.EstimatedLeftVelocity() +
                 units::meters_per_second_t{noise(1, 0)},
             controller.EstimatedRightVelocity() +
-                units::meters_per_second_t{noise(2, 0)});
+                units::meters_per_second_t{noise(2, 0)},
+            leftPosition, rightPosition);
         controller.Update(kDt, currentTime);
+        leftPosition += controller.EstimatedLeftVelocity() * kDt;
+        rightPosition += controller.EstimatedRightVelocity() * kDt;
         currentTime += kDt;
     }
     EXPECT_TRUE(controller.AtGoal());

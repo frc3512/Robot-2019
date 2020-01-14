@@ -10,13 +10,13 @@
 #include <vector>
 
 #include <Eigen/Core>
-#include <frc/estimator/ExtendedKalmanFilter.h>
 #include <frc/logging/CSVLogFile.h>
 #include <frc/trajectory/Trajectory.h>
 #include <units/units.h>
 #include <wpi/mutex.h>
 
 #include "Constants.hpp"
+#include "controllers/DrivetrainObserver.hpp"
 
 namespace frc3512 {
 
@@ -53,10 +53,14 @@ public:
      * @param heading       Angle of the robot.
      * @param leftVelocity  Velocity of left side in meters per second.
      * @param rightVelocity Velocity of right side in meters per second.
+     * @param leftPosition  Distance traveled by left side in meters.
+     * @param rightPosition Distance traveled by right side in meters.
      */
     void SetMeasuredLocalOutputs(units::radian_t heading,
                                  units::meters_per_second_t leftVelocity,
-                                 units::meters_per_second_t rightVelocity);
+                                 units::meters_per_second_t rightVelocity,
+                                 units::meter_t leftPosition,
+                                 units::meter_t rightPosition);
 
     /**
      * Set global measurements.
@@ -66,11 +70,15 @@ public:
      * @param heading       Angle of the robot.
      * @param leftVelocity  Velocity of left side in meters per second.
      * @param rightVelocity Velocity of right side in meters per second.
+     * @param leftPosition  Distance traveled by left side in meters.
+     * @param rightPosition Distance traveled by right side in meters.
      */
     void SetMeasuredGlobalOutputs(units::meter_t x, units::meter_t y,
                                   units::radian_t heading,
                                   units::meters_per_second_t leftVelocity,
-                                  units::meters_per_second_t rightVelocity);
+                                  units::meters_per_second_t rightVelocity,
+                                  units::meter_t leftPosition,
+                                  units::meter_t rightPosition);
 
     /**
      * Returns the estimated outputs based on the current state estimate.
@@ -145,18 +153,13 @@ public:
 
 private:
     // The current sensor measurements.
-    Eigen::Matrix<double, 3, 1> m_y;
+    Eigen::Matrix<double, 5, 1> m_y;
 
     units::meter_t m_leftPos = 0_m;
     units::meter_t m_rightPos = 0_m;
 
     // Design observer
-    frc::ExtendedKalmanFilter<5, 2, 3> m_observer{
-        Dynamics,
-        LocalMeasurementModel,
-        {0.002, 0.002, 0.0001, 1.5, 1.5},
-        {0.0001, 0.01, 0.01},
-        Constants::kDt};
+    DrivetrainObserver m_observer;
 
     // Design controller
     Eigen::Matrix<double, 5, 2> m_B;
