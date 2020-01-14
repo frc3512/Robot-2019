@@ -27,7 +27,7 @@ TEST(DrivetrainControllerTest, ReachesReference) {
     auto currentTime = 0_s;
     while (!controller.AtGoal() && currentTime < 10_s) {
         Eigen::Matrix<double, 3, 1> noise =
-            frc::MakeWhiteNoiseVector<3>({0.0001, 0.01, 0.01});
+            frc::MakeWhiteNoiseVector(0.0001, 0.01, 0.01);
         controller.SetMeasuredLocalOutputs(
             controller.EstimatedPose().Rotation().Radians() +
                 units::radian_t{noise(0, 0)},
