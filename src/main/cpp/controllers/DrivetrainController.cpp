@@ -188,11 +188,12 @@ void DrivetrainController::Update(units::second_t dt,
     m_nextR(4, 0) = vr.to<double>();
 
     // Compute feedforward
-    auto xdot = (m_nextR - m_r) / dt.to<double>();
-    auto uff = m_B.householderQr().solve(
-        xdot - Dynamics(m_r, Eigen::Matrix<double, 2, 1>::Zero()));
+    Eigen::Matrix<double, 5, 1> rdot = (m_nextR - m_r) / dt.to<double>();
+    Eigen::Matrix<double, 2, 1> uff = m_B.householderQr().solve(
+        rdot - Dynamics(m_r, Eigen::Matrix<double, 2, 1>::Zero()));
 
-    auto u = Controller(m_observer.Xhat(), m_nextR) + uff;
+    Eigen::Matrix<double, 2, 1> u =
+        Controller(m_observer.Xhat(), m_nextR) + uff;
 
     double Vl = u(0, 0);
     double Vr = u(1, 0);
@@ -207,7 +208,10 @@ void DrivetrainController::Update(units::second_t dt,
     m_observer.Correct(m_cappedU, m_y);
 
     auto error = m_r - m_observer.Xhat();
-    m_atReferences = std::abs(error(3, 0)) < kVelocityTolerance &&
+    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
+                     std::abs(error(1, 0)) < kPositionTolerance &&
+                     std::abs(error(2, 0)) < kAngleTolerance &&
+                     std::abs(error(3, 0)) < kVelocityTolerance &&
                      std::abs(error(4, 0)) < kVelocityTolerance;
 
     m_r = m_nextR;

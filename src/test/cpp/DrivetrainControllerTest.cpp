@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include <frc/StateSpaceUtil.h>
 #include <gtest/gtest.h>
 #include <mockdata/RoboRioData.h>
 #include <units/units.h>

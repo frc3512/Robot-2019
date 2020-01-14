@@ -11,7 +11,6 @@
 
 #include <Eigen/Core>
 #include <frc/estimator/ExtendedKalmanFilter.h>
-#include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/Trajectory.h>
 #include <units/units.h>
 #include <wpi/mutex.h>
@@ -145,9 +144,6 @@ public:
     void Reset(const frc::Pose2d& initialPose);
 
 private:
-    frc::LinearSystem<2, 2, 2> m_plant =
-        frc::IdentifyDrivetrainSystem(1.08, 0.0111, 1.07, 0.00692);
-
     // The current sensor measurements.
     Eigen::Matrix<double, 3, 1> m_y;
 

@@ -136,11 +136,7 @@ class ExtendedKalmanFilter {
   void Predict(const Eigen::Matrix<double, Inputs, 1>& u, units::second_t dt) {
     // Find continuous A
     Eigen::Matrix<double, States, States> contA =
-        NumericalJacobianX<States, States, Inputs>(
-            [this](const auto& x, const auto& u, units::second_t dt) {
-              return RungeKutta(m_f, x, u, dt);
-            },
-            m_xHat, u, dt);
+        NumericalJacobianX<States, States, Inputs>(m_f, m_xHat, u);
 
     // Find discrete A and Q
     Eigen::Matrix<double, States, States> discA;
