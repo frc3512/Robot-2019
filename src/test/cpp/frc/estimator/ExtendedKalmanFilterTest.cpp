@@ -103,7 +103,7 @@ TEST(ExtendedKalmanFilterTest, Convergence) {
   frc::ExtendedKalmanFilter<5, 2, 3> observer{Dynamics,
                                               LocalMeasurementModel,
                                               {0.5, 0.5, 10.0, 1.0, 1.0},
-                                              {0.0001, 0.01, 0.01},
+                                              {0.0001, 0.5, 0.5},
                                               dt};
 
   auto waypoints =

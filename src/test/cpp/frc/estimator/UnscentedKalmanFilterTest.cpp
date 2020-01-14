@@ -11,12 +11,16 @@
 #include <cmath>
 
 #include <Eigen/Core>
+#include <Eigen/QR>
 
 #include "frc/StateSpaceUtil.h"
 #include "frc/estimator/UnscentedKalmanFilter.h"
+#include "frc/system/NumericalJacobian.h"
 #include "frc/system/plant/DCMotor.h"
+#include "frc/trajectory/TrajectoryGenerator.h"
 
 namespace {
+
 Eigen::Matrix<double, 5, 1> Dynamics(const Eigen::Matrix<double, 5, 1>& x,
                                      const Eigen::Matrix<double, 2, 1>& u) {
   auto motors = frc::DCMotor::CIM(2);
@@ -73,19 +77,79 @@ Eigen::Matrix<double, 5, 1> GlobalMeasurementModel(
 }  // namespace
 
 TEST(UnscentedKalmanFilterTest, Init) {
-  frc::UnscentedKalmanFilter<5, 2, 3> observer{
-      Dynamics, LocalMeasurementModel,
-      std::array<double, 5>{0.5, 0.5, 10.0, 1.0, 1.0},
-      std::array<double, 3>{0.0001, 0.01, 0.01}};
+  constexpr auto dt = 0.00505_s;
+
+  frc::UnscentedKalmanFilter<5, 2, 3> observer{Dynamics,
+                                               LocalMeasurementModel,
+                                               {0.5, 0.5, 10.0, 1.0, 1.0},
+                                               {0.0001, 0.01, 0.01}};
   Eigen::Matrix<double, 2, 1> u;
   u << 12.0, 12.0;
-  observer.Predict(u, 0.00505_s);
+  observer.Predict(u, dt);
 
   auto localY = LocalMeasurementModel(observer.Xhat(), u);
   observer.Correct(u, localY);
 
   auto globalY = GlobalMeasurementModel(observer.Xhat(), u);
-  auto R =
-      frc::MakeCovMatrix(std::array<double, 5>{0.01, 0.01, 0.0001, 0.01, 0.01});
+  auto R = frc::MakeCovMatrix(0.01, 0.01, 0.0001, 0.01, 0.01);
+  observer.Correct<5>(u, globalY, GlobalMeasurementModel, R);
+}
+
+TEST(UnscentedKalmanFilterTest, Convergence) {
+  constexpr auto dt = 0.00505_s;
+  constexpr auto rb = 0.8382_m / 2.0;  // Robot radius
+
+  frc::UnscentedKalmanFilter<5, 2, 3> observer{Dynamics,
+                                               LocalMeasurementModel,
+                                               {0.5, 0.5, 10.0, 1.0, 1.0},
+                                               {0.0001, 0.5, 0.5}};
+
+  auto waypoints =
+      std::vector<frc::Pose2d>{frc::Pose2d{2.75_m, 22.521_m, 0_rad},
+                               frc::Pose2d{24.73_m, 19.68_m, 5.846_rad}};
+  auto trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+      waypoints, {8.8_mps, 0.1_mps_sq});
+
+  Eigen::Matrix<double, 5, 1> r = Eigen::Matrix<double, 5, 1>::Zero();
+
+  Eigen::Matrix<double, 5, 1> nextR;
+  Eigen::Matrix<double, 2, 1> u = Eigen::Matrix<double, 2, 1>::Zero();
+
+  auto B = frc::NumericalJacobianU<5, 5, 2>(
+      Dynamics, Eigen::Matrix<double, 5, 1>::Zero(),
+      Eigen::Matrix<double, 2, 1>::Zero());
+
+  auto totalTime = trajectory.TotalTime();
+  for (size_t i = 0; i < (totalTime / dt).to<double>(); ++i) {
+    auto ref = trajectory.Sample(dt * i);
+    units::meters_per_second_t vl =
+        ref.velocity * (1 - (ref.curvature * rb).to<double>());
+    units::meters_per_second_t vr =
+        ref.velocity * (1 + (ref.curvature * rb).to<double>());
+
+    nextR(0, 0) = ref.pose.Translation().X().to<double>();
+    nextR(1, 0) = ref.pose.Translation().Y().to<double>();
+    nextR(2, 0) = ref.pose.Rotation().Radians().to<double>();
+    nextR(3, 0) = vl.to<double>();
+    nextR(4, 0) = vr.to<double>();
+
+    auto localY = LocalMeasurementModel(observer.Xhat(),
+                                        Eigen::Matrix<double, 2, 1>::Zero());
+    observer.Correct(u, localY + frc::MakeWhiteNoiseVector(0.0001, 0.5, 0.5));
+
+    Eigen::Matrix<double, 5, 1> rdot = (nextR - r) / dt.to<double>();
+    u = B.householderQr().solve(
+        rdot - Dynamics(r, Eigen::Matrix<double, 2, 1>::Zero()));
+
+    observer.Predict(u, dt);
+
+    r = nextR;
+  }
+
+  auto localY = LocalMeasurementModel(observer.Xhat(), u);
+  observer.Correct(u, localY);
+
+  auto globalY = GlobalMeasurementModel(observer.Xhat(), u);
+  auto R = frc::MakeCovMatrix(0.01, 0.01, 0.0001, 0.5, 0.5);
   observer.Correct<5>(u, globalY, GlobalMeasurementModel, R);
 }
