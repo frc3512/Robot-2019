@@ -145,6 +145,7 @@ class ExtendedKalmanFilter {
 
     m_xHat = RungeKutta(m_f, m_xHat, u, dt);
     m_P = discA * m_P * discA.transpose() + discQ;
+    m_discR = DiscretizeR(m_contR, dt);
   }
 
   /**

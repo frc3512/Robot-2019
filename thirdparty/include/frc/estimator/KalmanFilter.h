@@ -61,12 +61,12 @@ class KalmanFilter {
     Eigen::Matrix<double, States, States> discQ;
     DiscretizeAQTaylor(plant.A(), m_contQ, dt, &discA, &discQ);
 
-    auto discR = DiscretizeR(m_contR, dt);
+    m_discR = DiscretizeR(m_contR, dt);
 
     if (IsStabilizable<States, Outputs>(discA.transpose(),
                                         plant.C().transpose())) {
       m_P = drake::math::DiscreteAlgebraicRiccatiEquation(
-          discA.transpose(), plant.C().transpose(), discQ, discR);
+          discA.transpose(), plant.C().transpose(), discQ, m_discR);
     } else {
       m_P = Eigen::Matrix<double, States, States>::Zero();
     }
