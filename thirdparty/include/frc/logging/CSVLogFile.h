@@ -49,8 +49,9 @@ class CSVLogFile {
   /**
    * Print a new line of values in the CSVLogFile.
    *
-   * @param value 1st value to log in the file.
-   * @param values Other values to log in the file in the order.
+   * @param time   The timestamp for this line of values.
+   * @param value  First value to log in the file.
+   * @param values Other values to log in the file in order.
    */
   template <typename Value, typename... Values>
   void Log(units::second_t time, Value value, Values... values) {
@@ -61,8 +62,8 @@ class CSVLogFile {
   /**
    * Print a new line of values in the CSVLogFile.
    *
-   * @param value 1st value to log in the file.
-   * @param values Other values to log in the file in the order.
+   * @param value  First value to log in the file.
+   * @param values Other values to log in the file in order.
    */
   template <typename Value, typename... Values>
   void Log(Value value, Values... values) {
@@ -95,8 +96,8 @@ class CSVLogFile {
   /**
    * Print a new line of values in the CSVLogFile without timestamp.
    *
-   * @param value 1st value to log in the file.
-   * @param values Other values to log in the file in the order.
+   * @param value  First value to log in the file.
+   * @param values Other values to log in the file in order.
    */
   template <typename Value, typename... Values>
   void LogValues(Value value, Values... values) {
