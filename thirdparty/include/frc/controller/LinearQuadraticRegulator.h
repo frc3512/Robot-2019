@@ -32,8 +32,6 @@ namespace frc {
 template <int States, int Inputs>
 class LinearQuadraticRegulator {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /**
    * Constructs a controller with the given coefficients and plant.
    *

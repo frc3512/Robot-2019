@@ -41,8 +41,6 @@ namespace frc {
 template <int States, int Inputs, int Outputs>
 class KalmanFilter {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /**
    * Constructs a state-space observer with the given plant.
    *

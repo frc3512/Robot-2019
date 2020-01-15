@@ -28,8 +28,6 @@ namespace frc {
 template <int States, int Inputs, int Outputs>
 class LinearSystem {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /**
    * Constructs a discrete plant with the given continuous system coefficients.
    *
