@@ -136,6 +136,13 @@ class DCMotor {
   static constexpr DCMotor NEO550(int numMotors = 1) {
     return DCMotor(12_V, 0.97_Nm, 100_A, 1.4_A, 11000_rpm, numMotors);
   }
+
+  /**
+   * Returns instance of Falcon 500 brushless motor.
+   */
+  static constexpr DCMotor Falcon500(int numMotors = 1) {
+    return DCMotor(12_V, 4.69_Nm, 257_A, 1.5_A, 6380_rpm, numMotors);
+  }
 };
 
 }  // namespace frc
