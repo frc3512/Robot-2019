@@ -182,7 +182,7 @@ class ExtendedKalmanFilter {
     const Eigen::Matrix<double, Rows, States> C =
         NumericalJacobianX<Rows, States, Inputs>(h, m_xHat, u);
 
-    auto S = C * m_P * C.transpose() + R;
+    Eigen::Matrix<double, Rows, Rows> S = C * m_P * C.transpose() + R;
 
     // We want to put K = PC^T S^-1 into Ax = b form so we can solve it more
     // efficiently.

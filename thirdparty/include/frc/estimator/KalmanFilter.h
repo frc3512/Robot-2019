@@ -168,7 +168,7 @@ class KalmanFilter {
                const Eigen::Matrix<double, Rows, States>& C,
                const Eigen::Matrix<double, Rows, Rows>& R) {
     const auto& x = m_plant->X();
-    auto S = C * m_P * C.transpose() + R;
+    Eigen::Matrix<double, Rows, Rows> S = C * m_P * C.transpose() + R;
 
     // We want to put K = PC^T S^-1 into Ax = b form so we can solve it more
     // efficiently.

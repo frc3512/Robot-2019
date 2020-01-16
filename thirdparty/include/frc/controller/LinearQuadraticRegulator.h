@@ -70,7 +70,8 @@ class LinearQuadraticRegulator {
     Eigen::Matrix<double, Inputs, Inputs> R = MakeCostMatrix(Relems);
 
     auto S = drake::math::DiscreteAlgebraicRiccatiEquation(discA, discB, Q, R);
-    auto tmp = discB.transpose() * S * discB + R;
+    Eigen::Matrix<double, Inputs, Inputs> tmp =
+        discB.transpose() * S * discB + R;
     m_K = tmp.llt().solve(discB.transpose() * S * discA);
   }
 
