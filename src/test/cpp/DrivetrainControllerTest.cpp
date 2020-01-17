@@ -4,7 +4,6 @@
 
 #include <frc/StateSpaceUtil.h>
 #include <gtest/gtest.h>
-#include <mockdata/RoboRioData.h>
 #include <units/units.h>
 
 #include "Constants.hpp"
@@ -12,8 +11,6 @@
 
 TEST(DrivetrainControllerTest, ReachesReference) {
     using frc3512::Constants::kDt;
-
-    HALSIM_SetRoboRioVInVoltage(0, 12.0);
 
     frc3512::DrivetrainController controller{
         {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, kDt};
