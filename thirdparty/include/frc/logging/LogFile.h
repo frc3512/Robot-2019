@@ -83,7 +83,7 @@ class LogFile {
    * @param time The time that is saved in the filename.
    * @return The filename at the format "{filePrefix}-{date/time}.txt".
    */
-  const std::string CreateFilename(std::time_t time) const;
+  std::string CreateFilename(std::time_t time) const;
 
   std::string m_filePrefix;
   std::string m_fileExtension;

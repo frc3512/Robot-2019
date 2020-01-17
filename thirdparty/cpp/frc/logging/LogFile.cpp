@@ -10,7 +10,11 @@
 #include <cstdio>
 #include <ctime>
 
+#include <wpi/FileSystem.h>
+#include <wpi/SmallVector.h>
 #include <wpi/raw_ostream.h>
+
+#include "frc/Filesystem.h"
 
 using namespace frc;
 
@@ -54,11 +58,15 @@ void LogFile::UpdateFilename() {
   m_time = newTime;
 }
 
-const std::string LogFile::CreateFilename(std::time_t time) const {
+std::string LogFile::CreateFilename(std::time_t time) const {
+  wpi::SmallVector<char, 64> path;
+  frc::filesystem::GetOperatingDirectory(path);
+
   // Get current date/time, format is YYYY-MM-DD.HH_mm_ss
   struct tm localTime = *std::localtime(&time);
   char datetime[80];
   std::strftime(datetime, sizeof(datetime), "%Y-%m-%d-%H_%M_%S", &localTime);
 
-  return m_filePrefix + "-" + datetime + "." + m_fileExtension;
+  return (path + "/" + m_filePrefix + "-" + datetime + "." + m_fileExtension)
+      .str();
 }
