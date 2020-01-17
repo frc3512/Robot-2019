@@ -179,18 +179,22 @@ private:
 
     // The loggers that generates the comma separated value files
     frc::CSVLogFile velocityLogger{
-        "DriveVelocities",  "LeftRate (m/s)",    "RightRate (m/s)",
-        "EstLeftVel (m/s)", "EstRightVel (m/s)", "GoalV (V)",
-        "GoalW (V)",        "LeftVelRef (m/s)",  "RightVelRef (m/s)"};
-    frc::CSVLogFile voltageLogger{"DriveVoltage", "Time (s)", "LeftVolt (V)",
-                                  "RightVolt (V)", "DSVoltage (V)"};
+        "Drivetrain Velocities",     "Left Rate (m/s)",
+        "Right Rate (m/s)",          "Estimated Left Vel (m/s)",
+        "Estimated Right Vel (m/s)", "Left Vel Ref (m/s)",
+        "Right Vel Ref (m/s)"};
+    frc::CSVLogFile voltageLogger{"Drivetrain Voltages", "Left (V)",
+                                  "Right (V)", "DS Voltage (V)"};
     frc::CSVLogFile positionLogger{
-        "DrivePositions", "LeftPos (m)", "RightPos (m)",
-        "EstX (m)",       "EstY (m)",    "EstTheta (rad)",
-        "GoalX (m)",      "GoalY (m)",   "GoalTheta (rad)"};
-    frc::CSVLogFile errorCovLogger{"DriveErrorCov",      "X Cov (m^2)",
-                                   "Y Cov (m^2)",        "Heading Cov (m^2)",
-                                   "Left Vel Cov (m^2)", "Right Vel Cov (m^2)"};
+        "Drivetrain Positions",  "Estimated X (m)", "Estimated Y (m)",
+        "Estimated Theta (rad)", "X Ref (m)",       "Y Ref (m)",
+        "Theta Ref (rad)"};
+    frc::CSVLogFile errorCovLogger{"Drivetrain Error Covariances",
+                                   "X Cov (m^2)",
+                                   "Y Cov (m^2)",
+                                   "Heading Cov (m^2)",
+                                   "Left Vel Cov (m^2)",
+                                   "Right Vel Cov (m^2)"};
 
     Eigen::Matrix<double, 2, 1> Controller(
         const Eigen::Matrix<double, 5, 1>& x,

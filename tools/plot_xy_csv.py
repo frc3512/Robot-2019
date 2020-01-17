@@ -20,7 +20,7 @@ files = [os.path.join(dp, f) for dp, dn, fn in os.walk(".") for f in fn]
 # Maps subsystem name to tuple of csv_group and date
 filtered = {}
 file_rgx = re.compile(
-    r"^\./(?P<name>[A-Za-z]+)-(?P<date>\d{4}-\d{2}-\d{2}-\d{2}_\d{2}_\d{2})\.csv$"
+    r"^\./(?P<name>[A-Za-z ]+)-(?P<date>\d{4}-\d{2}-\d{2}-\d{2}_\d{2}_\d{2})\.csv$"
 )
 for f in files:
     match = file_rgx.search(f)
@@ -39,7 +39,7 @@ for f in files:
         filtered[name] = f
 
 # Plot datasets
-csv_group = "DrivePositions"
+csv_group = "Drivetrain Positions"
 plt.figure()
 plt.title(csv_group)
 filename = filtered[csv_group]
