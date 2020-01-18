@@ -15,10 +15,12 @@
 #include <units/angular_velocity.h>
 
 #include "Constants.hpp"
+#include "controllers/ControllerBase.hpp"
+#include "logging/CSVControllerLogger.hpp"
 
 namespace frc3512 {
 
-class FourBarLiftController {
+class FourBarLiftController : public ControllerBase<2, 1, 1> {
 public:
     // State tolerances in radians and radians/sec respectively.
     static constexpr double kAngleTolerance = 0.05;
@@ -28,6 +30,22 @@ public:
 
     FourBarLiftController(const FourBarLiftController&) = delete;
     FourBarLiftController& operator=(const FourBarLiftController&) = delete;
+
+    class State {
+    public:
+        static constexpr int kAngle = 0;
+        static constexpr int kAngularVelocity = 1;
+    };
+
+    class Input {
+    public:
+        static constexpr int kVoltage = 0;
+    };
+
+    class Output {
+    public:
+        static constexpr int kAngle = 0;
+    };
 
     /**
      * Enables the control loop.
@@ -74,26 +92,11 @@ public:
     void SetMeasuredAngle(double measuredAngle);
 
     /**
-     * Returns the control loop calculated voltage.
-     */
-    double ControllerVoltage() const;
-
-    /**
      * Informs the controller if to use the climbing feedforward.
      *
      * @param climbing Whether or not to use the climbing feedforward.
      */
     void SetClimbing(bool climbing);
-
-    /**
-     * Returns the estimated angle.
-     */
-    double EstimatedAngle() const;
-
-    /**
-     * Returns the estimated angular velocity.
-     */
-    double EstimatedAngularVelocity() const;
 
     /**
      * Returns the error between the angle reference and the angle
@@ -107,15 +110,13 @@ public:
      */
     double AngularVelocityError() const;
 
-    /**
-     * Returns the current angle reference.
-     */
-    double AngleReference();
+    const Eigen::Matrix<double, 2, 1>& GetReferences() const override;
 
-    /**
-     * Returns the current angular velocity reference.
-     */
-    double AngularVelocityReference();
+    const Eigen::Matrix<double, 2, 1>& GetStates() const override;
+
+    const Eigen::Matrix<double, 1, 1>& GetInputs() const override;
+
+    const Eigen::Matrix<double, 1, 1>& GetOutputs() const override;
 
     /**
      * Executes the control loop for a cycle.
@@ -157,13 +158,18 @@ private:
     frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer,
                                           12_V, Constants::kDt};
 
+    mutable Eigen::Matrix<double, 1, 1> m_u;
+
     bool m_atReferences = false;
     bool m_isEnabled = false;
     bool m_climbing = false;
 
-    frc::CSVLogFile elevatorLogger{"FourBarLift",    "EstPos (rad)",
-                                   "RefPos (rad)",   "Voltage (V)",
-                                   "EstVel (rad/s)", "RefVel (rad/s)"};
+    CSVControllerLogger<2, 1, 1> m_logger{
+        "FourBarLift",
+        {ControllerLabel{"Angle", "rad"},
+         ControllerLabel{"Angular velocity", "rad/s"}},
+        {ControllerLabel{"Voltage", "V"}},
+        {ControllerLabel{"Angle", "rad"}}};
 };
 
 }  // namespace frc3512

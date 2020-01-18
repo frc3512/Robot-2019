@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/Elevator.hpp"
 
@@ -54,11 +54,11 @@ void Elevator::Iterate() {
     // Set motor input
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
-    m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+    m_grbx.Set(m_controller.GetInputs()(0) / batteryVoltage);
 }
 
 double Elevator::ControllerVoltage() const {
-    return m_controller.ControllerVoltage();
+    return m_controller.GetInputs()(0);
 }
 
 void Elevator::Reset() {
@@ -68,7 +68,7 @@ void Elevator::Reset() {
 
 void Elevator::SubsystemPeriodic() {
     ElevatorStatusPacket message{
-        "", m_encoder.GetDistance(), m_controller.ControllerVoltage(),
+        "", m_encoder.GetDistance(), m_controller.GetInputs()(0),
         m_controller.AtReferences(), m_controller.AtGoal()};
     Publish(message);
 }

@@ -48,26 +48,6 @@ void ElevatorController::SetMeasuredPosition(double measuredPosition) {
     m_y(0, 0) = measuredPosition;
 }
 
-double ElevatorController::ControllerVoltage() const {
-    if (m_climbing) {
-        // Feedforward compensates for unmodeled extra weight from lifting robot
-        // while climbing
-        return m_climbController.U(0) - 1.0;
-    } else {
-        return m_scoreController.U(0);
-    }
-}
-
-double ElevatorController::EstimatedPosition() const {
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return observer.Xhat(0);
-}
-
-double ElevatorController::EstimatedVelocity() const {
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return observer.Xhat(1);
-}
-
 double ElevatorController::PositionError() const {
     const auto& controller = m_climbing ? m_climbController : m_scoreController;
     const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
@@ -80,18 +60,8 @@ double ElevatorController::VelocityError() const {
     return controller.R(1) - observer.Xhat(1);
 }
 
-double ElevatorController::PositionReference() {
-    return m_profiledReference.position.to<double>();
-}
-
-double ElevatorController::VelocityReference() {
-    return m_profiledReference.velocity.to<double>();
-}
-
 void ElevatorController::Update() {
-    elevatorLogger.Log(EstimatedPosition(), EstimatedVelocity(),
-                       PositionReference(), ControllerVoltage(),
-                       VelocityReference());
+    m_logger.Log(GetReferences(), GetStates(), GetInputs(), GetOutputs());
 
     frc::TrapezoidProfile<units::meters>::State references = {
         units::meter_t(m_nextR(0, 0)),
@@ -122,4 +92,29 @@ void ElevatorController::Reset() {
     m_climbObserver.Reset();
     m_nextR.setZero();
     m_u.setZero();
+}
+
+const Eigen::Matrix<double, 2, 1>& ElevatorController::GetReferences() const {
+    return m_nextR;
+}
+
+const Eigen::Matrix<double, 2, 1>& ElevatorController::GetStates() const {
+    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
+    return observer.Xhat();
+}
+
+const Eigen::Matrix<double, 1, 1>& ElevatorController::GetInputs() const {
+    if (m_climbing) {
+        // Feedforward compensates for unmodeled extra weight from lifting robot
+        // while climbing
+        m_u = m_climbController.U();
+        m_u(0) -= 1.0;
+        return m_u;
+    } else {
+        return m_scoreController.U();
+    }
+}
+
+const Eigen::Matrix<double, 1, 1>& ElevatorController::GetOutputs() const {
+    return m_y;
 }

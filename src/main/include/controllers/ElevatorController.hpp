@@ -14,10 +14,12 @@
 #include <units/velocity.h>
 
 #include "Constants.hpp"
+#include "controllers/ControllerBase.hpp"
+#include "logging/CSVControllerLogger.hpp"
 
 namespace frc3512 {
 
-class ElevatorController {
+class ElevatorController : public ControllerBase<2, 1, 1> {
 public:
     // State tolerances in meters and meters/sec respectively.
     static constexpr double kPositionTolerance = 0.05;
@@ -27,6 +29,22 @@ public:
 
     ElevatorController(const ElevatorController&) = delete;
     ElevatorController& operator=(const ElevatorController&) = delete;
+
+    class State {
+    public:
+        static constexpr int kPosition = 0;
+        static constexpr int kVelocity = 1;
+    };
+
+    class Input {
+    public:
+        static constexpr int kVoltage = 0;
+    };
+
+    class Output {
+    public:
+        static constexpr int kPosition = 0;
+    };
 
     void Enable();
     void Disable();
@@ -58,21 +76,6 @@ public:
     void SetMeasuredPosition(double measuredPosition);
 
     /**
-     * Returns the control loop calculated voltage.
-     */
-    double ControllerVoltage() const;
-
-    /**
-     * Returns the estimated position.
-     */
-    double EstimatedPosition() const;
-
-    /**
-     * Returns the estimated velocity.
-     */
-    double EstimatedVelocity() const;
-
-    /**
      * Returns the error between the position reference and the position
      * estimate.
      */
@@ -85,16 +88,6 @@ public:
     double VelocityError() const;
 
     /**
-     * Returns the current position reference set by the profile.
-     */
-    double PositionReference();
-
-    /**
-     * Returns the current velocity reference set by the profile.
-     */
-    double VelocityReference();
-
-    /**
      * Executes the control loop for a cycle.
      */
     void Update();
@@ -103,6 +96,11 @@ public:
      * Resets any internal state.
      */
     void Reset();
+
+    const Eigen::Matrix<double, 2, 1>& GetReferences() const override;
+    const Eigen::Matrix<double, 2, 1>& GetStates() const override;
+    const Eigen::Matrix<double, 1, 1>& GetInputs() const override;
+    const Eigen::Matrix<double, 1, 1>& GetOutputs() const override;
 
 private:
     // The current sensor measurement.
@@ -162,12 +160,15 @@ private:
     bool m_climbing = false;
 
     Eigen::Matrix<double, 2, 1> m_nextR;
-    Eigen::Matrix<double, 1, 1> m_u;
+    mutable Eigen::Matrix<double, 1, 1> m_u;
 
     bool m_atReferences = false;
 
-    frc::CSVLogFile elevatorLogger{"Elevator",   "EstPos (m)",  "EstVel (m/s)",
-                                   "RefPos (m)", "Voltage (V)", "RefVel (m/s)"};
+    CSVControllerLogger<2, 1, 1> m_logger{
+        "Elevator",
+        {ControllerLabel{"Position", "m"}, ControllerLabel{"Velocity", "m/s"}},
+        {ControllerLabel{"Voltage", "V"}},
+        {ControllerLabel{"Position", "m"}}};
 };
 
 }  // namespace frc3512

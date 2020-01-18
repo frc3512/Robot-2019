@@ -17,7 +17,7 @@ void FourBarLiftController::SetGoal(double goal) {
     m_angleProfile = frc::TrapezoidProfile<units::radians>{
         constraints,
         {units::radian_t{goal}, 0_rad_per_s},
-        {units::radian_t{EstimatedAngle()}, 0_rad_per_s}};
+        {units::radian_t{GetStates()(0)}, 0_rad_per_s}};
     m_goal = {units::radian_t{goal}, 0_rad_per_s};
 }
 
@@ -37,48 +37,47 @@ bool FourBarLiftController::AtGoal() const {
 }
 
 void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
-    m_y(0, 0) = measuredAngle;
-}
-
-double FourBarLiftController::ControllerVoltage() const {
-    if (!m_climbing) {
-        return m_loop.U(0);
-    } else {
-        // Feedforward compensates for unmodeled extra weight from lifting robot
-        // while climbing
-        return m_loop.U(0) - 2.0;
-    }
+    m_y(0) = measuredAngle;
 }
 
 void FourBarLiftController::SetClimbing(bool climbing) {
     m_climbing = climbing;
 }
 
-double FourBarLiftController::EstimatedAngle() const { return m_loop.Xhat(0); }
-
-double FourBarLiftController::EstimatedAngularVelocity() const {
-    return m_loop.Xhat(1);
-}
-
-double FourBarLiftController::AngleError() const {
-    return m_loop.Error()(0, 0);
-}
+double FourBarLiftController::AngleError() const { return m_loop.Error()(0); }
 
 double FourBarLiftController::AngularVelocityError() const {
-    return m_loop.Error()(1, 0);
+    return m_loop.Error()(1);
 }
 
-double FourBarLiftController::AngleReference() {
-    return m_profiledReference.position.to<double>();
+const Eigen::Matrix<double, 2, 1>& FourBarLiftController::GetReferences()
+    const {
+    return m_loop.NextR();
 }
 
-double FourBarLiftController::AngularVelocityReference() {
-    return m_profiledReference.velocity.to<double>();
+const Eigen::Matrix<double, 2, 1>& FourBarLiftController::GetStates() const {
+    return m_loop.Xhat();
+}
+
+const Eigen::Matrix<double, 1, 1>& FourBarLiftController::GetInputs() const {
+    if (!m_climbing) {
+        m_u = m_loop.U();
+        return m_u;
+    } else {
+        // Feedforward compensates for unmodeled extra weight from lifting robot
+        // while climbing
+        m_u = m_loop.U();
+        m_u(0) -= 2.0;
+        return m_u;
+    }
+}
+
+const Eigen::Matrix<double, 1, 1>& FourBarLiftController::GetOutputs() const {
+    return m_y;
 }
 
 void FourBarLiftController::Update() {
-    elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage(),
-                       EstimatedAngularVelocity(), AngularVelocityReference());
+    m_logger.Log(GetReferences(), GetStates(), GetInputs(), GetOutputs());
 
     frc::TrapezoidProfile<units::radians>::State references = {
         units::radian_t(m_loop.NextR(0)),
@@ -92,12 +91,13 @@ void FourBarLiftController::Update() {
     m_loop.Correct(m_y);
 
     auto error = m_loop.Error();
-    m_atReferences = std::abs(error(0, 0)) < kAngleTolerance &&
-                     std::abs(error(1, 0)) < kAngularVelocityTolerance;
+    m_atReferences = std::abs(error(0)) < kAngleTolerance &&
+                     std::abs(error(1)) < kAngularVelocityTolerance;
 
     m_loop.Predict(Constants::kDt);
 }
 
 void FourBarLiftController::Reset() {
     m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+    m_u.setZero();
 }

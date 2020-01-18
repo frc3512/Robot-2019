@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/FourBarLift.hpp"
 
@@ -48,7 +48,7 @@ void FourBarLift::Iterate() {
     // Set motor input
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
-    m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+    m_grbx.Set(m_controller.GetInputs()(0) / batteryVoltage);
 }
 
 void FourBarLift::Reset() {
@@ -58,7 +58,7 @@ void FourBarLift::Reset() {
 
 void FourBarLift::SubsystemPeriodic() {
     FourBarLiftStatusPacket message{
-        "", m_encoder.GetDistance(), m_controller.ControllerVoltage(),
+        "", m_encoder.GetDistance(), m_controller.GetInputs()(0),
         m_controller.AtReferences(), m_controller.AtGoal()};
     Publish(message);
 }
