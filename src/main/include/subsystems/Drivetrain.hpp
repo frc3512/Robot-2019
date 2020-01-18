@@ -6,7 +6,7 @@
 
 #include <frc/ADXRS450_Gyro.h>
 #include <frc/Encoder.h>
-#include <frc/Notifier.h>
+#include <frc/RTNotifier.h>
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
@@ -140,7 +140,8 @@ private:
 
     DrivetrainController m_controller{
         {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, Constants::kDt};
-    frc::Notifier m_controllerThread{&Drivetrain::Iterate, this};
+    frc::RTNotifier m_controllerThread{Constants::kControllerPrio,
+                                       &Drivetrain::Iterate, this};
 
     std::chrono::steady_clock::time_point m_lastTime =
         std::chrono::steady_clock::time_point::min();

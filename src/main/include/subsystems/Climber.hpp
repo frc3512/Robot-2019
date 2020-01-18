@@ -6,8 +6,8 @@
 #include <mutex>
 
 #include <frc/Encoder.h>
-#include <frc/Notifier.h>
 #include <frc/PowerDistributionPanel.h>
+#include <frc/RTNotifier.h>
 #include <frc/Spark.h>
 #include <frc/Timer.h>
 
@@ -136,7 +136,8 @@ private:
 
     frc::Encoder m_encoder{Constants::Climber::kLiftEncoderA,
                            Constants::Climber::kLiftEncoderB};
-    frc::Notifier m_notifier{&Climber::Iterate, this};
+    frc::RTNotifier m_notifier{Constants::kControllerPrio, &Climber::Iterate,
+                               this};
 
     ElevatorStatusPacket m_elevatorStatusPacket;
     FourBarLiftStatusPacket m_fourBarLiftStatusPacket;

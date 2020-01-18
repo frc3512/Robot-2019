@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -184,5 +184,6 @@ constexpr double kHab2 = 0.0898;  // 0.1498
 }  // namespace Elevator
 
 constexpr auto kDt = 0.00505_s;
+constexpr int kControllerPrio = 50;
 }  // namespace Constants
 }  // namespace frc3512
