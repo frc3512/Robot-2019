@@ -10,6 +10,7 @@
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
 #include "controllers/FourBarLiftController.hpp"
+#include "rev/CANSparkMax.hpp"
 #include "subsystems/SubsystemBase.hpp"
 
 namespace frc3512 {
@@ -85,7 +86,8 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    frc::PWMSparkMax m_grbx{Constants::FourBarLift::kPort};
+    rev::CANSparkMax m_grbx{Constants::FourBarLift::kPort,
+                            rev::CANSparkMax::MotorType::kBrushless};
 
     FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,

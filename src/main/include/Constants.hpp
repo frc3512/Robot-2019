@@ -100,7 +100,7 @@ constexpr double kClimb2Height = -0.1498 - 0.0254;
 
 namespace FourBarLift {
 // Motor Ports
-constexpr int kPort = 3;
+constexpr int kPort = 12;
 
 // Sensors
 constexpr int kEncoderA = 6;
