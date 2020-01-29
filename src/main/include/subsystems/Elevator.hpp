@@ -103,6 +103,8 @@ public:
 
     void ProcessMessage(const CommandPacket& message) override;
 
+    void ProcessMessage(const HIDPacket& message) override;
+
 private:
     frc::Timer m_timer;
     rev::CANSparkMax m_grbx{9, rev::CANSparkMax::MotorType::kBrushless};

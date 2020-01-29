@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/Intake.hpp"
 
@@ -23,20 +23,20 @@ void Intake::SetMotors(MotorState motorState) {
 void Intake::ToggleClaw() { m_claw.Set(!m_claw.Get()); }
 
 void Intake::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick2" && message.button == 4 &&
+    if (message.topic == "Robot/AppendageStick" && message.button == 4 &&
         message.pressed) {
         SetMotors(MotorState::kOuttake);
-    } else if (message.topic == "Robot/AppendageStick2" &&
-               message.button == 6 && message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 6 &&
+               message.pressed) {
         SetMotors(MotorState::kIntake);
-    } else if (message.topic == "Robot/AppendageStick2" &&
-               message.button == 4 && !message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 4 &&
+               !message.pressed) {
         SetMotors(MotorState::kIdle);
-    } else if (message.topic == "Robot/AppendageStick2" &&
-               message.button == 6 && !message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 6 &&
+               !message.pressed) {
         SetMotors(MotorState::kIdle);
-    } else if (message.topic == "Robot/AppendageStick2" &&
-               message.button == 1 && message.pressed) {
+    } else if (message.topic == "Robot/AppendageStick" && message.button == 1 &&
+               message.pressed) {
         ToggleClaw();
     }  // TODO get state and put in DS
 }
