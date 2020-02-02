@@ -8,13 +8,11 @@
 #include <Eigen/QR>
 #include <frc/RobotController.h>
 #include <frc/controller/LinearQuadraticRegulator.h>
-#include <frc/controller/SimpleMotorFeedforward.h>
 #include <frc/geometry/Pose2d.h>
-#include <frc/kinematics/DifferentialDriveKinematics.h>
 #include <frc/system/NumericalJacobian.h>
 #include <frc/system/plant/DCMotor.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc/trajectory/constraint/DifferentialDriveVoltageConstraint.h>
+#include <frc/trajectory/constraint/DrivetrainVelocitySystemConstraint.h>
 #include <units/units.h>
 #include <wpi/MathExtras.h>
 
@@ -66,10 +64,8 @@ bool DrivetrainController::IsEnabled() const { return m_isEnabled; }
 
 void DrivetrainController::SetWaypoints(
     const std::vector<frc::Pose2d>& waypoints) {
-    frc::SimpleMotorFeedforward<units::meter> ff{0_V, kLinearV, kLinearA};
-    frc::DifferentialDriveKinematics kinematics{kWidth};
-    frc::DifferentialDriveVoltageConstraint constraint{ff, kinematics, 8_V};
-    frc::TrajectoryConfig config{0.5 * kMaxV, 0.1 * kMaxA};
+    frc::DrivetrainVelocitySystemConstraint constraint{m_plant, kWidth, 8_V};
+    frc::TrajectoryConfig config{kMaxV, kMaxA};
     config.AddConstraint(constraint);
 
     std::lock_guard lock(m_trajectoryMutex);

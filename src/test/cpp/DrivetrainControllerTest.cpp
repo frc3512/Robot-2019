@@ -49,7 +49,7 @@ TEST(DrivetrainControllerTest, ReachesReference) {
         // Account for battery voltage drop due to current draw
         using Input = frc3512::DrivetrainController::Input;
         using State = frc3512::DrivetrainController::State;
-        constexpr auto motors = frc::DCMotor::MiniCIM(2);
+        constexpr auto motors = frc::DCMotor::MiniCIM(3);
         units::ampere_t loadIleft = motors.Current(
             units::meters_per_second_t{trueXhat(State::kLeftVelocity, 0)} / r *
                 1_rad,
