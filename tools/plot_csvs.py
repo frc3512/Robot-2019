@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""Finds latest versions of the CSVs for each subsystem, then plots the data."""
+"""Finds latest versions of the CSVs for each subsystem, then plots the data.
+
+If provided, the first argument to this script is a filename regex that
+restricts which CSVs are plotted to those that match the regex.
+"""
+
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
+import sys
 
 
 def num_lines(csv_group):
@@ -16,6 +23,10 @@ def num_lines(csv_group):
 
 # Get list of files in current directory
 files = [os.path.join(dp, f) for dp, dn, fn in os.walk(".") for f in fn]
+
+# Ignore files not matching optional pattern
+if len(sys.argv) > 1:
+    files = [f for f in files if re.search(sys.argv[1], f)]
 
 # Maps subsystem name to tuple of csv_group and date
 filtered = {}
