@@ -10,10 +10,12 @@
 
 #include <Eigen/Core>
 #include <frc/estimator/ExtendedKalmanFilter.h>
+#include <frc/kinematics/DifferentialDriveOdometry.h>
 #include <frc/logging/CSVLogFile.h>
 #include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/Trajectory.h>
 #include <units/units.h>
+#include <wpi/math>
 #include <wpi/mutex.h>
 
 #include "Constants.hpp"
@@ -50,14 +52,13 @@ public:
     /**
      * Set local measurements.
      *
-     * @param leftPosition    Encoder count of left side in meters.
-     * @param rightPosition   Encoder count of right side in meters.
-     * @param angularVelocity Angular velocity of the robot in radians per
-     *                        second.
+     * @param heading       Angle of the robot.
+     * @param leftPosition  Encoder count of left side in meters.
+     * @param rightPosition Encoder count of right side in meters.
      */
-    void SetMeasuredLocalOutputs(units::meter_t leftPosition,
-                                 units::meter_t rightPosition,
-                                 units::radians_per_second_t angularVelocity);
+    void SetMeasuredLocalOutputs(units::radian_t heading,
+                                 units::meter_t leftPosition,
+                                 units::meter_t rightPosition);
 
     /**
      * Set global measurements.
@@ -177,9 +178,9 @@ public:
 
     class LocalOutput {
     public:
-        static constexpr int kLeftPosition = 0;
-        static constexpr int kRightPosition = 1;
-        static constexpr int kAngularVelocity = 2;
+        static constexpr int kHeading = 0;
+        static constexpr int kLeftPosition = 1;
+        static constexpr int kRightPosition = 2;
     };
 
     class GlobalOutput {
@@ -193,11 +194,12 @@ public:
     };
 
 private:
-    static constexpr auto rb = 0.8382_m / 2.0;  // Robot radius
+    // Robot radius
+    static constexpr auto rb = Constants::Drivetrain::kWidth / 2.0;
 
     static frc::LinearSystem<2, 2, 2> m_plant;
 
-    // The current sensor measurements.
+    // The current sensor measurements
     Eigen::Matrix<double, 3, 1> m_localY;
     Eigen::Matrix<double, 6, 1> m_globalY;
 
@@ -219,8 +221,12 @@ private:
         Dynamics,
         LocalMeasurementModel,
         {0.002, 0.002, 0.0001, 1.5, 1.5, 0.5, 0.5, 10.0, 10.0, 2.0},
-        {0.005, 0.005, 0.00001},
+        {0.0001, 0.005, 0.005},
         Constants::kDt};
+
+    // XXX: For testing only. This is used to verify the EKF pose because
+    // DifferentialDriveOdometry is known to work on other robots.
+    frc::DifferentialDriveOdometry m_odometer{frc::Rotation2d(0_rad)};
 
     // Design controller
     // States: [x position, y position, heading, left velocity, right velocity]
@@ -248,17 +254,22 @@ private:
                                    "Estimated Y (m)",
                                    "X Ref (m)",
                                    "Y Ref (m)",
-                                   "Left Position (m)",
-                                   "Right Position (m)",
+                                   "Measured Left Position (m)",
+                                   "Measured Right Position (m)",
                                    "Estimated Left Position (m)",
-                                   "Estimated Right Position (m)"};
-    frc::CSVLogFile angleLogger{"Drivetrain Angles", "Estimated Heading (rad)",
-                                "Heading Ref (rad)", "Angle Error (rad)"};
-    frc::CSVLogFile velocityLogger{
-        "Drivetrain Velocities",     "Left Velocity (m/s)",
-        "Right Velocity (m/s)",      "Estimated Left Vel (m/s)",
-        "Estimated Right Vel (m/s)", "Left Vel Ref (m/s)",
-        "Right Vel Ref (m/s)"};
+                                   "Estimated Right Position (m)",
+                                   "Odometry X (m)",
+                                   "Odometry Y (m)"};
+    frc::CSVLogFile angleLogger{"Drivetrain Angles", "Measured Heading (rad)",
+                                "Estimated Heading (rad)", "Heading Ref (rad)",
+                                "Angle Error (rad)"};
+    frc::CSVLogFile velocityLogger{"Drivetrain Velocities",
+                                   "Measured Left Velocity (m/s)",
+                                   "Measured Right Velocity (m/s)",
+                                   "Estimated Left Vel (m/s)",
+                                   "Estimated Right Vel (m/s)",
+                                   "Left Vel Ref (m/s)",
+                                   "Right Vel Ref (m/s)"};
     frc::CSVLogFile voltageLogger{
         "Drivetrain Voltages",     "Left Voltage (V)",
         "Right Voltage (V)",       "Left Voltage Error (V)",
@@ -276,6 +287,54 @@ private:
         "Right Voltage Error Cov (V^2)",
         "Angle Error Cov (rad^2)",
     };
+
+    /**
+     * Constrains theta to within the range (-pi, pi].
+     *
+     * @param theta Angle to normalize
+     */
+    static constexpr double NormalizeAngle(double theta) {
+        // Constrain theta to within (-3pi, pi)
+        const int n_pi_pos = (theta + wpi::math::pi) / 2.0 / wpi::math::pi;
+        theta -= n_pi_pos * 2.0 * wpi::math::pi;
+
+        // Cut off the bottom half of the above range to constrain within
+        // (-pi, pi]
+        const int n_pi_neg = (theta - wpi::math::pi) / 2.0 / wpi::math::pi;
+        theta -= n_pi_neg * 2.0 * wpi::math::pi;
+
+        return theta;
+    }
+
+    /**
+     * Converts velocity and curvature of drivetrain into left and right wheel
+     * velocities.
+     *
+     * @param velocity Linear velocity of drivetrain chassis.
+     * @param curvature Curvature of drivetrain arc.
+     * @param trackWidth Track width of drivetrain.
+     */
+    static constexpr std::tuple<units::meters_per_second_t,
+                                units::meters_per_second_t>
+    ToWheelVelocities(units::meters_per_second_t velocity,
+                      frc::curvature_t curvature, units::meter_t trackWidth) {
+        // clang-format off
+        // v = (v_r + v_l) / 2     (1)
+        // w = (v_r - v_l) / (2r)  (2)
+        // k = w / v               (3)
+        //
+        // v_l = v - wr
+        // v_l = v - (vk)r
+        // v_l = v(1 - kr)
+        //
+        // v_r = v + wr
+        // v_r = v + (vk)r
+        // v_r = v(1 + kr)
+        // clang-format on
+        auto vl = velocity * (1 - (curvature / 1_rad * trackWidth / 2.0));
+        auto vr = velocity * (1 + (curvature / 1_rad * trackWidth / 2.0));
+        return {vl, vr};
+    }
 
     static void ScaleCapU(Eigen::Matrix<double, 2, 1>* u);
 };

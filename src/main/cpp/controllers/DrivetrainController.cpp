@@ -82,10 +82,10 @@ bool DrivetrainController::AtGoal() {
 }
 
 void DrivetrainController::SetMeasuredLocalOutputs(
-    units::meter_t leftPosition, units::meter_t rightPosition,
-    units::radians_per_second_t angularVelocity) {
-    m_localY << leftPosition.to<double>(), rightPosition.to<double>(),
-        angularVelocity.to<double>();
+    units::radian_t heading, units::meter_t leftPosition,
+    units::meter_t rightPosition) {
+    m_localY << heading.to<double>(), leftPosition.to<double>(),
+        rightPosition.to<double>();
 }
 
 void DrivetrainController::SetMeasuredGlobalOutputs(
@@ -133,22 +133,29 @@ void DrivetrainController::Update(units::second_t dt,
         ref = m_trajectory.Sample(elapsedTime);
     }
 
+    auto [vlRef, vrRef] =
+        ToWheelVelocities(ref.velocity, ref.curvature, kWidth);
+
     positionLogger.Log(elapsedTime, m_observer.Xhat(State::kX),
                        m_observer.Xhat(State::kY),
                        ref.pose.Translation().X().to<double>(),
                        ref.pose.Translation().Y().to<double>(),
+                       m_localY(LocalOutput::kLeftPosition, 0),
+                       m_localY(LocalOutput::kRightPosition, 0),
                        m_observer.Xhat(State::kLeftPosition),
                        m_observer.Xhat(State::kRightPosition),
-                       m_localY(LocalOutput::kLeftPosition, 0),
-                       m_localY(LocalOutput::kRightPosition, 0));
+                       m_odometer.GetPose().Translation().X().to<double>(),
+                       m_odometer.GetPose().Translation().Y().to<double>());
 
-    angleLogger.Log(elapsedTime, m_observer.Xhat(State::kHeading),
+    angleLogger.Log(elapsedTime, m_localY(LocalOutput::kHeading),
+                    m_observer.Xhat(State::kHeading),
                     ref.pose.Rotation().Radians().to<double>(),
                     m_observer.Xhat(State::kAngularVelocityError));
     velocityLogger.Log(elapsedTime, m_observer.Xhat(State::kLeftVelocity),
                        m_observer.Xhat(State::kRightVelocity),
                        m_nextR(State::kLeftVelocity, 0),
-                       m_nextR(State::kRightVelocity, 0));
+                       m_nextR(State::kRightVelocity, 0), vlRef.to<double>(),
+                       vrRef.to<double>());
     voltageLogger.Log(elapsedTime, m_cappedU(Input::kLeftVoltage, 0),
                       m_cappedU(Input::kRightVoltage, 0),
                       m_observer.Xhat(State::kLeftVoltageError),
@@ -167,31 +174,15 @@ void DrivetrainController::Update(units::second_t dt,
         m_observer.P(State::kAngularVelocityError,
                      State::kAngularVelocityError));
 
+    m_odometer.Update(units::radian_t{m_localY(LocalOutput::kHeading)},
+                      units::meter_t{m_localY(LocalOutput::kLeftPosition)},
+                      units::meter_t{m_localY(LocalOutput::kRightPosition)});
     m_observer.Correct(m_cappedU, m_localY);
-
-    // clang-format off
-    // v = (v_r + v_l) / 2     (1)
-    // w = (v_r - v_l) / (2r)  (2)
-    // k = w / v               (3)
-    //
-    // v_l = v - wr
-    // v_l = v - (vk)r
-    // v_l = v(1 - kr)
-    //
-    // v_r = v + wr
-    // v_r = v + (vk)r
-    // v_r = v(1 + kr)
-    // clang-format on
-    constexpr auto r = kWidth / 2.0;
-    units::meters_per_second_t vl =
-        ref.velocity * (1 - (ref.curvature * r).to<double>());
-    units::meters_per_second_t vr =
-        ref.velocity * (1 + (ref.curvature * r).to<double>());
 
     m_nextR << ref.pose.Translation().X().to<double>(),
         ref.pose.Translation().Y().to<double>(),
-        ref.pose.Rotation().Radians().to<double>(), vl.to<double>(),
-        vr.to<double>();
+        ref.pose.Rotation().Radians().to<double>(), vlRef.to<double>(),
+        vrRef.to<double>();
 
     // Compute feedforward
     Eigen::Matrix<double, 5, 1> rdot = (m_nextR - m_r) / dt.to<double>();
@@ -284,7 +275,10 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
     inRobotFrame(0, 1) = std::sin(x(2, 0));
     inRobotFrame(1, 0) = -std::sin(x(2, 0));
     inRobotFrame(1, 1) = std::cos(x(2, 0));
-    return K * inRobotFrame * (r - x.block<5, 1>(0, 0));  // - uError;
+
+    Eigen::Matrix<double, 5, 1> error = r - x.block<5, 1>(0, 0);
+    error(State::kHeading, 0) = NormalizeAngle(error(State::kHeading, 0));
+    return K * inRobotFrame * error;
 }
 
 Eigen::Matrix<double, 10, 1> DrivetrainController::Dynamics(
@@ -306,19 +300,17 @@ Eigen::Matrix<double, 10, 1> DrivetrainController::Dynamics(
     // constexpr auto k2 = (1 / m - rb * rb / J);
 
     Eigen::Matrix<double, 4, 2> B;
-    // clang-format off
     B.block<2, 2>(0, 0) = m_plant.B();
     B.block<2, 2>(2, 0).setZero();
     Eigen::Matrix<double, 4, 7> A;
     A.block<2, 2>(0, 0) = m_plant.A();
 
-    // clang-format on
     A.block<2, 2>(2, 0).setIdentity();
     A.block<4, 2>(0, 2).setZero();
     A.block<4, 2>(0, 4) = B;
     A.block<4, 1>(0, 6) << 0, 0, 1, -1;
 
-    double v = 0.5 * (x(State::kLeftVelocity, 0) + x(State::kRightVelocity, 0));
+    double v = (x(State::kLeftVelocity, 0) + x(State::kRightVelocity, 0)) / 2.0;
 
     Eigen::Matrix<double, 10, 1> result;
     result(0, 0) = v * std::cos(x(State::kHeading, 0));
@@ -337,9 +329,8 @@ Eigen::Matrix<double, 3, 1> DrivetrainController::LocalMeasurementModel(
     static_cast<void>(u);
 
     Eigen::Matrix<double, 3, 1> y;
-    y << x(State::kLeftPosition, 0), x(State::kRightPosition, 0),
-        (x(State::kRightVelocity, 0) - x(State::kLeftVelocity, 0)) /
-            (2.0 * rb.to<double>());
+    y << x(State::kHeading, 0), x(State::kLeftPosition, 0),
+        x(State::kRightPosition, 0);
     return y;
 }
 

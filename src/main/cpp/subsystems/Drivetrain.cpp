@@ -105,8 +105,8 @@ void Drivetrain::Reset() {
 }
 
 void Drivetrain::Iterate() {
-    m_controller.SetMeasuredLocalOutputs(
-        GetLeftDisplacement(), GetRightDisplacement(), GetAngularRate());
+    m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftDisplacement(),
+                                         GetRightDisplacement());
     auto now = std::chrono::steady_clock::now();
     m_controller.Update(now - m_lastTime, now - m_startTime);
 
@@ -114,7 +114,6 @@ void Drivetrain::Iterate() {
     auto u = m_controller.GetInputs();
     SetLeftManual(u(0, 0) / 12.0);
     SetRightManual(u(1, 0) / 12.0);
-
     m_lastTime = now;
 }
 

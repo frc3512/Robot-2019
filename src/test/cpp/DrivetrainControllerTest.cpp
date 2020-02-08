@@ -19,7 +19,7 @@ TEST(DrivetrainControllerTest, ReachesReference) {
     controller.Reset(frc::Pose2d{0_m, 0_m, 0_rad});
     controller.Enable();
 
-    controller.SetMeasuredLocalOutputs(0_m, 0_m, 0_rad_per_s);
+    controller.SetMeasuredLocalOutputs(0_rad, 0_m, 0_m);
     controller.SetWaypoints(
         {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
 
@@ -33,10 +33,10 @@ TEST(DrivetrainControllerTest, ReachesReference) {
         Eigen::Matrix<double, 3, 1> y =
             frc3512::DrivetrainController::LocalMeasurementModel(
                 trueXhat, Eigen::Matrix<double, 2, 1>::Zero()) +
-            frc::MakeWhiteNoiseVector(0.005, 0.005, 0.00001);
-        controller.SetMeasuredLocalOutputs(
-            units::meter_t{y(0, 0)}, units::meter_t{y(1, 0)},
-            units::radians_per_second_t{y(2, 0)});
+            frc::MakeWhiteNoiseVector(0.0001, 0.005, 0.005);
+        controller.SetMeasuredLocalOutputs(units::radian_t{y(0, 0)},
+                                           units::meter_t{y(1, 0)},
+                                           units::meter_t{y(2, 0)});
         controller.Update(kDt, currentTime);
         currentTime += dt;
 
