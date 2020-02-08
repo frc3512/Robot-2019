@@ -5,8 +5,7 @@
 #include <units/units.h>
 #include <wpi/math>
 
-namespace frc3512 {
-namespace Constants {
+namespace frc3512::Constants {
 
 /*
  * Math and Conversions
@@ -189,5 +188,4 @@ constexpr double kHab2 = 0.0898;  // 0.1498
 
 constexpr auto kDt = 0.00505_s;
 constexpr int kControllerPrio = 50;
-}  // namespace Constants
-}  // namespace frc3512
+}  // namespace frc3512::Constants
