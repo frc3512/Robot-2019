@@ -294,7 +294,7 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
 Eigen::Matrix<double, 10, 1> DrivetrainController::Dynamics(
     const Eigen::Matrix<double, 10, 1>& x,
     const Eigen::Matrix<double, 2, 1>& u) {
-    // constexpr auto motors = frc::DCMotor::MiniCIM(2);
+    // constexpr auto motors = frc::DCMotor::MiniCIM(3);
 
     // constexpr units::dimensionless_t Glow = 15.32;  // Low gear ratio
     // constexpr units::dimensionless_t Ghigh = 7.08;  // High gear ratio
