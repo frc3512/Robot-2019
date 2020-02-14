@@ -14,7 +14,6 @@ constexpr double kGravity = 9.80665;
 
 namespace Robot {
 constexpr int kMjpegServerPort = 1180;
-constexpr double kNominalVoltage = 12.0;
 
 /*
  * Joystick and buttons
@@ -42,18 +41,16 @@ constexpr int kRightEncoderA = 0;
 constexpr int kRightEncoderB = 1;
 
 // Controller constants
-constexpr double kAlpha = 0.5;  // How much to trust voltage,  0 is full trust
-constexpr double kPositionTolerance = 0.05;  // meters
-constexpr double kVelocityTolerance = 2.0;   // meters/second
-constexpr double kAngleTolerance = 0.05;     // radians
+constexpr double kPositionTolerance = 0.05;  // m
+constexpr double kVelocityTolerance = 2.0;   // m/s
+constexpr double kAngleTolerance = 0.05;     // rad
 
 // Physical Robot Constants
-constexpr auto kWheelbaseWidth = 0.6096_m;  // 24.0;
-constexpr auto kLength = 0.9398_m;          // 37.0;  // Approximate
-constexpr auto kWidth = 0.8382_m;           // 33.0;   // Approximate
-constexpr auto kWheelRadius = 0.0746125_m;  // 2.9375;  // 2.947
+constexpr auto kWheelbaseWidth = 0.6096_m;
+constexpr auto kLength = 0.9398_m;
+constexpr auto kWidth = 0.990405073902434_m;
+constexpr auto kWheelRadius = 0.0746125_m;
 constexpr double kDriveGearRatio = 1.0 / 1.0;
-constexpr auto kMaxControlVoltage = 12_V;
 
 // System Characterization
 constexpr auto kLinearV = 3.62_V / 1_mps;
@@ -91,7 +88,7 @@ constexpr double kDpP = (2.0 * wpi::math::pi * kSprocketRadius) / 2048.0;
 constexpr double kRobotMass = 63.503;  // kg
 
 // Setpoints
-constexpr double kClimb3Height = -0.4826 - 0.0254;  // - 0.04;
+constexpr double kClimb3Height = -0.4826 - 0.0254;
 constexpr double kClimb2Height = -0.1498 - 0.0254;
 }  // namespace Climber
 
@@ -111,7 +108,7 @@ constexpr double kMin = -1.495867;
 constexpr double kMax = 0.0;
 constexpr double kStallTorque = 0.71;
 constexpr double kStallCurrent = 134.0;
-constexpr double kLength = 0.508;  // Approx 20.0 IN
+constexpr double kLength = 0.508;  // Approx 20.0 in.
 constexpr double kMass = 7.18;     // Approx 15 lbs.
 
 // Distance per pulse (converts ticks to radians)
@@ -171,19 +168,20 @@ constexpr double kOffset = 0.18415;
 
 constexpr double kFloorHeight = 0.0;
 
-constexpr double kBottomHatch = 0.0;  // 0.46482;
+constexpr double kBottomHatch = 0.0;
 constexpr double kMiddleHatch = 1.11602 - FourBarLift::kOffset - kOffset;
 constexpr double kTopHatch = 1.83722 - FourBarLift::kOffset - kOffset;
 
 constexpr double kBottomCargo = 0.0;
 constexpr double kMiddleCargo = 1.33192 - FourBarLift::kOffset - kOffset;
-// 0.06 compensates for the physical limitations of the elevator
+
+// 0.11 compensates for the physical limitations of the elevator
 constexpr double kTopCargo = 2.03312 - FourBarLift::kOffset - kOffset - 0.11;
 
 constexpr double kCargoShip = 0.9941 - FourBarLift::kOffset - kOffset;
 
-constexpr double kHab3 = 0.42;    // 0.48
-constexpr double kHab2 = 0.0898;  // 0.1498
+constexpr double kHab3 = 0.42;
+constexpr double kHab2 = 0.0898;
 }  // namespace Elevator
 
 constexpr auto kDt = 0.00505_s;
