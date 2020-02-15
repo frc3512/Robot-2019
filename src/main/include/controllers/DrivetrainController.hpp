@@ -24,6 +24,43 @@ namespace frc3512 {
 
 class DrivetrainController {
 public:
+    class State {
+    public:
+        static constexpr int kX = 0;
+        static constexpr int kY = 1;
+        static constexpr int kHeading = 2;
+        static constexpr int kLeftVelocity = 3;
+        static constexpr int kRightVelocity = 4;
+        static constexpr int kLeftPosition = 5;
+        static constexpr int kRightPosition = 6;
+        static constexpr int kLeftVoltageError = 7;
+        static constexpr int kRightVoltageError = 8;
+        static constexpr int kAngularVelocityError = 9;
+    };
+
+    class Input {
+    public:
+        static constexpr int kLeftVoltage = 0;
+        static constexpr int kRightVoltage = 1;
+    };
+
+    class LocalOutput {
+    public:
+        static constexpr int kHeading = 0;
+        static constexpr int kLeftPosition = 1;
+        static constexpr int kRightPosition = 2;
+    };
+
+    class GlobalOutput {
+    public:
+        static constexpr int kX = 0;
+        static constexpr int kY = 1;
+        static constexpr int kHeading = 2;
+        static constexpr int kLeftPosition = 3;
+        static constexpr int kRightPosition = 4;
+        static constexpr int kAngularVelocity = 5;
+    };
+
     /**
      * Constructs a drivetrain controller with the given coefficients.
      *
@@ -155,43 +192,6 @@ public:
     static Eigen::Matrix<double, 6, 1> GlobalMeasurementModel(
         const Eigen::Matrix<double, 10, 1>& x,
         const Eigen::Matrix<double, 2, 1>& u);
-
-    class State {
-    public:
-        static constexpr int kX = 0;
-        static constexpr int kY = 1;
-        static constexpr int kHeading = 2;
-        static constexpr int kLeftVelocity = 3;
-        static constexpr int kRightVelocity = 4;
-        static constexpr int kLeftPosition = 5;
-        static constexpr int kRightPosition = 6;
-        static constexpr int kLeftVoltageError = 7;
-        static constexpr int kRightVoltageError = 8;
-        static constexpr int kAngularVelocityError = 9;
-    };
-
-    class Input {
-    public:
-        static constexpr int kLeftVoltage = 0;
-        static constexpr int kRightVoltage = 1;
-    };
-
-    class LocalOutput {
-    public:
-        static constexpr int kHeading = 0;
-        static constexpr int kLeftPosition = 1;
-        static constexpr int kRightPosition = 2;
-    };
-
-    class GlobalOutput {
-    public:
-        static constexpr int kX = 0;
-        static constexpr int kY = 1;
-        static constexpr int kHeading = 2;
-        static constexpr int kLeftPosition = 3;
-        static constexpr int kRightPosition = 4;
-        static constexpr int kAngularVelocity = 5;
-    };
 
 private:
     // Robot radius
