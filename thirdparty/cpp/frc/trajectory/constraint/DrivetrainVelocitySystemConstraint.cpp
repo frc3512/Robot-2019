@@ -15,12 +15,13 @@ units::meters_per_second_t DrivetrainVelocitySystemConstraint::MaxVelocity(
   // Calculate wheel velocity states from current velocity and curvature
   auto [vl, vr] = ToWheelVelocities(velocity, curvature, m_trackWidth);
 
-  Eigen::Matrix<double, 2, 1> x;
+  Eigen::Vector2d x;
   x << vl.to<double>(), vr.to<double>();
 
   // If either wheel velocity is greater than its maximum, normalize the wheel
   // speeds to within an achievable range while maintaining the curvature
-  if (x(0, 0) > velocity.to<double>() || x(1, 0) > velocity.to<double>()) {
+  if (std::abs(x(0, 0)) > velocity.to<double>() ||
+      std::abs(x(1, 0)) > velocity.to<double>()) {
     x *= velocity.to<double>() / x.lpNorm<Eigen::Infinity>();
   }
   return units::meters_per_second_t{(x(0, 0) + x(1, 0)) / 2.0};
@@ -32,11 +33,11 @@ DrivetrainVelocitySystemConstraint::MinMaxAcceleration(
     units::meters_per_second_t speed) {
   // Calculate wheel velocity states from current velocity and curvature
   auto [vl, vr] = ToWheelVelocities(speed, curvature, m_trackWidth);
-  Eigen::Matrix<double, 2, 1> x;
+  Eigen::Vector2d x;
   x << vl.to<double>(), vr.to<double>();
 
-  Eigen::Matrix<double, 2, 1> xDot;
-  Eigen::Matrix<double, 2, 1> u;
+  Eigen::Vector2d xDot;
+  Eigen::Vector2d u;
 
   // Get dx/dt for min u
   u << -m_maxVoltage.to<double>(), -m_maxVoltage.to<double>();
