@@ -114,9 +114,6 @@ private:
     frc::TrapezoidProfile<units::meters>::Constraints m_activeConstraints =
         scoringConstraints;
 
-    frc::TrapezoidProfile<units::meters> m_positionProfile{scoringConstraints,
-                                                           {0_m, 0_mps}};
-
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_scorePlant = [=] {

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/ElevatorController.hpp"
 
@@ -26,10 +26,6 @@ void ElevatorController::SetClimbingIndex() {
 }
 
 void ElevatorController::SetGoal(double goal) {
-    m_positionProfile = frc::TrapezoidProfile<units::meters>{
-        m_activeConstraints,
-        {units::meter_t{goal}, 0_mps},
-        {units::meter_t{EstimatedPosition()}, 0_mps}};
     m_goal = {units::meter_t{goal}, 0_mps};
 }
 
