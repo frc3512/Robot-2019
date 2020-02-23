@@ -121,6 +121,8 @@ void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
     m_controller.SetWaypoints(waypoints);
 }
 
+bool Drivetrain::AtGoal() const { return m_controller.AtGoal(); }
+
 void Drivetrain::ProcessMessage(const ButtonPacket& message) {
     if (message.topic == "Robot/DriveStick2" && message.button == 1 &&
         message.pressed) {

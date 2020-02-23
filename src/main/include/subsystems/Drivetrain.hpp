@@ -111,6 +111,8 @@ public:
 
     void SetWaypoints(const std::vector<frc::Pose2d>& waypoints);
 
+    bool AtGoal() const;
+
     void ProcessMessage(const ButtonPacket& message) override;
 
     void ProcessMessage(const CommandPacket& message) override;
