@@ -5,10 +5,10 @@ import multiprocessing as mp
 import os
 from pathlib import Path
 import re
+import requests
 import subprocess
 import sys
 from textwrap import TextWrapper
-from urllib.request import urlretrieve
 
 
 def purge(dir, pattern):
@@ -57,12 +57,6 @@ def scrub_make_dep_rules():
                 f.write(output)
 
 
-def dl_progress(count, block_size, total_size):
-    percent = min(int(count * block_size * 100 / total_size), 100)
-    sys.stdout.write(f"\r-> {percent}%")
-    sys.stdout.flush()
-
-
 def download_file(maven_url, filename, dest_dir):
     """Download file from maven server.
 
@@ -71,17 +65,34 @@ def download_file(maven_url, filename, dest_dir):
     dest_dir -- destination directory for file
     """
     dest_file = f"{dest_dir}/{filename}"
-    if not os.path.exists(f"{dest_dir}/{filename}"):
-        print(f"Downloading {filename}...")
-        print(f"Querying {maven_url}/{filename}")
-        urlretrieve(
-            url=f"{maven_url}/{filename}", filename=dest_file, reporthook=dl_progress
-        )
-        print(" done.")
+    if not os.path.exists(dest_file):
+        print(f"[maven] {filename}")
+
+        r = requests.get(f"{maven_url}/{filename}", stream=True)
+        block_size = 8196
+        valid_size = True
+        try:
+            total_size = int(r.headers["content-length"])
+        except KeyError:
+            valid_size = False
+
+        status_line = "\r  downloading... "
+        with open(dest_file, "wb") as f:
+            for count, chunk in enumerate(r.iter_content(block_size)):
+                if valid_size:
+                    percent = min(int(count * block_size * 100 / total_size), 100)
+                    print(status_line + f"{percent}%", end="")
+                    sys.stdout.flush()
+                f.write(chunk)
+
+        status_line += "100%"
+        print(status_line, end="")
+        sys.stdout.flush()
 
     folder_name = f"{dest_dir}/{os.path.splitext(filename)[0]}"
     if not os.path.exists(folder_name):
-        print(f"Unzipping {dest_file}...", end="")
+        status_line += ", unzipping..."
+        print(status_line, end="")
         sys.stdout.flush()
         subprocess.run(["unzip", "-q", "-d", folder_name, f"{dest_file}"])
         print(" done.")
@@ -106,12 +117,13 @@ def main():
     parser = argparse.ArgumentParser(description="Builds and deploys FRC C++ programs")
     parser.add_argument(
         "target",
-        choices=["build", "deploy", "clean", "ci", "test"],
+        choices=["build", "deploy", "clean", "ci", "test", "docs"],
         help="""'build' compiles the robot program for athena and downloads missing dependencies.
         'deploy' compiles the program if it hasn't already and deploys it to a roboRIO.
         'clean' removes all build artifacts from the build folder.
         'ci' compiles the robot program for x86-64 and downloads missing dependencies.
-        'test' compiles the robot program for x86-64 and downloads missing dependencies, then runs the tests.""",
+        'test' compiles the robot program for x86-64 and downloads missing dependencies, then runs the tests.
+        'docs' generates C++ API documentation using Doxygen.""",
     )
     parser.add_argument(
         "-j",
@@ -157,8 +169,8 @@ def main():
         download_lib(GTEST_URL, "googletest", "1.9.0-4-437e100-1", classifier + "static")
 
     classifier += "static"
-    download_lib(REV_URL, "SparkMax-cpp", "1.5.1", classifier)
-    download_lib(REV_URL, "SparkMax-driver", "1.5.1", classifier)
+    download_lib(REV_URL, "SparkMax-cpp", "1.5.2", classifier)
+    download_lib(REV_URL, "SparkMax-driver", "1.5.2", classifier)
 
     # Generate pubsub messages
     if (
@@ -203,6 +215,8 @@ def main():
         purge(".", r"Robot\.log$")
 
         subprocess.run(["build/linuxx86-64/frcUserProgram"], check=True)
+    elif args.target == "docs":
+        subprocess.run(["doxygen", "doxygen.conf"])
 
 
 if __name__ == "__main__":
