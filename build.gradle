@@ -49,6 +49,15 @@ dependencies {
     simulation wpi.deps.sim.gui(wpi.platforms.desktop, true)
 }
 
+nativeUtils.platformConfigs.named("linuxathena").configure {
+    it.cppCompiler.args.remove('-g')
+}
+
+nativeUtils.platformConfigs.named("linuxx86-64").configure {
+    it.cppCompiler.args.remove('-g')
+    it.linker.args.add('-lstdc++fs')
+}
+
 model {
     components {
         frcUserProgram(NativeExecutableSpec) {
@@ -97,6 +106,13 @@ model {
                   it.buildable = false
                 }
               }
+            }
+
+            binaries.all {
+                binary ->
+                binary.getTasks().withType(AbstractNativeSourceCompileTask) {
+                    it.dependsOn pythonTask
+                }
             }
 
             sources.cpp {
