@@ -22,7 +22,7 @@ Install the following python packages via `pip3 install --user package_name`.
 
 ## Build
 
-* `./make.py build`
+* `./gradlew-build-athena.sh`
 
 This runs a roboRIO build. Message parsers for the publish-subscribe framework
 will be automatically generated in `build/generated`. `build/generated/include`
@@ -31,20 +31,20 @@ start from that directory.
 
 ## Test
 
-* `./make.py test`
+* `./gradlew-test.sh`
 
 This runs a desktop build and executes all the unit tests in `src/test`.
 
 ## Deploy
 
-* `./make.py deploy`
+* `./gradlew deploy`
 
 This runs a roboRIO build if needed, copies the resulting binary to a roboRIO at
 10.35.12.2, and restarts it.
 
 ## Documentation
 
-* `./gradlew doxygen`
+* `./gradlew-docs.sh`
 
 Doxygen 1.8.15 needs to be installed. The HTML documentation will be generated
 in `build/docs/html` with an index.html page as the root.
