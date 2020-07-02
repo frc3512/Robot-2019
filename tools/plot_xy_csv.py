@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
+import sys
 
 
 def num_lines(csv_group):
@@ -15,12 +16,18 @@ def num_lines(csv_group):
 
 
 # Get list of files in current directory
-files = [os.path.join(dp, f) for dp, dn, fn in os.walk(".") for f in fn]
+prefix = "./build/test-results/frcUserProgramTest/linuxx86-64/release"
+files = [os.path.join(dp, f) for dp, dn, fn in os.walk(prefix) for f in fn]
+
+# Ignore files not matching optional pattern
+if len(sys.argv) > 1:
+    files = [f for f in files if re.search(sys.argv[1], f)]
 
 # Maps subsystem name to tuple of csv_group and date
 filtered = {}
 file_rgx = re.compile(
-    r"^\./(?P<name>[A-Za-z ]+)-(?P<date>\d{4}-\d{2}-\d{2}-\d{2}_\d{2}_\d{2})\.csv$"
+    r"^" + re.escape(prefix) +
+    r"/(?P<name>[A-Za-z ]+)-(?P<date>\d{4}-\d{2}-\d{2}-\d{2}_\d{2}_\d{2})\.csv$"
 )
 for f in files:
     match = file_rgx.search(f)
@@ -40,23 +47,24 @@ for f in files:
         filtered[name] = date
 
 # Plot datasets
-csv_group = "Drivetrain Positions"
-plt.figure()
-plt.title(csv_group)
-filename = csv_group + "-" + filtered[csv_group] + ".csv"
+for csv_group in filtered.keys():
+    plt.figure()
+    plt.title(csv_group)
+    filename = prefix + os.path.sep + csv_group + "-" + filtered[
+        csv_group] + ".csv"
 
-# Get labels from first row of file
-with open(filename) as f:
-    labels = [x.strip('"') for x in f.readline().rstrip().split(",")]
+    # Get labels from first row of file
+    with open(filename) as f:
+        labels = [x.strip('"') for x in f.readline().rstrip().split(",")]
 
-# Retrieve data from remaining rows of file
-print(f"Plotting {filename}")
-data = np.genfromtxt(filename, delimiter=",", skip_header=1, skip_footer=1)
-plt.plot(data[:, 1], data[:, 2])
-plt.plot(data[:, 3], data[:, 4])
+    # Retrieve data from remaining rows of file
+    print(f"Plotting {filename}")
+    data = np.genfromtxt(filename, delimiter=",", skip_header=1, skip_footer=1)
+    plt.plot(data[:, 1], data[:, 2])
+    plt.plot(data[:, 3], data[:, 4])
 
-# First label is x axis label (time). The remainder are dataset names.
-plt.xlabel("X (m)")
-plt.ylabel("Y (m)")
-plt.legend(["Estimate", "Reference"])
+    # First label is x axis label (time). The remainder are dataset names.
+    plt.xlabel("X (m)")
+    plt.ylabel("Y (m)")
+    plt.legend(["Estimate", "Reference"])
 plt.show()
