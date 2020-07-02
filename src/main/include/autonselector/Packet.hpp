@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2020 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -47,6 +47,8 @@ public:
     Packet& operator>>(uint16_t& data);
     Packet& operator>>(int32_t& data);
     Packet& operator>>(uint32_t& data);
+    Packet& operator>>(int64_t& data);
+    Packet& operator>>(uint64_t& data);
     Packet& operator>>(float& data);
     Packet& operator>>(double& data);
     Packet& operator>>(std::string& data);
@@ -57,6 +59,8 @@ public:
     Packet& operator<<(uint16_t data);
     Packet& operator<<(int32_t data);
     Packet& operator<<(uint32_t data);
+    Packet& operator<<(int64_t data);
+    Packet& operator<<(uint64_t data);
     Packet& operator<<(float data);
     Packet& operator<<(double data);
     Packet& operator<<(const std::string& data);
