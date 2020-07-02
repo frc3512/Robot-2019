@@ -5,7 +5,37 @@
 import argparse
 import os
 import re
+import shutil
 
+
+class FileWriter:
+    def __init__(self, filename):
+        """Opens a temporary file with the given name.
+
+        It will replace the original file, if one exists, only if the temporary
+        file's contents differ from the original upon closing. Otherwise, the
+        temporary file will be discarded.
+        """
+        self.filename = filename
+
+    def __enter__(self):
+        self.file = open(self.filename + ".tmp", "w")
+        return self.file
+
+    def __exit__(self, type, value, traceback):
+        self.file.close()
+        try:
+            with open(self.filename) as file:
+                old_contents = file.read()
+        except FileNotFoundError:
+            shutil.move(self.filename + ".tmp", self.filename)
+
+        with open(self.filename + ".tmp") as file:
+            new_contents = file.read()
+        if old_contents != new_contents:
+            shutil.move(self.filename + ".tmp", self.filename)
+        else:
+            os.remove(self.filename + ".tmp")
 
 def write_msg_header(
     output_dir, msg_name, member_var_types, constructor_arg_types, member_var_names
@@ -19,15 +49,17 @@ def write_msg_header(
     constructor_arg_types -- list of function argument types
     member_var_names -- list of member variable names
     """
-    with open(f"{msg_name}Packet.hpp", "w") as output:
+    filename = f"{output_dir}/include/communications/{msg_name}Packet.hpp"
+    with FileWriter(filename) as output:
         output.write(
             """#pragma once
 
+#include <wpi/StringRef.h>
+
 #include <string>
-#include <string_view>
 
 #include "communications/PacketType.hpp"
-#include "dsdisplay/Packet.hpp"
+#include "autonselector/Packet.hpp"
 
 namespace frc3512 {
 
@@ -98,10 +130,6 @@ namespace frc3512 {
 
 }}"""
         )
-    os.rename(
-        f"{msg_name}Packet.hpp",
-        f"{output_dir}/include/communications/{msg_name}Packet.hpp",
-    )
 
 
 def write_msg_source(
@@ -116,7 +144,8 @@ def write_msg_source(
     member_var_names -- list of member variable names
     serial_names -- list of member variable names to serialize/deserialize
     """
-    with open(f"{msg_name}Packet.cpp", "w") as output:
+    filename = f"{output_dir}/cpp/communications/{msg_name}Packet.cpp"
+    with FileWriter(filename) as output:
         output.write(
             f"""#include "communications/{msg_name}Packet.hpp"
 
@@ -167,9 +196,6 @@ void {msg_name}Packet::Deserialize(const char* buf, size_t length) {{
     Deserialize(packet);
 }}"""
         )
-    os.rename(
-        f"{msg_name}Packet.cpp", f"{output_dir}/cpp/communications/{msg_name}Packet.cpp"
-    )
 
 
 def write_packettype_header(output_dir, msg_names):
@@ -179,7 +205,8 @@ def write_packettype_header(output_dir, msg_names):
     output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
-    with open("PacketType.hpp", "w") as output:
+    filename = f"{output_dir}/include/communications/PacketType.hpp"
+    with FileWriter(filename) as output:
         output.write(
             """#pragma once
 
@@ -205,7 +232,6 @@ namespace frc3512 {
 }  // namespace frc3512
 """
         )
-    os.rename("PacketType.hpp", f"{output_dir}/include/communications/PacketType.hpp")
 
 
 def write_publishnodebase_header(output_dir, msg_names):
@@ -215,7 +241,8 @@ def write_publishnodebase_header(output_dir, msg_names):
     output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
-    with open("PublishNodeBase.hpp", "w") as output:
+    filename = f"{output_dir}/include/communications/PublishNodeBase.hpp"
+    with FileWriter(filename) as output:
         output.write(
             """#pragma once
 
@@ -258,10 +285,6 @@ protected:
 }  // namespace frc3512
 """
         )
-    os.rename(
-        "PublishNodeBase.hpp",
-        f"{output_dir}/include/communications/PublishNodeBase.hpp",
-    )
 
 
 def write_publishnodebase_source(output_dir, msg_names):
@@ -271,9 +294,11 @@ def write_publishnodebase_source(output_dir, msg_names):
     output_dir -- output directory root for source
     msg_names -- list of packet message names
     """
-    with open("PublishNodeBase.cpp", "w") as output:
+    filename = f"{output_dir}/cpp/communications/PublishNodeBase.cpp"
+    with FileWriter(filename) as output:
         output.write(
             """#include "communications/PublishNodeBase.hpp"
+            #include "communications/PacketType.hpp"
 
 void frc3512::PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl<char>& message) {
     // Checks the first byte of the message for its ID to determine
@@ -300,9 +325,6 @@ void frc3512::PublishNodeBase::DeserializeAndProcessMessage(wpi::SmallVectorImpl
 }
 """
         )
-    os.rename(
-        "PublishNodeBase.cpp", f"{output_dir}/cpp/communications/PublishNodeBase.cpp"
-    )
 
 
 def main():
@@ -327,12 +349,12 @@ def main():
         os.makedirs(f"{args.output}/include/communications")
 
     # Parse schema files
-    var_regex = re.compile(r"(?P<type>\w+)\s+(?P<name>\w+)")
+    var_regex = re.compile(r"(?P<type>[\w:]+)\s+(?P<name>\w+)")
     for filename in msg_files:
         with open(filename, "r") as msgfile:
             member_var_types = ["std::string"]
             member_var_names = ["topic"]
-            constructor_arg_types = ["std::string_view"]
+            constructor_arg_types = ["wpi::StringRef"]
             serial_names = ["ID", "topic"]
             for line in msgfile:
                 # Strip comments
@@ -345,7 +367,7 @@ def main():
                     name = match.group("name")
                     if type == "string":
                         member_var_types.append("std::string")
-                        constructor_arg_types.append("std::string_view")
+                        constructor_arg_types.append("wpi::StringRef")
                     else:
                         member_var_types.append(type)
                         constructor_arg_types.append(type)
