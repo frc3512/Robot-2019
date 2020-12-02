@@ -20,34 +20,60 @@ Install the following python packages via `pip3 install --user package_name`.
 * wpiformat (optional)
   * https://github.com/wpilibsuite/styleguide/blob/master/wpiformat/README.rst
 
-## Build
+## Build options
 
-* `./gradlew-build-athena.sh`
+### Build everything
 
-This runs a roboRIO build. Message parsers for the publish-subscribe framework
-will be automatically generated in `build/generated`. `build/generated/include`
-is specified as an include path in the Makefile, so `#include` directives can
-start from that directory.
+* `./gradlew build`
 
-## Test
+This runs a roboRIO and desktop build and runs the unit tests. Message parsers
+for the publish-subscribe framework will be automatically generated in
+`build/generated`. `build/generated/include` is specified as an include path in
+the Makefile, so `#include` directives can start from that directory.
 
-* `./gradlew-test.sh`
+This may take a while, so more specific builds (see below) are recommended
+instead.
 
-This runs a desktop build and executes all the unit tests in `src/test`.
+### Build (athena)
 
-## Deploy
+* `./gradlew buildAthena`
+
+This runs a roboRIO build.
+
+### Deploy
 
 * `./gradlew deploy`
 
 This runs a roboRIO build if needed, copies the resulting binary to a roboRIO at
 10.35.12.2, and restarts it.
 
-## Documentation
+### Test
 
-* `./gradlew-docs.sh`
+* `./gradlew test`
 
-Doxygen 1.8.15 needs to be installed. The HTML documentation will be generated
-in `build/docs/html` with an index.html page as the root.
+This runs a release build of the robot code's unit tests from `src/test`. They
+are useful for ensuring parts of the robot code continue to work correctly after
+implementing new features or refactoring existing functionality.
+
+### Simulation GUI
+
+* `./gradlew simulate`
+
+This runs a debug build of the robot code in the simulation GUI.
+
+* `./buildscripts/simulate.sh`
+
+This runs a debug build of the robot code in the simulation GUI, but the console
+output is printed to the shell instead of squelched.
+
+### Documentation
+
+* `./gradlew doxygen`
+
+The source code and algorithms documentation is located in the [docs](docs)
+folder. This command generates HTML documentation for the robot code from
+in-source Doxygen comments. The results are placed in a `docs/html` folder with
+an `index.html` page as the root.
 
 ## Game
 
