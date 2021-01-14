@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -8,8 +8,10 @@
 #include <frc/logging/CSVLogFile.h>
 #include <frc/system/LinearSystem.h>
 #include <frc/system/plant/DCMotor.h>
-#include <frc/system/plant/ElevatorSystem.h>
+#include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <units/length.h>
+#include <units/velocity.h>
 
 #include "Constants.hpp"
 
@@ -128,7 +130,7 @@ private:
         // Gear ratio
         constexpr double G = 8.0;
 
-        return frc::ElevatorSystem(motor, m, r, G);
+        return frc::LinearSystemId::ElevatorSystem(motor, m, r, G);
     }();
 
     frc::LinearSystem<2, 1, 1> m_climbPlant = [=] {
@@ -143,7 +145,7 @@ private:
         // Gear ratio
         constexpr double G = 12.5;
 
-        return frc::ElevatorSystem(motor, m, r, G);
+        return frc::LinearSystemId::ElevatorSystem(motor, m, r, G);
     }();
 
     frc::LinearQuadraticRegulator<2, 1> m_scoreController{
@@ -152,14 +154,15 @@ private:
         m_climbPlant, {0.3, 3.0}, {12.0}, Constants::kDt};
 
     frc::KalmanFilter<2, 1, 1> m_scoreObserver{
-        m_scorePlant, Constants::kDt, {0.05, 100.0}, {0.0001}};
+        m_scorePlant, {0.05, 100.0}, {0.0001}, Constants::kDt};
     frc::KalmanFilter<2, 1, 1> m_climbObserver{
-        m_climbPlant, Constants::kDt, {0.05, 100.0}, {0.0001}};
+        m_climbPlant, {0.05, 100.0}, {0.0001}, Constants::kDt};
 
     bool m_isEnabled = false;
     bool m_climbing = false;
 
     Eigen::Matrix<double, 2, 1> m_nextR;
+    Eigen::Matrix<double, 1, 1> m_u;
 
     bool m_atReferences = false;
 

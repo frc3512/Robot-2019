@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/ClimberController.hpp"
 
@@ -10,9 +10,9 @@ using namespace frc3512;
 
 ClimberController::ClimberController() { m_y.setZero(); }
 
-void ClimberController::Enable() { m_loop.Enable(); }
+void ClimberController::Enable() { m_isEnabled = true; }
 
-void ClimberController::Disable() { m_loop.Disable(); }
+void ClimberController::Disable() { m_isEnabled = false; }
 
 void ClimberController::SetGoal(double goal) {
     m_positionProfile = frc::TrapezoidProfile<units::meters>{
@@ -82,4 +82,6 @@ void ClimberController::Update() {
     m_loop.Predict(Constants::kDt);
 }
 
-void ClimberController::Reset() { m_loop.Reset(); }
+void ClimberController::Reset() {
+    m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+}

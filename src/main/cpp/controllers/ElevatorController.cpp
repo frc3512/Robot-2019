@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/ElevatorController.hpp"
 
@@ -105,22 +105,21 @@ void ElevatorController::Update() {
     auto& controller = m_climbing ? m_climbController : m_scoreController;
     auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
 
-    observer.Correct(controller.U(), m_y);
+    observer.Correct(m_u, m_y);
 
     auto error = controller.R() - observer.Xhat();
     m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
                      std::abs(error(1, 0)) < kVelocityTolerance;
 
-    controller.Update(observer.Xhat(), m_nextR);
-    observer.Predict(controller.U(), Constants::kDt);
+    m_u = controller.Calculate(observer.Xhat(), m_nextR);
+    observer.Predict(m_u, Constants::kDt);
 }
 
 void ElevatorController::Reset() {
-    m_scorePlant.Reset();
-    m_climbPlant.Reset();
     m_scoreController.Reset();
     m_climbController.Reset();
     m_scoreObserver.Reset();
     m_climbObserver.Reset();
     m_nextR.setZero();
+    m_u.setZero();
 }

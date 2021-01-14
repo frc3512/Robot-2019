@@ -1,11 +1,10 @@
-// Copyright (c) 2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
 #include <cscore.h>
 #include <frc/DriverStation.h>
 #include <frc/Joystick.h>
-#include <frc/PowerDistributionPanel.h>
 #include <frc/TimedRobot.h>
 #include <frc/livewindow/LiveWindow.h>
 
@@ -37,8 +36,7 @@ public:
     void TeleopPeriodic() override;
 
 private:
-    frc::PowerDistributionPanel m_pdp;
-    Climber m_climber{m_pdp};
+    Climber m_climber;
     Drivetrain m_drivetrain;
     Elevator m_elevator;
     Logger m_logger;

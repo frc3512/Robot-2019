@@ -1,11 +1,11 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
 #include <frc/Encoder.h>
-#include <frc/RTNotifier.h>
+#include <frc/Notifier.h>
+#include <frc/PWMSparkMax.h>
 #include <frc/SpeedControllerGroup.h>
-#include <rev/SparkMax.h>
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
@@ -85,14 +85,14 @@ public:
     void ProcessMessage(const CommandPacket& message) override;
 
 private:
-    rev::SparkMax m_grbx{Constants::FourBarLift::kPort};
+    frc::PWMSparkMax m_grbx{Constants::FourBarLift::kPort};
 
     FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,
                            Constants::FourBarLift::kEncoderB};
 
-    frc::RTNotifier m_thread{Constants::kControllerPrio, &FourBarLift::Iterate,
-                             this};
+    frc::Notifier m_thread{Constants::kControllerPrio, &FourBarLift::Iterate,
+                           this};
 };
 
 }  // namespace frc3512

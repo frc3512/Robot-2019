@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/FourBarLiftController.hpp"
 
@@ -9,9 +9,9 @@ using namespace frc3512::Constants::FourBarLift;
 
 FourBarLiftController::FourBarLiftController() { m_y.setZero(); }
 
-void FourBarLiftController::Enable() { m_loop.Enable(); }
+void FourBarLiftController::Enable() { m_isEnabled = true; }
 
-void FourBarLiftController::Disable() { m_loop.Disable(); }
+void FourBarLiftController::Disable() { m_isEnabled = false; }
 
 void FourBarLiftController::SetGoal(double goal) {
     m_angleProfile = frc::TrapezoidProfile<units::radians>{
@@ -98,4 +98,6 @@ void FourBarLiftController::Update() {
     m_loop.Predict(Constants::kDt);
 }
 
-void FourBarLiftController::Reset() { m_loop.Reset(); }
+void FourBarLiftController::Reset() {
+    m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+}

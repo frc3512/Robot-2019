@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/Climber.hpp"
 
@@ -10,8 +10,7 @@
 using namespace frc3512;
 using namespace frc3512::Constants::Climber;
 
-Climber::Climber(frc::PowerDistributionPanel& pdp)
-    : PublishNode("Climber"), m_pdp(pdp) {
+Climber::Climber() : PublishNode("Climber") {
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kDpP);
     m_lift.SetInverted(true);

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -6,11 +6,15 @@
 
 #include <frc/ADXRS450_Gyro.h>
 #include <frc/Encoder.h>
-#include <frc/RTNotifier.h>
+#include <frc/Notifier.h>
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
 #include <frc/drive/DifferentialDrive.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
+#include <units/length.h>
+#include <units/velocity.h>
 
 #include "Constants.hpp"
 #include "communications/PublishNode.hpp"
@@ -142,8 +146,8 @@ private:
 
     DrivetrainController m_controller{
         {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, Constants::kDt};
-    frc::RTNotifier m_controllerThread{Constants::kControllerPrio,
-                                       &Drivetrain::Iterate, this};
+    frc::Notifier m_controllerThread{Constants::kControllerPrio,
+                                     &Drivetrain::Iterate, this};
 
     std::chrono::steady_clock::time_point m_lastTime =
         std::chrono::steady_clock::time_point::min();

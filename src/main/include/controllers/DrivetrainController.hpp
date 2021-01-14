@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,12 @@
 #include <frc/logging/CSVLogFile.h>
 #include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/Trajectory.h>
-#include <units/units.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
+#include <units/curvature.h>
+#include <units/length.h>
+#include <units/time.h>
+#include <units/velocity.h>
 #include <wpi/math>
 #include <wpi/mutex.h>
 
@@ -113,6 +118,11 @@ public:
                                   units::meter_t leftPosition,
                                   units::meter_t rightPosition,
                                   units::radians_per_second_t angularVelocity);
+
+    /**
+     * Returns the drivetrain's plant.
+     */
+    frc::LinearSystem<2, 2, 2> GetPlant() const;
 
     /**
      * Returns the current references.
@@ -317,7 +327,7 @@ private:
     static constexpr std::tuple<units::meters_per_second_t,
                                 units::meters_per_second_t>
     ToWheelVelocities(units::meters_per_second_t velocity,
-                      frc::curvature_t curvature, units::meter_t trackWidth) {
+                      units::curvature_t curvature, units::meter_t trackWidth) {
         // clang-format off
         // v = (v_r + v_l) / 2     (1)
         // w = (v_r - v_l) / (2r)  (2)

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -9,8 +9,10 @@
 #include <frc/system/LinearSystem.h>
 #include <frc/system/LinearSystemLoop.h>
 #include <frc/system/plant/DCMotor.h>
-#include <frc/system/plant/SingleJointedArmSystem.h>
+#include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <units/angle.h>
+#include <units/angular_velocity.h>
 
 #include "Constants.hpp"
 
@@ -146,15 +148,17 @@ private:
         // Gear ratio
         constexpr double G = 302.22;
 
-        return frc::SingleJointedArmSystem(motor, J, G);
+        return frc::LinearSystemId::SingleJointedArmSystem(motor, J, G);
     }();
     frc::LinearQuadraticRegulator<2, 1> m_controller{
         m_plant, {0.01245, 0.109726}, {9.0}, Constants::kDt};
     frc::KalmanFilter<2, 1, 1> m_observer{
-        m_plant, Constants::kDt, {0.21745, 0.28726}, {0.01}};
-    frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer};
+        m_plant, {0.21745, 0.28726}, {0.01}, Constants::kDt};
+    frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer,
+                                          12_V, Constants::kDt};
 
     bool m_atReferences = false;
+    bool m_isEnabled = false;
     bool m_climbing = false;
 
     frc::CSVLogFile elevatorLogger{"FourBarLift",    "EstPos (rad)",

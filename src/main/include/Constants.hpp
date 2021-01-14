@@ -1,8 +1,14 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
-#include <units/units.h>
+#include <units/acceleration.h>
+#include <units/angular_acceleration.h>
+#include <units/angular_velocity.h>
+#include <units/length.h>
+#include <units/time.h>
+#include <units/velocity.h>
+#include <units/voltage.h>
 #include <wpi/math>
 
 namespace frc3512::Constants {
@@ -56,7 +62,7 @@ constexpr double kDriveGearRatio = 1.0 / 1.0;
 constexpr auto kLinearV = 3.62_V / 1_mps;
 constexpr auto kLinearA = 2.5_V / 1_mps_sq;
 constexpr auto kAngularV = 10.41_V / 1_rad_per_s;
-constexpr auto kAngularA = 1.0_V / 1_rad_per_s / 1_s;
+constexpr auto kAngularA = 1.0_V / 1_rad_per_s_sq;
 
 // Drive trapezoid profile constants
 constexpr auto kMaxV = 12_V / kLinearV;  // m/s
@@ -102,7 +108,7 @@ constexpr int kEncoderB = 7;
 
 // Four-bar Lift Physical Constants
 constexpr auto kMaxV = 1.477996_rad_per_s;
-constexpr auto kMaxA = 7.782482_rad_per_s / 1_s;
+constexpr auto kMaxA = 7.782482_rad_per_s_sq;
 constexpr double kGearRatio = 302.22 / 1;
 constexpr double kMin = -1.495867;
 constexpr double kMax = 0.0;

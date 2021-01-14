@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2018-2021 FRC Team 3512. All Rights Reserved.
 
 #include "controllers/DrivetrainController.hpp"
 
@@ -11,9 +11,9 @@
 #include <frc/geometry/Pose2d.h>
 #include <frc/system/NumericalJacobian.h>
 #include <frc/system/plant/DCMotor.h>
+#include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc/trajectory/constraint/DrivetrainVelocitySystemConstraint.h>
-#include <units/units.h>
+#include <frc/trajectory/constraint/DifferentialDriveVelocitySystemConstraint.h>
 #include <wpi/MathExtras.h>
 
 using namespace frc3512;
@@ -21,11 +21,9 @@ using namespace frc3512::Constants;
 using namespace frc3512::Constants::Drivetrain;
 
 frc::LinearSystem<2, 2, 2> DrivetrainController::m_plant =
-    frc::IdentifyDrivetrainSystem(
-        Constants::Drivetrain::kLinearV.to<double>(),
-        Constants::Drivetrain::kLinearA.to<double>(),
-        Constants::Drivetrain::kAngularV.to<double>(),
-        Constants::Drivetrain::kAngularA.to<double>());
+    frc::LinearSystemId::IdentifyDrivetrainSystem(
+        Constants::Drivetrain::kLinearV, Constants::Drivetrain::kLinearA,
+        Constants::Drivetrain::kAngularV, Constants::Drivetrain::kAngularA);
 
 DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
                                            const std::array<double, 2>& Relems,
@@ -64,7 +62,9 @@ bool DrivetrainController::IsEnabled() const { return m_isEnabled; }
 
 void DrivetrainController::SetWaypoints(
     const std::vector<frc::Pose2d>& waypoints) {
-    frc::DrivetrainVelocitySystemConstraint constraint{m_plant, kWidth, 8_V};
+    frc::DifferentialDriveKinematics kinematics{kWidth};
+    frc::DifferentialDriveVelocitySystemConstraint constraint{m_plant,
+                                                              kinematics, 8_V};
     frc::TrajectoryConfig config{kMaxV, kMaxA};
     config.AddConstraint(constraint);
 
@@ -95,6 +95,10 @@ void DrivetrainController::SetMeasuredGlobalOutputs(
     m_globalY << x.to<double>(), y.to<double>(), heading.to<double>(),
         leftPosition.to<double>(), rightPosition.to<double>(),
         angularVelocity.to<double>();
+}
+
+frc::LinearSystem<2, 2, 2> DrivetrainController::GetPlant() const {
+    return m_plant;
 }
 
 const Eigen::Matrix<double, 5, 1>& DrivetrainController::GetReferences() const {

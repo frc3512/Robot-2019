@@ -1,13 +1,22 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2020.3.2"
+    id "edu.wpi.first.GradleRIO" version "2021.1.2"
     id "org.ysb33r.doxygen" version "0.5"
 }
 
-task pythonTask(type: Exec) {
-    workingDir '.'
-    commandLine 'python3', 'python/generate_messages.py', '--input', 'msgs', '--output', 'build/generated'
+if (OperatingSystem.current().isWindows()) {
+    task pythonTask(type: Exec) {
+        workingDir '.'
+        commandLine 'python.exe', 'python/generate_messages.py', '--input', 'msgs', '--output', 'build/generated'
+    }
+} else {
+    task pythonTask(type: Exec) {
+        workingDir '.'
+        commandLine 'python3', 'python/generate_messages.py', '--input', 'msgs', '--output', 'build/generated'
+    }
 }
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -19,7 +28,7 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = frc.getTeamOrDefault(3512)
+            team = frc.getTeamNumber()
         }
     }
     artifacts {
@@ -47,15 +56,52 @@ def includeDesktopSupport = true
 // upon debugging
 dependencies {
     simulation wpi.deps.sim.gui(wpi.platforms.desktop, true)
+    simulation wpi.deps.sim.driverstation(wpi.platforms.desktop, true)
+
+    // Websocket extensions require additional configuration.
+    // simulation wpi.deps.sim.ws_server(wpi.platforms.desktop, true)
+    // simulation wpi.deps.sim.ws_client(wpi.platforms.desktop, true)
 }
 
 nativeUtils.platformConfigs.named("linuxathena").configure {
-    it.cppCompiler.args.remove('-g')
+    it.cppCompiler.args.add('-Wall')
+    it.cppCompiler.args.add('-Wextra')
+    it.cppCompiler.args.add('-pedantic')
+    it.cppCompiler.args.add('-Werror')
+    it.cppCompiler.args.add('-Wno-unused-parameter')
+    // Suppress warning from incorrect [[deprecated]] attribute usage in
+    // CANSparkMax.h
+    it.cppCompiler.args.add('-Wno-attributes')
+}
+
+if (OperatingSystem.current().isWindows()) {
+    nativeUtils.platformConfigs.named(wpi.platforms.desktop).configure {
+        it.cppCompiler.args.add('/W3')
+        it.cppCompiler.args.add('/WX')
+    }
+} else {
+    nativeUtils.platformConfigs.named(wpi.platforms.desktop).configure {
+        it.cppCompiler.args.add('-Wall')
+        it.cppCompiler.args.add('-Wextra')
+        it.cppCompiler.args.add('-pedantic')
+        it.cppCompiler.args.add('-Werror')
+        it.cppCompiler.args.add('-Wno-unused-parameter')
+        // Suppress warning from incorrect [[deprecated]] attribute usage in
+        // CANSparkMax.h
+        it.cppCompiler.args.add('-Wno-attributes')
+    }
 }
 
 nativeUtils.platformConfigs.named("linuxx86-64").configure {
-    it.cppCompiler.args.remove('-g')
     it.linker.args.add('-lstdc++fs')
+}
+
+if (project.hasProperty("asan")) {
+    nativeUtils.platformConfigs.named("linuxx86-64").configure {
+        it.cppCompiler.args.add('-g3')
+        it.cppCompiler.args.add('-fsanitize=address')
+        it.linker.args.add('-fsanitize=address')
+    }
 }
 
 model {
@@ -83,11 +129,11 @@ model {
 
             sources.cpp {
                 source {
-                    srcDirs = ['src/main/cpp', 'thirdparty/cpp', 'build/generated/cpp']
+                    srcDirs = ['src/main/cpp', 'build/generated/cpp']
                     include '**/*.cpp', '**/*.cc'
                 }
                 exportedHeaders {
-                    srcDirs = ['src/main/include', 'thirdparty/include', 'build/generated/include']
+                    srcDirs = ['src/main/include', 'build/generated/include']
                 }
             }
 
@@ -115,15 +161,15 @@ model {
                 }
             }
 
+
             sources.cpp {
                 source {
                     srcDir 'src/test/cpp'
                     include '**/*.cpp'
-                    include '**/*.cc'
                 }
 
                 exportedHeaders {
-                    srcDirs += ['src/test/include', 'src/test/include/frc']
+                    srcDir 'src/test/include'
                 }
             }
 
@@ -138,19 +184,22 @@ task buildAthena {
     dependsOn 'frcUserProgramLinuxathenaReleaseExecutable'
 }
 
-task removeLogs(type: Exec) {
-    workingDir '.'
-    commandLine './buildscripts/remove-logs.sh'
-}
-
 task test {
-    dependsOn 'removeLogs'
-    dependsOn 'runFrcUserProgramTestLinuxx86-64ReleaseGoogleTestExe'
+    dependsOn 'testRelease'
 }
 
-task simulate {
-    dependsOn 'removeLogs'
-    dependsOn 'simulateFrcUserProgramLinuxx86-64DebugExecutable'
+task testDebug {
+    dependsOn 'runFrcUserProgramTest' + wpi.platforms.desktop.capitalize() + 'DebugGoogleTestExe'
+}
+
+task testRelease {
+    dependsOn 'runFrcUserProgramTest' + wpi.platforms.desktop.capitalize() + 'ReleaseGoogleTestExe'
+}
+
+task simulate(type: Exec) {
+    dependsOn 'simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'DebugExecutable'
+    workingDir 'build/stdout'
+    commandLine 'tail', '-f', 'simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'DebugExecutable.log'
 }
 
 doxygen {

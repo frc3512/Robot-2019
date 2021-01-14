@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2019-2021 FRC Team 3512. All Rights Reserved.
 
 #pragma once
 
@@ -6,8 +6,7 @@
 #include <mutex>
 
 #include <frc/Encoder.h>
-#include <frc/PowerDistributionPanel.h>
-#include <frc/RTNotifier.h>
+#include <frc/Notifier.h>
 #include <frc/Spark.h>
 #include <frc/Timer.h>
 
@@ -32,10 +31,8 @@ class Climber : public SubsystemBase, public PublishNode {
 public:
     /**
      * Constructs a Climber.
-     *
-     * @param pdp The robot's power distribution panel.
      */
-    explicit Climber(frc::PowerDistributionPanel& pdp);
+    Climber();
 
     /**
      * Sets the voltage to pass into the drive motor.
@@ -129,23 +126,20 @@ private:
     frc::Spark m_drive{Constants::Climber::kDrivePort};
 
     frc::Timer m_timer;
-    double lastVelocity;
     bool m_thirdLevel = true;
 
     ClimberController m_controller;
 
     frc::Encoder m_encoder{Constants::Climber::kLiftEncoderA,
                            Constants::Climber::kLiftEncoderB};
-    frc::RTNotifier m_notifier{Constants::kControllerPrio, &Climber::Iterate,
-                               this};
+    frc::Notifier m_notifier{Constants::kControllerPrio, &Climber::Iterate,
+                             this};
 
     ElevatorStatusPacket m_elevatorStatusPacket;
     FourBarLiftStatusPacket m_fourBarLiftStatusPacket;
     HIDPacket m_HIDPacket;
     ButtonPacket m_buttonPacket;
     std::mutex m_cacheMutex;
-
-    frc::PowerDistributionPanel& m_pdp;
 };
 
 }  // namespace frc3512
