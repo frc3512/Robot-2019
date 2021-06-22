@@ -1,87 +1,144 @@
-// Copyright (c) 2017-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2017-2021 FRC Team 3512. All Rights Reserved.
 
 #include "Robot.hpp"
 
+#include <frc/Joystick.h>
 #include <wpi/raw_ostream.h>
 
 namespace frc3512 {
 
-Robot::Robot() : PublishNode("Robot") {
-    m_logger.AddLogSink(fileSink);
-    m_logger.Subscribe(m_climber);
-    m_logger.Subscribe(m_drivetrain);
-    m_logger.Subscribe(m_elevator);
-    m_logger.Subscribe(m_intake);
-    m_logger.Subscribe(m_fourBarLift);
-    m_logger.Subscribe(*this);
-
-    m_climber.Subscribe(*this);
-    m_climber.Subscribe(m_climber);
-    m_climber.Subscribe(m_elevator);
-    m_climber.Subscribe(m_fourBarLift);
-    m_drivetrain.Subscribe(*this);
-    m_elevator.Subscribe(*this);
-    m_elevator.Subscribe(m_climber);
-    m_elevator.Subscribe(m_fourBarLift);
-    m_intake.Subscribe(*this);
-    m_fourBarLift.Subscribe(*this);
-    m_fourBarLift.Subscribe(m_elevator);
-    m_fourBarLift.Subscribe(m_climber);
-
+Robot::Robot() {
     camera.SetResolution(160, 120);
     camera.SetFPS(15);
     server.SetSource(camera);
 
-    m_fourBarLift.Subscribe(m_climber);
-
-    frc::LiveWindow::GetInstance()->DisableAllTelemetry();
+    Schedule(
+        [=] {
+            if (IsEnabled()) {
+                m_drivetrain.ControllerPeriodic();
+            }
+        },
+        1_ms);
+    Schedule(
+        [=] {
+            if (IsEnabled()) {
+                m_climber.ControllerPeriodic();
+            }
+        },
+        0.6_ms);
+    Schedule(
+        [=] {
+            if (IsEnabled()) {
+                m_elevator.ControllerPeriodic();
+            }
+        },
+        0.6_ms);
+    Schedule(
+        [=] {
+            if (IsEnabled()) {
+                m_fourBarLift.ControllerPeriodic();
+            }
+        },
+        0.6_ms);
 }
 
-void Robot::DisabledInit() {
-    CommandPacket message{"DisabledInit", false};
-    Publish(message);
-}
+void Robot::DisabledInit() { SubsystemBase::RunAllDisabledInit(); }
 
 void Robot::AutonomousInit() {
-    CommandPacket message{"AutonomousInit", false};
-    Publish(message);
+    SubsystemBase::RunAllAutonomousInit();
     m_drivetrain.SetWaypoints(
         {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
 }
 
-void Robot::TeleopInit() {
-    CommandPacket message{"TeleopInit", false};
-    Publish(message);
+void Robot::TeleopInit() { SubsystemBase::RunAllTeleopInit(); }
 
-    for (int i = 1; i <= 12; i++) {
-        if (m_driveStick2.GetRawButtonPressed(i)) {
-            ButtonPacket message{"DriveStick2", i, true};
-            Publish(message);
+void Robot::TestInit() { SubsystemBase::RunAllTestInit(); }
+
+void Robot::RobotPeriodic() {
+    SubsystemBase::RunAllRobotPeriodic();
+
+    static frc::Joystick appendageStick1{Constants::Robot::kAppendageStickPort};
+    static frc::Joystick appendageStick2{
+        Constants::Robot::kAppendageStick2Port};
+
+    switch (m_state) {
+        case State::kInit: {
+            std::lock_guard lock(m_cacheMutex);
+            if (appendageStick2.GetRawButtonPressed(7)) {
+                m_elevator.SetGoal(Constants::Elevator::kHab3);
+                m_thirdLevel = true;
+                m_state = State::kThirdLevel;
+            }
+            if (appendageStick2.GetRawButtonPressed(8)) {
+                m_elevator.SetGoal(Constants::Elevator::kHab2);
+                m_thirdLevel = false;
+                m_state = State::kSecondLevel;
+            }
+            break;
         }
-        if (m_appendageStick.GetRawButtonPressed(i)) {
-            ButtonPacket message{"AppendageStick", i, true};
-            Publish(message);
+        case State::kThirdLevel: {
+            std::lock_guard lock(m_cacheMutex);
+            wpi::outs() << "ThirdLevel\n";
+            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.3) {
+                // Hardcoded number from who knows where
+                m_fourBarLift.SetClimbing(true);
+                m_fourBarLift.SetGoal(-1.35);
+                m_state = State::kFourBarDescend;
+            }
+            break;
         }
-        if (m_appendageStick.GetRawButtonReleased(i)) {
-            ButtonPacket message{"AppendageStick", i, false};
-            Publish(message);
+        case State::kSecondLevel: {
+            std::lock_guard lock(m_cacheMutex);
+            wpi::outs() << "SecondLevel\n";
+            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.1) {
+                m_fourBarLift.SetClimbing(true);
+                m_fourBarLift.SetGoal(-1.35);
+                m_state = State::kFourBarDescend;
+            }
+            break;
         }
-        if (m_appendageStick2.GetRawButtonPressed(i)) {
-            ButtonPacket message{"AppendageStick2", i, true};
-            Publish(message);
+        case State::kFourBarDescend: {
+            std::lock_guard lock(m_cacheMutex);
+            if (m_fourBarLift.AtGoal() && m_fourBarLift.GetHeight() > -0.7) {
+                m_elevator.SetClimbingIndex();
+                m_elevator.SetGoal(0);
+                if (m_thirdLevel) {
+                    m_climber.SetGoal(Constants::Climber::kClimb3Height);
+                } else {
+                    m_climber.SetGoal(Constants::Climber::kClimb2Height);
+                }
+                m_state = State::kDescend;
+            }
+            break;
         }
-        if (m_appendageStick2.GetRawButtonReleased(i)) {
-            ButtonPacket message{"AppendageStick2", i, false};
-            Publish(message);
+        case State::kDescend: {
+            std::lock_guard lock(m_cacheMutex);
+            if (m_climber.AtGoal() && m_elevator.AtGoal()) {
+                m_state = State::kDriveForward;
+            }
+            break;
+        }
+        case State::kDriveForward: {
+            std::lock_guard lock(m_cacheMutex);
+            m_climber.SetDriveVoltage(appendageStick1.GetY());
+            if (appendageStick2.GetRawButtonPressed(9)) {
+                m_fourBarLift.SetClimbing(false);
+                m_fourBarLift.SetGoal(0);
+                m_climber.SetGoal(0);
+                m_state = State::kIdle;
+            }
+            break;
+        }
+        case State::kIdle: {
+            m_elevator.SetScoringIndex();
+            break;
         }
     }
 }
 
-void Robot::TestInit() {}
-
-void Robot::RobotPeriodic() {}
-
 void Robot::DisabledPeriodic() {
+    SubsystemBase::RunAllDisabledPeriodic();
+
     wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
     wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
     wpi::outs() << "Climber: " << m_climber.GetHeight() << "\n";
@@ -96,48 +153,9 @@ void Robot::DisabledPeriodic() {
     wpi::outs().flush();
 }
 
-void Robot::AutonomousPeriodic() { TeleopPeriodic(); }
+void Robot::AutonomousPeriodic() { SubsystemBase::RunAllAutonomousPeriodic(); }
 
-void Robot::TeleopPeriodic() {
-    for (int i = 1; i <= 12; i++) {
-        if (m_driveStick2.GetRawButtonPressed(i)) {
-            ButtonPacket message{"DriveStick2", i, true};
-            Publish(message);
-        }
-        if (m_appendageStick.GetRawButtonPressed(i)) {
-            ButtonPacket message{"AppendageStick", i, true};
-            Publish(message);
-        }
-        if (m_appendageStick.GetRawButtonReleased(i)) {
-            ButtonPacket message{"AppendageStick", i, false};
-            Publish(message);
-        }
-        if (m_appendageStick2.GetRawButtonPressed(i)) {
-            ButtonPacket message{"AppendageStick2", i, true};
-            Publish(message);
-        }
-        if (m_appendageStick2.GetRawButtonReleased(i)) {
-            ButtonPacket message{"AppendageStick2", i, false};
-            Publish(message);
-        }
-    }
-
-    auto& ds = frc::DriverStation::GetInstance();
-    HIDPacket message{"",
-                      m_driveStick1.GetX(),
-                      m_driveStick1.GetY(),
-                      ds.GetStickButtons(0),
-                      m_driveStick2.GetX(),
-                      m_driveStick2.GetY(),
-                      ds.GetStickButtons(1),
-                      m_appendageStick.GetX(),
-                      m_appendageStick.GetY(),
-                      ds.GetStickButtons(2),
-                      m_appendageStick2.GetX(),
-                      m_appendageStick2.GetY(),
-                      ds.GetStickButtons(3)};
-    Publish(message);
-}
+void Robot::TeleopPeriodic() { SubsystemBase::RunAllTeleopPeriodic(); }
 
 }  // namespace frc3512
 

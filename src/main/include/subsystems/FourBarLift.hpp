@@ -8,14 +8,13 @@
 #include <frc/SpeedControllerGroup.h>
 
 #include "Constants.hpp"
-#include "communications/PublishNode.hpp"
 #include "controllers/FourBarLiftController.hpp"
 #include "rev/CANSparkMax.hpp"
-#include "subsystems/SubsystemBase.hpp"
+#include "subsystems/ControlledSubsystemBase.hpp"
 
 namespace frc3512 {
 
-class FourBarLift : public SubsystemBase, public PublishNode {
+class FourBarLift : public ControlledSubsystemBase<2, 1, 1> {
 public:
     FourBarLift();
     FourBarLift& operator=(const FourBarLift&) = delete;
@@ -26,6 +25,12 @@ public:
      * @param voltage in [-1..1]
      */
     void SetVoltage(double voltage);
+
+    /**
+     * Sets the controller to climbing mode
+     *
+     */
+    void SetClimbing(bool on);
 
     /**
      * Resets the encoder.
@@ -67,23 +72,13 @@ public:
     bool AtGoal();
 
     /**
-     * Updates the controller from sensors and the motors from the controller.
-     */
-    void Iterate();
-
-    /**
      * Resets sensors and the controller.
      */
     void Reset();
 
-    /**
-     * Publishes status packets.
-     */
-    void SubsystemPeriodic() override;
+    void ControllerPeriodic() override;
 
-    void ProcessMessage(const ButtonPacket& message) override;
-
-    void ProcessMessage(const CommandPacket& message) override;
+    void TeleopPeriodic() override;
 
 private:
     rev::CANSparkMax m_grbx{Constants::FourBarLift::kPort,
@@ -92,9 +87,6 @@ private:
     FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,
                            Constants::FourBarLift::kEncoderB};
-
-    frc::Notifier m_thread{Constants::kControllerPrio, &FourBarLift::Iterate,
-                           this};
 };
 
 }  // namespace frc3512

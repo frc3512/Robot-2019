@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 FRC Team 3512. All Rights Reserved.
+// Copyright (c) 2016-2021 FRC Team 3512. All Rights Reserved.
 
 #include "subsystems/FourBarLift.hpp"
 
@@ -6,34 +6,35 @@
 #include <limits>
 
 #include <frc/DriverStation.h>
+#include <frc/Joystick.h>
 
 using namespace frc3512;
 using namespace frc3512::Constants::FourBarLift;
 using namespace std::chrono_literals;
 
-FourBarLift::FourBarLift() : PublishNode("FourBarLift") {
+FourBarLift::FourBarLift()
+    : ControlledSubsystemBase{"FourBarLift",
+                              {ControllerLabel{"Angle", "rad"},
+                               ControllerLabel{"Angular Velocity", "rad/s"}},
+                              {ControllerLabel{"Voltage", "V"}},
+                              {ControllerLabel{"Angle", "rad"}}} {
     m_grbx.Set(0.0);
     m_encoder.SetDistancePerPulse(kDpP);
-    EnablePeriodic();
     m_grbx.SetInverted(true);
     SetGoal(0.0);
 }
 
 void FourBarLift::SetVoltage(double voltage) { m_grbx.Set(voltage); }
 
+void FourBarLift::SetClimbing(bool on) { m_controller.SetClimbing(on); }
+
 void FourBarLift::ResetEncoder() { m_encoder.Reset(); }
 
 double FourBarLift::GetHeight() { return m_encoder.GetDistance(); }
 
-void FourBarLift::Enable() {
-    m_controller.Enable();
-    m_thread.StartPeriodic(5_ms);
-}
+void FourBarLift::Enable() { m_controller.Enable(); }
 
-void FourBarLift::Disable() {
-    m_controller.Disable();
-    m_thread.Stop();
-}
+void FourBarLift::Disable() { m_controller.Disable(); }
 
 void FourBarLift::SetGoal(double position) { m_controller.SetGoal(position); }
 
@@ -41,7 +42,12 @@ bool FourBarLift::AtReference() const { return m_controller.AtReferences(); }
 
 bool FourBarLift::AtGoal() { return m_controller.AtGoal(); }
 
-void FourBarLift::Iterate() {
+void FourBarLift::Reset() {
+    ResetEncoder();
+    m_controller.Reset();
+}
+
+void FourBarLift::ControllerPeriodic() {
     m_controller.SetMeasuredAngle(m_encoder.GetDistance());
     m_controller.Update();
 
@@ -51,55 +57,27 @@ void FourBarLift::Iterate() {
     m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
 }
 
-void FourBarLift::Reset() {
-    ResetEncoder();
-    m_controller.Reset();
-}
+void FourBarLift::TeleopPeriodic() {
+    static frc::Joystick driveStick2{Constants::Robot::kDriveStick2Port};
+    static frc::Joystick appendageStick1{Constants::Robot::kAppendageStickPort};
+    static frc::Joystick appendageStick2{
+        Constants::Robot::kAppendageStick2Port};
 
-void FourBarLift::SubsystemPeriodic() {
-    FourBarLiftStatusPacket message{
-        "", m_encoder.GetDistance(), m_controller.ControllerVoltage(),
-        m_controller.AtReferences(), m_controller.AtGoal()};
-    Publish(message);
-}
-
-void FourBarLift::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/AppendageStick2" && message.button == 3 &&
-        message.pressed) {
+    if (appendageStick2.GetRawButtonPressed(3)) {
         SetGoal(kMin);
-    } else if (message.topic == "Robot/AppendageStick2" &&
-               message.button == 2 && message.pressed) {
+    } else if (appendageStick2.GetRawButtonPressed(2)) {
         SetGoal(kMax);
-    } else if (message.topic == "Robot/AppendageStick" &&
-               message.button == 11 && message.pressed) {
+    } else if (appendageStick1.GetRawButtonPressed(11)) {
         SetGoal(kBottomHatch);
-    } else if (message.topic == "Robot/DriveStick2" && message.button == 7 &&
-               message.pressed) {
+    } else if (driveStick2.GetRawButtonPressed(7)) {
         m_controller.SetClimbing(true);
-    } else if (message.topic == "Robot/DriveStick2" && message.button == 8 &&
-               message.pressed) {
+    } else if (driveStick2.GetRawButtonPressed(8)) {
         m_controller.SetClimbing(false);
-    } else if (message.topic == "Robot/AppendageStick" && message.pressed) {
-        if (message.button == 12 || message.button == 9 ||
-            message.button == 10 || message.button == 7 ||
-            message.button == 8) {
-            SetGoal(kMax);
-        }
-    }
-}
-
-void FourBarLift::ProcessMessage(const CommandPacket& message) {
-    if (message.topic == "Robot/TeleopInit" && !message.reply) {
-        Enable();
-    } else if (message.topic == "Robot/AutonomousInit" && !message.reply) {
-        Enable();
-    } else if (message.topic == "Robot/DisabledInit" && !message.reply) {
-        Disable();
-    } else if (message.topic == "Climber/FourBarStart") {
-        m_controller.SetClimbing(true);
-        SetGoal(-1.35);
-    } else if (message.topic == "Climber/Up") {
-        m_controller.SetClimbing(false);
-        SetGoal(0);
+    } else if (appendageStick1.GetRawButtonPressed(7) ||
+               appendageStick1.GetRawButtonPressed(8) ||
+               appendageStick1.GetRawButtonPressed(9) ||
+               appendageStick1.GetRawButtonPressed(10) ||
+               appendageStick1.GetRawButtonPressed(12)) {
+        SetGoal(kMax);
     }
 }

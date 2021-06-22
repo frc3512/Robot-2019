@@ -23,6 +23,22 @@ public:
     static constexpr double kPositionTolerance = 0.05;
     static constexpr double kVelocityTolerance = 2.0;
 
+    class State {
+    public:
+        static constexpr int kPosition = 0;
+        static constexpr int kVelocity = 1;
+    };
+
+    class Input {
+    public:
+        static constexpr int kVoltage = 0;
+    };
+
+    class Output {
+    public:
+        static constexpr int kPosition = 0;
+    };
+
     ElevatorController();
 
     ElevatorController(const ElevatorController&) = delete;

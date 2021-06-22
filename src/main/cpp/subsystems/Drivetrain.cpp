@@ -6,24 +6,40 @@
 #include <limits>
 #include <string>
 
+#include <frc/Joystick.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
 #include <units/velocity.h>
 
+#include "CurvatureDrive.hpp"
+
 using namespace frc3512;
 using namespace frc3512::Constants::Drivetrain;
 using namespace frc3512::Constants::Robot;
 
-Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
-    m_drive.SetDeadband(kJoystickDeadband);
-
+Drivetrain::Drivetrain()
+    : ControlledSubsystemBase(
+          "Drivetrain",
+          {ControllerLabel{"X", "m"}, ControllerLabel{"Y", "m"},
+           ControllerLabel{"Heading", "rad"},
+           ControllerLabel{"Left velocity", "m/s"},
+           ControllerLabel{"Right velocity", "m/s"},
+           ControllerLabel{"Left position", "m"},
+           ControllerLabel{"Right position", "m"},
+           ControllerLabel{"Left voltage error", "V"},
+           ControllerLabel{"Right voltage error", "V"},
+           ControllerLabel{"Angular velocity error", "rad/s"}},
+          {ControllerLabel{"Left voltage", "V"},
+           ControllerLabel{"Right voltage", "V"}},
+          {ControllerLabel{"Heading", "rad"},
+           ControllerLabel{"Left position", "m"},
+           ControllerLabel{"Right position", "m"}}) {
     m_leftGrbx.Set(0.0);
     m_rightGrbx.Set(0.0);
 
     m_leftGrbx.SetInverted(true);
-
-    m_drive.SetRightSideInverted(false);
+    m_rightGrbx.SetInverted(false);
 
     m_leftEncoder.SetSamplesToAverage(10);
     m_rightEncoder.SetSamplesToAverage(10);
@@ -34,11 +50,6 @@ Drivetrain::Drivetrain() : PublishNode("Drivetrain") {
     m_rightEncoder.SetDistancePerPulse(kDpP);
 
     ShiftUp();
-    EnablePeriodic();
-}
-
-void Drivetrain::Drive(double throttle, double turn, bool isQuickTurn) {
-    m_drive.CurvatureDrive(throttle, turn, isQuickTurn);
 }
 
 void Drivetrain::SetLeftManual(double value) { m_leftGrbx.Set(value); }
@@ -86,15 +97,15 @@ void Drivetrain::ResetEncoders() {
 
 void Drivetrain::EnableController() {
     m_lastTime = std::chrono::steady_clock::now();
-    m_controllerThread.StartPeriodic(Constants::kDt);
     m_controller.Enable();
-    m_drive.SetSafetyEnabled(false);
+    m_leftGrbx.SetSafetyEnabled(true);
+    m_rightGrbx.SetSafetyEnabled(true);
 }
 
 void Drivetrain::DisableController() {
-    m_controllerThread.Stop();
     m_controller.Disable();
-    m_drive.SetSafetyEnabled(true);
+    m_leftGrbx.SetSafetyEnabled(false);
+    m_rightGrbx.SetSafetyEnabled(false);
 }
 
 bool Drivetrain::IsControllerEnabled() const {
@@ -107,7 +118,19 @@ void Drivetrain::Reset() {
     ResetGyro();
 }
 
-void Drivetrain::Iterate() {
+void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
+    m_controller.SetWaypoints(waypoints);
+}
+
+bool Drivetrain::AtGoal() const { return m_controller.AtGoal(); }
+
+void Drivetrain::AutonomousInit() {
+    Reset();
+    EnableController();
+    m_startTime = std::chrono::steady_clock::now();
+}
+
+void Drivetrain::ControllerPeriodic() {
     m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftDisplacement(),
                                          GetRightDisplacement());
     auto now = std::chrono::steady_clock::now();
@@ -120,40 +143,22 @@ void Drivetrain::Iterate() {
     m_lastTime = now;
 }
 
-void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
-    m_controller.SetWaypoints(waypoints);
-}
+void Drivetrain::TeleopPeriodic() {
+    static frc::Joystick driveStick1{kDriveStick1Port};
+    static frc::Joystick driveStick2{kDriveStick2Port};
 
-bool Drivetrain::AtGoal() const { return m_controller.AtGoal(); }
+    double y = ApplyDeadband(-driveStick1.GetY(), kJoystickDeadband);
+    double x = ApplyDeadband(driveStick2.GetX(), kJoystickDeadband);
 
-void Drivetrain::ProcessMessage(const ButtonPacket& message) {
-    if (message.topic == "Robot/DriveStick2" && message.button == 1 &&
-        message.pressed) {
+    if (driveStick2.GetRawButtonPressed(1)) {
         Shift();
     }
-}
 
-void Drivetrain::ProcessMessage(const CommandPacket& message) {
-    if (message.topic == "Robot/DisabledInit" && !message.reply) {
-        DisableController();
-    }
-    if (message.topic == "Robot/AutonomousInit" && !message.reply) {
-        Reset();
-        EnableController();
-        m_startTime = std::chrono::steady_clock::now();
-    }
-    if (message.topic == "Robot/TeleopInit" && !message.reply) {
-        EnablePeriodic();
-    }
-}
+    auto [left, right] = CurvatureDrive(y, x, driveStick2.GetRawButton(2));
 
-void Drivetrain::ProcessMessage(const HIDPacket& message) {
-    if (!IsControllerEnabled()) {
-        if (GetRawButton(message, 0, 1)) {
-            Drive(-message.y1 * 0.5, message.x2 * 0.5,
-                  GetRawButton(message, 1, 2));
-        } else {
-            Drive(-message.y1, message.x2, GetRawButton(message, 1, 2));
-        }
-    }
+    Eigen::Matrix<double, 2, 1> u =
+        frc::MakeMatrix<2, 1>(left * 12.0, right * 12.0);
+
+    m_leftGrbx.SetVoltage(units::volt_t{u(0)});
+    m_rightGrbx.SetVoltage(units::volt_t{u(1)});
 }

@@ -20,6 +20,22 @@ namespace frc3512 {
 
 class ClimberController {
 public:
+    class State {
+    public:
+        static constexpr int kPosition = 0;
+        static constexpr int kVelocity = 1;
+    };
+
+    class Input {
+    public:
+        static constexpr int kVoltage = 0;
+    };
+
+    class Output {
+    public:
+        static constexpr int kPosition = 0;
+    };
+
     // State tolerances in meters and meters/sec respectively.
     static constexpr double kPositionTolerance = 0.05;
     static constexpr double kVelocityTolerance = 2.0;

@@ -9,8 +9,7 @@
 #include <frc/livewindow/LiveWindow.h>
 
 #include "Constants.hpp"
-#include "logging/LogFileSink.hpp"
-#include "logging/Logger.hpp"
+#include "RealTimeRobot.hpp"
 #include "subsystems/Climber.hpp"
 #include "subsystems/Drivetrain.hpp"
 #include "subsystems/Elevator.hpp"
@@ -21,7 +20,17 @@ namespace frc3512 {
 
 using namespace frc3512::Constants::Robot;
 
-class Robot : public frc::TimedRobot, public PublishNode {
+enum class State {
+    kInit,
+    kThirdLevel,
+    kSecondLevel,
+    kFourBarDescend,
+    kDescend,
+    kDriveForward,
+    kIdle
+};
+
+class Robot : public RealTimeRobot {
 public:
     Robot();
 
@@ -39,19 +48,21 @@ private:
     Climber m_climber;
     Drivetrain m_drivetrain;
     Elevator m_elevator;
-    Logger m_logger;
     Intake m_intake;
     FourBarLift m_fourBarLift;
+
+    State m_state = State::kInit;
+    bool m_thirdLevel = true;
 
     frc::Joystick m_driveStick1{kDriveStick1Port};
     frc::Joystick m_driveStick2{kDriveStick2Port};
     frc::Joystick m_appendageStick{kAppendageStickPort};
     frc::Joystick m_appendageStick2{kAppendageStick2Port};
 
-    LogFileSink fileSink{"Robot.log"};
-
     cs::UsbCamera camera{"Camera 1", 0};
     cs::MjpegServer server{"Server", kMjpegServerPort};
+
+    std::mutex m_cacheMutex;
 };
 
 }  // namespace frc3512

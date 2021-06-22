@@ -10,33 +10,25 @@
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
-#include <frc/drive/DifferentialDrive.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
 #include <units/velocity.h>
 
 #include "Constants.hpp"
-#include "communications/PublishNode.hpp"
 #include "controllers/DrivetrainController.hpp"
-#include "subsystems/SubsystemBase.hpp"
+#include "subsystems/ControlledSubsystemBase.hpp"
 
 namespace frc3512 {
 
 /**
  * Provides an interface for this year's drive train.
  */
-class Drivetrain : public SubsystemBase, public PublishNode {
+class Drivetrain : public ControlledSubsystemBase<10, 2, 3> {
 public:
     Drivetrain();
     Drivetrain(const Drivetrain&) = delete;
     Drivetrain& operator=(const Drivetrain&) = delete;
-
-    /**
-     * Drives robot with given speed and turn values [-1..1].
-     * This is a convenience function for use in Operator Control.
-     */
-    void Drive(double throttle, double turn, bool isQuickTurn = false);
 
     /**
      * Directly set wheel speeds (see GearBox::SetManual(double)).
@@ -111,17 +103,17 @@ public:
 
     void Reset();
 
-    void Iterate();
-
     void SetWaypoints(const std::vector<frc::Pose2d>& waypoints);
 
     bool AtGoal() const;
 
-    void ProcessMessage(const ButtonPacket& message) override;
+    void AutonomousInit() override;
 
-    void ProcessMessage(const CommandPacket& message) override;
+    void DisabledInit() override { DisableController(); }
 
-    void ProcessMessage(const HIDPacket& message) override;
+    void ControllerPeriodic() override;
+
+    void TeleopPeriodic() override;
 
 private:
     // Left gearbox used in position PID
@@ -136,8 +128,6 @@ private:
                                 Constants::Drivetrain::kRightEncoderB, false,
                                 frc::Encoder::EncodingType::k1X};
 
-    frc::DifferentialDrive m_drive{m_leftGrbx, m_rightGrbx};
-
     // Gyro used for angle PID
     frc::ADXRS450_Gyro m_gyro;
 
@@ -146,8 +136,6 @@ private:
 
     DrivetrainController m_controller{
         {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, Constants::kDt};
-    frc::Notifier m_controllerThread{Constants::kControllerPrio,
-                                     &Drivetrain::Iterate, this};
 
     std::chrono::steady_clock::time_point m_lastTime =
         std::chrono::steady_clock::time_point::min();

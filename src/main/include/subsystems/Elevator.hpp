@@ -11,14 +11,13 @@
 #include <frc/Timer.h>
 
 #include "Constants.hpp"
-#include "communications/PublishNode.hpp"
 #include "controllers/ElevatorController.hpp"
 #include "rev/CANSparkMax.hpp"
-#include "subsystems/SubsystemBase.hpp"
+#include "subsystems/ControlledSubsystemBase.hpp"
 
 namespace frc3512 {
 
-class Elevator : public SubsystemBase, public PublishNode {
+class Elevator : public ControlledSubsystemBase<2, 1, 1> {
 public:
     Elevator();
     Elevator& operator=(const Elevator&) = delete;
@@ -80,11 +79,6 @@ public:
     bool AtGoal();
 
     /**
-     * Updates the controller from sensors and the motors from the controller.
-     */
-    void Iterate();
-
-    /**
      * Returns the voltage from the controller.
      */
     double ControllerVoltage() const;
@@ -94,14 +88,9 @@ public:
      */
     void Reset();
 
-    /**
-     * Publishes status packets.
-     */
-    void SubsystemPeriodic() override;
+    void ControllerPeriodic() override;
 
-    void ProcessMessage(const ButtonPacket& message) override;
-
-    void ProcessMessage(const CommandPacket& message) override;
+    void TeleopPeriodic() override;
 
 private:
     frc::Timer m_timer;
@@ -110,9 +99,6 @@ private:
     ElevatorController m_controller;
     frc::Encoder m_encoder{Constants::Elevator::kEncoderA,
                            Constants::Elevator::kEncoderB};
-
-    frc::Notifier m_thread{Constants::kControllerPrio, &Elevator::Iterate,
-                           this};
 
     std::atomic<bool> m_isEnabled{true};
 };

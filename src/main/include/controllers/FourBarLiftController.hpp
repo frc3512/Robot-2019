@@ -24,6 +24,22 @@ public:
     static constexpr double kAngleTolerance = 0.05;
     static constexpr double kAngularVelocityTolerance = 2.0;
 
+    class State {
+    public:
+        static constexpr int kAngle = 0;
+        static constexpr int kAngularVelocity = 1;
+    };
+
+    class Input {
+    public:
+        static constexpr int kVoltage = 0;
+    };
+
+    class Output {
+    public:
+        static constexpr int kAngle = 0;
+    };
+
     FourBarLiftController();
 
     FourBarLiftController(const FourBarLiftController&) = delete;
