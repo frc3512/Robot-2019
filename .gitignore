@@ -163,3 +163,8 @@ imgui.ini
 NO
 docs/html/
 *.csv
+*.pyc
+
+# clangd intellisense
+.cache/
+compile_commands.json
