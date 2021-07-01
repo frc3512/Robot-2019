@@ -13,16 +13,18 @@
 #include <units/voltage.h>
 
 #include "Constants.hpp"
+#include "RealTimeRobot.hpp"
 #include "controllers/DrivetrainController.hpp"
 
 TEST(DrivetrainControllerTest, ReachesReference) {
     using namespace frc3512::Constants::Drivetrain;
-    using frc3512::Constants::kDt;
+    using namespace frc3512;
 
     frc3512::DrivetrainController controller{
-        {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, kDt};
+        {0.0625, 0.125, 10.0, 0.95, 0.95},
+        {12.0, 12.0},
+        RealTimeRobot::kDefaultControllerPeriod};
     controller.Reset(frc::Pose2d{0_m, 0_m, 0_rad});
-    controller.Enable();
 
     controller.SetMeasuredLocalOutputs(0_rad, 0_m, 0_m);
     controller.SetWaypoints(
@@ -41,8 +43,8 @@ TEST(DrivetrainControllerTest, ReachesReference) {
         controller.SetMeasuredLocalOutputs(drivetrainSim.GetHeading().Radians(),
                                            drivetrainSim.GetLeftPosition(),
                                            drivetrainSim.GetRightPosition());
-        controller.Update(kDt, currentTime);
-        currentTime += kDt;
+        controller.Update(RealTimeRobot::kDefaultControllerPeriod, currentTime);
+        currentTime += RealTimeRobot::kDefaultControllerPeriod;
 
         Eigen::Matrix<double, 2, 1> u = controller.GetInputs();
 
@@ -52,7 +54,7 @@ TEST(DrivetrainControllerTest, ReachesReference) {
         u *= frc::RobotController::GetInputVoltage() / 12.0;
 
         drivetrainSim.SetInputs(units::volt_t{u(0)}, units::volt_t{u(1)});
-        drivetrainSim.Update(kDt);
+        drivetrainSim.Update(RealTimeRobot::kDefaultControllerPeriod);
     }
     EXPECT_TRUE(controller.AtGoal());
 }

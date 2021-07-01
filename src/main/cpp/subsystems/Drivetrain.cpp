@@ -7,6 +7,9 @@
 #include <string>
 
 #include <frc/Joystick.h>
+#include <frc/RobotController.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
@@ -50,6 +53,8 @@ Drivetrain::Drivetrain()
     m_rightEncoder.SetDistancePerPulse(kDpP);
 
     ShiftUp();
+
+    frc::SmartDashboard::PutData(&m_field);
 }
 
 void Drivetrain::SetLeftManual(double value) { m_leftGrbx.Set(value); }
@@ -70,8 +75,6 @@ units::radians_per_second_t Drivetrain::GetAngularRate() const {
     return units::degrees_per_second_t{m_gyro.GetRate()};
 }
 
-void Drivetrain::ResetGyro() { m_gyro.Reset(); }
-
 void Drivetrain::CalibrateGyro() { m_gyro.Calibrate(); }
 
 units::meter_t Drivetrain::GetLeftDisplacement() const {
@@ -90,32 +93,16 @@ units::meters_per_second_t Drivetrain::GetRightRate() const {
     return units::meters_per_second_t{m_rightEncoder.GetRate()};
 }
 
-void Drivetrain::ResetEncoders() {
-    m_leftEncoder.Reset();
-    m_rightEncoder.Reset();
-}
-
-void Drivetrain::EnableController() {
-    m_lastTime = std::chrono::steady_clock::now();
-    m_controller.Enable();
-    m_leftGrbx.SetSafetyEnabled(true);
-    m_rightGrbx.SetSafetyEnabled(true);
-}
-
-void Drivetrain::DisableController() {
-    m_controller.Disable();
-    m_leftGrbx.SetSafetyEnabled(false);
-    m_rightGrbx.SetSafetyEnabled(false);
-}
-
-bool Drivetrain::IsControllerEnabled() const {
-    return m_controller.IsEnabled();
-}
-
 void Drivetrain::Reset() {
     m_controller.Reset();
-    ResetEncoders();
-    ResetGyro();
+    m_leftEncoder.Reset();
+    m_rightEncoder.Reset();
+    m_gyro.Reset();
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        m_drivetrainSim.SetState(Eigen::Matrix<double, 7, 1>::Zero());
+        m_field.SetRobotPose(frc::Pose2d(0_m, 0_m, 0_rad));
+    }
 }
 
 void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
@@ -126,21 +113,48 @@ bool Drivetrain::AtGoal() const { return m_controller.AtGoal(); }
 
 void Drivetrain::AutonomousInit() {
     Reset();
-    EnableController();
+    Enable();
     m_startTime = std::chrono::steady_clock::now();
 }
 
 void Drivetrain::ControllerPeriodic() {
+    UpdateDt();
+
     m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftDisplacement(),
                                          GetRightDisplacement());
     auto now = std::chrono::steady_clock::now();
-    m_controller.Update(now - m_lastTime, now - m_startTime);
+    m_controller.Update(GetDt(), now - m_startTime);
 
     // Set motor inputs
     auto u = m_controller.GetInputs();
     SetLeftManual(u(0, 0) / 12.0);
     SetRightManual(u(1, 0) / 12.0);
-    m_lastTime = now;
+
+    // Log(m_controller.GetReferences(), m_observer.Xhat(), u,
+    //     m_controller.GetOutputs());
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        auto batteryVoltage = frc::RobotController::GetInputVoltage();
+        m_drivetrainSim.SetInputs(
+            units::volt_t{std::clamp(m_leftGrbx.Get(), -1.0, 1.0) *
+                          batteryVoltage},
+            units::volt_t{std::clamp(m_rightGrbx.Get(), -1.0, 1.0) *
+                          batteryVoltage});
+
+        m_drivetrainSim.Update(GetDt());
+
+        m_leftEncoderSim.SetDistance(
+            m_drivetrainSim.GetLeftPosition().to<double>());
+        m_rightEncoderSim.SetDistance(
+            m_drivetrainSim.GetRightPosition().to<double>());
+        m_gyroSim.SetAngle(
+            units::degree_t{m_drivetrainSim.GetHeading().Radians()});
+
+        m_gyroSim.SetAngle(
+            -units::degree_t{m_drivetrainSim.GetHeading().Radians()});
+
+        m_field.SetRobotPose(m_drivetrainSim.GetPose());
+    }
 }
 
 void Drivetrain::TeleopPeriodic() {

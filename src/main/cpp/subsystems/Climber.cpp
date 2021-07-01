@@ -5,6 +5,9 @@
 #include <chrono>
 
 #include <frc/DriverStation.h>
+#include <frc/RobotController.h>
+#include <frc/simulation/BatterySim.h>
+#include <frc/simulation/RoboRioSim.h>
 #include <wpi/raw_ostream.h>
 
 using namespace frc3512;
@@ -19,41 +22,63 @@ Climber::Climber()
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kDpP);
     m_lift.SetInverted(true);
-    m_timer.Start();
 }
 
-void Climber::SetDriveVoltage(double voltage) { m_drive.Set(voltage); }
+void Climber::SetDriveVoltage(units::volt_t voltage) {
+    m_drive.SetVoltage(voltage);
+}
 
-void Climber::SetVoltage(double voltage) { m_lift.Set(voltage); }
+void Climber::SetVoltage(units::volt_t voltage) { m_lift.SetVoltage(voltage); }
 
 void Climber::ResetEncoder() { m_encoder.Reset(); }
 
-double Climber::GetHeight() { return m_encoder.GetDistance(); }
-
-double Climber::GetVelocity() { return m_encoder.GetRate(); }
-
-void Climber::ControllerPeriodic() {
-    m_controller.SetMeasuredPosition(m_encoder.GetDistance());
-    m_controller.Update();
-
-    // Set motor input
-    double batteryVoltage =
-        frc::DriverStation::GetInstance().GetBatteryVoltage();
-
-    SetVoltage(m_controller.ControllerVoltage() / batteryVoltage);
+units::meter_t Climber::GetHeight() {
+    return units::meter_t{m_encoder.GetDistance()};
 }
 
-void Climber::AutonomousInit() { SetGoal(0.02); }
+units::meters_per_second_t Climber::GetVelocity() {
+    return units::meters_per_second_t{m_encoder.GetRate()};
+}
 
-void Climber::TeleopInit() { SetGoal(0.02); }
+void Climber::ControllerPeriodic() {
+    UpdateDt();
 
-void Climber::SetGoal(double position) { m_controller.SetGoal(position); }
+    m_observer.Predict(m_u, GetDt());
+    Eigen::Matrix<double, 1, 1> y;
+    y << GetHeight().to<double>();
+    m_observer.Correct(m_controller.GetInputs(), y);
 
-bool Climber::AtReference() const { return m_controller.AtReferences(); }
+    m_u = m_controller.Calculate(m_observer.Xhat());
+
+    SetVoltage(units::volt_t{m_u(0)});
+
+    Log(m_controller.GetReferences(), m_observer.Xhat(), m_u, y);
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        m_climberSim.SetInput(frc::MakeMatrix<1, 1>(
+            m_lift.Get() * frc::RobotController::GetInputVoltage()));
+
+        m_climberSim.Update(GetDt());
+
+        m_encoderSim.SetDistance(m_climberSim.GetOutput()(0));
+    }
+}
+
+void Climber::AutonomousInit() {
+    Enable();
+    SetGoal(0.02_m);
+}
+
+void Climber::TeleopInit() {
+    Enable();
+    SetGoal(0.02_m);
+}
+
+void Climber::SetGoal(units::meter_t position) {
+    m_controller.SetGoal(position);
+}
 
 bool Climber::AtGoal() const { return m_controller.AtGoal(); }
-
-double Climber::ControllerVoltage() { return m_controller.ControllerVoltage(); }
 
 void Climber::Reset() {
     ResetEncoder();

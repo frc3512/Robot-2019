@@ -10,6 +10,10 @@
 #include <frc/Solenoid.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
+#include <frc/simulation/ADXRS450_GyroSim.h>
+#include <frc/simulation/DifferentialDrivetrainSim.h>
+#include <frc/simulation/EncoderSim.h>
+#include <frc/smartdashboard/Field2d.h>
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
@@ -70,11 +74,6 @@ public:
     units::radians_per_second_t GetAngularRate() const;
 
     /**
-     * Resets gyro.
-     */
-    void ResetGyro();
-
-    /**
      * Calibrates gyro.
      */
     void CalibrateGyro();
@@ -93,23 +92,17 @@ public:
 
     units::meters_per_second_t GetRightRate() const;
 
-    void ResetEncoders();
-
-    void EnableController();
-
-    void DisableController();
-
-    bool IsControllerEnabled() const;
-
     void Reset();
 
     void SetWaypoints(const std::vector<frc::Pose2d>& waypoints);
 
     bool AtGoal() const;
 
+    void DisabledInit() override { Disable(); };
+
     void AutonomousInit() override;
 
-    void DisabledInit() override { DisableController(); }
+    void TeleopInit() override { Enable(); };
 
     void ControllerPeriodic() override;
 
@@ -134,14 +127,28 @@ private:
     // Solenoid
     frc::Solenoid m_shifter{Constants::Drivetrain::kShifterPort};
 
-    DrivetrainController m_controller{
-        {0.0625, 0.125, 10.0, 0.95, 0.95}, {12.0, 12.0}, Constants::kDt};
+    DrivetrainController m_controller{{0.0625, 0.125, 10.0, 0.95, 0.95},
+                                      {12.0, 12.0},
+                                      RealTimeRobot::kDefaultControllerPeriod};
+    Eigen::Matrix<double, 2, 1> m_u = Eigen::Matrix<double, 2, 1>::Zero();
 
     std::chrono::steady_clock::time_point m_lastTime =
         std::chrono::steady_clock::time_point::min();
 
     std::chrono::steady_clock::time_point m_startTime =
         std::chrono::steady_clock::time_point::min();
+
+    // Simulation variables
+    // TODO make sure drivetrain is using cim motors
+    frc::sim::DifferentialDrivetrainSim m_drivetrainSim{
+        m_controller.GetPlant(), Constants::Drivetrain::kWidth,
+        frc::DCMotor::CIM(2), Constants::Drivetrain::kDriveGearRatio,
+        Constants::Drivetrain::kWheelRadius};
+
+    frc::sim::EncoderSim m_leftEncoderSim{m_leftEncoder};
+    frc::sim::EncoderSim m_rightEncoderSim{m_rightEncoder};
+    frc::sim::ADXRS450_GyroSim m_gyroSim{m_gyro};
+    frc::Field2d m_field;
 };
 
 }  // namespace frc3512

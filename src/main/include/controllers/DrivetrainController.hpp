@@ -24,10 +24,12 @@
 #include <wpi/mutex.h>
 
 #include "Constants.hpp"
+#include "RealTimeRobot.hpp"
+#include "controllers/ControllerBase.hpp"
 
 namespace frc3512 {
 
-class DrivetrainController {
+class DrivetrainController : public ControllerBase<10, 2, 2> {
 public:
     class State {
     public:
@@ -80,10 +82,6 @@ public:
     DrivetrainController(const DrivetrainController&) = delete;
     DrivetrainController& operator=(const DrivetrainController&) = delete;
 
-    void Enable();
-    void Disable();
-    bool IsEnabled() const;
-
     void SetWaypoints(const std::vector<frc::Pose2d>& waypoints);
 
     /**
@@ -122,7 +120,7 @@ public:
     /**
      * Returns the drivetrain's plant.
      */
-    frc::LinearSystem<2, 2, 2> GetPlant() const;
+    static frc::LinearSystem<2, 2, 2> GetPlant();
 
     /**
      * Returns the current references.
@@ -187,6 +185,9 @@ public:
      */
     void Reset(const frc::Pose2d& initialPose);
 
+    Eigen::Matrix<double, 2, 1> Calculate(
+        const Eigen::Matrix<double, 10, 1>& x) override;
+
     Eigen::Matrix<double, 2, 1> Controller(
         const Eigen::Matrix<double, 10, 1>& x,
         const Eigen::Matrix<double, 5, 1>& r);
@@ -232,7 +233,7 @@ private:
         LocalMeasurementModel,
         {0.002, 0.002, 0.0001, 1.5, 1.5, 0.5, 0.5, 10.0, 10.0, 2.0},
         {0.0001, 0.005, 0.005},
-        Constants::kDt};
+        RealTimeRobot::kDefaultControllerPeriod};
 
     // XXX: For testing only. This is used to verify the EKF pose because
     // DifferentialDriveOdometry is known to work on other robots.
@@ -256,7 +257,6 @@ private:
     wpi::mutex m_trajectoryMutex;
 
     bool m_atReferences = false;
-    bool m_isEnabled = false;
 
     // The loggers that generates the comma separated value files
     frc::CSVLogFile positionLogger{"Drivetrain Positions",

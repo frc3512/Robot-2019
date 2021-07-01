@@ -7,6 +7,7 @@
 
 #include <frc/DriverStation.h>
 #include <frc/Joystick.h>
+#include <frc/RobotController.h>
 
 using namespace frc3512;
 using namespace frc3512::Constants::FourBarLift;
@@ -32,10 +33,6 @@ void FourBarLift::ResetEncoder() { m_encoder.Reset(); }
 
 double FourBarLift::GetHeight() { return m_encoder.GetDistance(); }
 
-void FourBarLift::Enable() { m_controller.Enable(); }
-
-void FourBarLift::Disable() { m_controller.Disable(); }
-
 void FourBarLift::SetGoal(double position) { m_controller.SetGoal(position); }
 
 bool FourBarLift::AtReference() const { return m_controller.AtReferences(); }
@@ -55,6 +52,13 @@ void FourBarLift::ControllerPeriodic() {
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
     m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        m_fourBarLiftSim.SetInput(frc::MakeMatrix<1, 1>(
+            m_grbx.Get() * frc::RobotController::GetInputVoltage()));
+        m_fourBarLiftSim.Update(GetDt());
+        m_encoderSim.SetDistance(m_fourBarLiftSim.GetAngle().to<double>());
+    }
 }
 
 void FourBarLift::TeleopPeriodic() {

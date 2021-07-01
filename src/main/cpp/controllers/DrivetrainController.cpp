@@ -20,10 +20,7 @@ using namespace frc3512;
 using namespace frc3512::Constants;
 using namespace frc3512::Constants::Drivetrain;
 
-frc::LinearSystem<2, 2, 2> DrivetrainController::m_plant =
-    frc::LinearSystemId::IdentifyDrivetrainSystem(
-        Constants::Drivetrain::kLinearV, Constants::Drivetrain::kLinearA,
-        Constants::Drivetrain::kAngularV, Constants::Drivetrain::kAngularA);
+frc::LinearSystem<2, 2, 2> DrivetrainController::m_plant{GetPlant()};
 
 DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
                                            const std::array<double, 2>& Relems,
@@ -53,12 +50,6 @@ DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
     m_K0 = frc::LinearQuadraticRegulator<5, 2>(A0, m_B, Qelems, Relems, dt).K();
     m_K1 = frc::LinearQuadraticRegulator<5, 2>(A1, m_B, Qelems, Relems, dt).K();
 }
-
-void DrivetrainController::Enable() { m_isEnabled = true; }
-
-void DrivetrainController::Disable() { m_isEnabled = false; }
-
-bool DrivetrainController::IsEnabled() const { return m_isEnabled; }
 
 void DrivetrainController::SetWaypoints(
     const std::vector<frc::Pose2d>& waypoints) {
@@ -97,8 +88,10 @@ void DrivetrainController::SetMeasuredGlobalOutputs(
         angularVelocity.to<double>();
 }
 
-frc::LinearSystem<2, 2, 2> DrivetrainController::GetPlant() const {
-    return m_plant;
+frc::LinearSystem<2, 2, 2> DrivetrainController::GetPlant() {
+    return frc::LinearSystemId::IdentifyDrivetrainSystem(
+        Constants::Drivetrain::kLinearV, Constants::Drivetrain::kLinearA,
+        Constants::Drivetrain::kAngularV, Constants::Drivetrain::kAngularA);
 }
 
 const Eigen::Matrix<double, 5, 1>& DrivetrainController::GetReferences() const {
@@ -140,44 +133,6 @@ void DrivetrainController::Update(units::second_t dt,
     auto [vlRef, vrRef] =
         ToWheelVelocities(ref.velocity, ref.curvature, kWidth);
 
-    positionLogger.Log(elapsedTime, m_observer.Xhat(State::kX),
-                       m_observer.Xhat(State::kY),
-                       ref.pose.Translation().X().to<double>(),
-                       ref.pose.Translation().Y().to<double>(),
-                       m_localY(LocalOutput::kLeftPosition, 0),
-                       m_localY(LocalOutput::kRightPosition, 0),
-                       m_observer.Xhat(State::kLeftPosition),
-                       m_observer.Xhat(State::kRightPosition),
-                       m_odometer.GetPose().Translation().X().to<double>(),
-                       m_odometer.GetPose().Translation().Y().to<double>());
-
-    angleLogger.Log(elapsedTime, m_localY(LocalOutput::kHeading),
-                    m_observer.Xhat(State::kHeading),
-                    ref.pose.Rotation().Radians().to<double>(),
-                    m_observer.Xhat(State::kAngularVelocityError));
-    velocityLogger.Log(elapsedTime, m_observer.Xhat(State::kLeftVelocity),
-                       m_observer.Xhat(State::kRightVelocity),
-                       m_nextR(State::kLeftVelocity, 0),
-                       m_nextR(State::kRightVelocity, 0), vlRef.to<double>(),
-                       vrRef.to<double>());
-    voltageLogger.Log(elapsedTime, m_cappedU(Input::kLeftVoltage, 0),
-                      m_cappedU(Input::kRightVoltage, 0),
-                      m_observer.Xhat(State::kLeftVoltageError),
-                      m_observer.Xhat(State::kRightVoltageError),
-                      frc::RobotController::GetInputVoltage());
-    errorCovLogger.Log(
-        elapsedTime, m_observer.P(State::kX, State::kX),
-        m_observer.P(State::kY, State::kY),
-        m_observer.P(State::kHeading, State::kHeading),
-        m_observer.P(State::kLeftVelocity, State::kLeftVelocity),
-        m_observer.P(State::kRightVelocity, State::kRightVelocity),
-        m_observer.P(State::kLeftPosition, State::kLeftPosition),
-        m_observer.P(State::kRightPosition, State::kRightPosition),
-        m_observer.P(State::kLeftVoltageError, State::kLeftVoltageError),
-        m_observer.P(State::kRightVoltageError, State::kRightVoltageError),
-        m_observer.P(State::kAngularVelocityError,
-                     State::kAngularVelocityError));
-
     m_odometer.Update(units::radian_t{m_localY(LocalOutput::kHeading)},
                       units::meter_t{m_localY(LocalOutput::kLeftPosition)},
                       units::meter_t{m_localY(LocalOutput::kRightPosition)});
@@ -197,11 +152,12 @@ void DrivetrainController::Update(units::second_t dt,
         rdot - Dynamics(rAugmented, Eigen::Matrix<double, 2, 1>::Zero())
                    .block<5, 1>(0, 0));
 
-    if (m_isEnabled) {
-        m_cappedU = Controller(m_observer.Xhat(), m_nextR) + uff;
-    } else {
-        m_cappedU = Eigen::Matrix<double, 2, 1>::Zero();
-    }
+    // TODO Move to ControllerPeriodic
+    // if (IsEnabled()) {
+    m_cappedU = Controller(m_observer.Xhat(), m_nextR) + uff;
+    // } else {
+    //     m_cappedU = Eigen::Matrix<double, 2, 1>::Zero();
+    // }
     ScaleCapU(&m_cappedU);
 
     Eigen::Matrix<double, 5, 1> error =
@@ -215,11 +171,11 @@ void DrivetrainController::Update(units::second_t dt,
     m_r = m_nextR;
     m_observer.Predict(m_cappedU, dt);
 
-    if (ref.pose == m_goal) {
-        Disable();
-    } else {
-        Enable();
-    }
+    // if (ref.pose == m_goal) {
+    //     Disable();
+    // } else {
+    //     Enable();
+    // }
 }
 
 void DrivetrainController::Reset() {
@@ -242,6 +198,11 @@ void DrivetrainController::Reset(const frc::Pose2d& initialPose) {
     m_r.setZero();
     m_nextR.setZero();
     m_cappedU.setZero();
+}
+
+Eigen::Matrix<double, 2, 1> DrivetrainController::Calculate(
+    const Eigen::Matrix<double, 10, 1>& x) {
+    return m_u;
 }
 
 Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(

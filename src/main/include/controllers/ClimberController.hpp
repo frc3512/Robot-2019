@@ -15,10 +15,12 @@
 #include <units/velocity.h>
 
 #include "Constants.hpp"
+#include "RealTimeRobot.hpp"
+#include "controllers/ControllerBase.hpp"
 
 namespace frc3512 {
 
-class ClimberController {
+class ClimberController : public ControllerBase<2, 1, 1> {
 public:
     class State {
     public:
@@ -46,21 +48,16 @@ public:
     ClimberController& operator=(const ClimberController&) = delete;
 
     /**
-     * Enables the control loop.
-     */
-    void Enable();
-
-    /**
-     * Disables the control loop.
-     */
-    void Disable();
-
-    /**
      * Sets the end goal of the controller profile.
      *
      * @param goal Position in meters to set the goal to.
      */
-    void SetGoal(double goal);
+    void SetGoal(units::meter_t goal);
+
+    /**
+     * Returns whether or not the goal has been reached.
+     */
+    bool AtGoal() const;
 
     /**
      * Sets the references.
@@ -72,58 +69,11 @@ public:
                        units::meters_per_second_t velocity);
 
     /**
-     * Returns whether or not the goal has been reached.
-     */
-    bool AtGoal() const;
-
-    /**
-     * Returns whether or not position and velocity are tracking the profile.
-     */
-    bool AtReferences() const;
-
-    /**
      * Sets the current encoder measurement.
      *
      * @param measuredPosition Position of the carriage in meters.
      */
-    void SetMeasuredPosition(double measuredPosition);
-
-    /**
-     * Returns the control loop calculated voltage.
-     */
-    double ControllerVoltage();
-
-    /**
-     * Returns the estimated position.
-     */
-    double EstimatedPosition() const;
-
-    /**
-     * Returns the estimated velocity.
-     */
-    double EstimatedVelocity() const;
-
-    /**
-     * Returns the error between the position reference and the position
-     * estimate.
-     */
-    double PositionError() const;
-
-    /**
-     * Returns the error between the velocity reference and the velocity
-     * estimate.
-     */
-    double VelocityError() const;
-
-    /**
-     * Returns the current position reference set by the profile.
-     */
-    double PositionReference();
-
-    /**
-     * Returns the current velocity reference set by the profile.
-     */
-    double VelocityReference();
+    void SetMeasuredPosition(units::meter_t measuredPosition);
 
     /**
      * Executes the control loop for a cycle.
@@ -135,46 +85,29 @@ public:
      */
     void Reset();
 
+    Eigen::Matrix<double, 1, 1> Calculate(
+        const Eigen::Matrix<double, 2, 1>& x) override;
+
+    static frc::LinearSystem<2, 1, 1> GetPlant();
+
 private:
-    // The current sensor measurement.
-    Eigen::Matrix<double, 1, 1> m_y;
     frc::TrapezoidProfile<units::meters>::State m_goal;
 
     frc::TrapezoidProfile<units::meters>::Constraints constraints{
         Constants::Climber::kMaxV, Constants::Climber::kMaxA};
-    frc::TrapezoidProfile<units::meters> m_positionProfile{constraints,
-                                                           {0_m, 0_mps}};
 
     // The current references from the profile.
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
-    frc::LinearSystem<2, 1, 1> m_plant = [=] {
-        constexpr auto motor = frc::DCMotor::Vex775Pro();
+    frc::LinearSystem<2, 1, 1> m_plant = GetPlant();
+    frc::LinearQuadraticRegulator<2, 1> m_lqr{
+        m_plant, {0.02, 0.4}, {12.0}, RealTimeRobot::kDefaultControllerPeriod};
+    frc::LinearPlantInversionFeedforward<2, 1> m_ff{
+        m_plant, RealTimeRobot::kDefaultControllerPeriod};
 
-        // Robot mass
-        constexpr auto m = 63.503_kg;
-
-        // Radius of axle
-        constexpr auto r = 0.003175_m;
-
-        // Gear ratio
-        constexpr double G = 50.0 / 1.0;
-
-        return frc::LinearSystemId::ElevatorSystem(motor, m, r, G);
-    }();
-    frc::LinearQuadraticRegulator<2, 1> m_controller{
-        m_plant, {0.02, 0.4}, {12.0}, Constants::kDt};
-    frc::KalmanFilter<2, 1, 1> m_observer{
-        m_plant, {0.05, 1.0}, {0.0001}, Constants::kDt};
-    frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer,
-                                          12_V, Constants::kDt};
-
-    bool m_isEnabled = false;
-
+    bool m_atGoal = false;
     bool m_atReferences = false;
 
-    frc::CSVLogFile climberLogger{"Climber",      "EstPos (m)",
-                                  "PosRef (m)",   "Voltage (V)",
-                                  "EstVel (m/s)", "VelRef (m/s)"};
+    void UpdateAtReferences(const Eigen::Matrix<double, 2, 1>& error);
 };
 }  // namespace frc3512

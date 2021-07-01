@@ -7,6 +7,9 @@
 
 #include <frc/DriverStation.h>
 #include <frc/Joystick.h>
+#include <frc/RobotController.h>
+#include <frc/simulation/BatterySim.h>
+#include <frc/simulation/RoboRioSim.h>
 
 using namespace frc3512;
 using namespace frc3512::Constants::Elevator;
@@ -31,16 +34,6 @@ void Elevator::ResetEncoder() { m_encoder.Reset(); }
 
 double Elevator::GetHeight() { return m_encoder.GetDistance(); }
 
-void Elevator::Enable() {
-    m_controller.Enable();
-    m_isEnabled = true;
-}
-
-void Elevator::Disable() {
-    m_controller.Disable();
-    m_isEnabled = false;
-}
-
 void Elevator::SetScoringIndex() { m_controller.SetScoringIndex(); }
 
 void Elevator::SetClimbingIndex() { m_controller.SetClimbingIndex(); }
@@ -61,6 +54,8 @@ void Elevator::Reset() {
 }
 
 void Elevator::ControllerPeriodic() {
+    UpdateDt();
+
     m_controller.SetMeasuredPosition(m_encoder.GetDistance());
     m_controller.Update();
 
@@ -68,6 +63,30 @@ void Elevator::ControllerPeriodic() {
     double batteryVoltage =
         frc::DriverStation::GetInstance().GetBatteryVoltage();
     m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+
+    // Log(m_controller.GetReferences(), )
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        if (m_controller.IsClimbing()) {
+            m_elevatorClimbingSim.SetInput(frc::MakeMatrix<1, 1>(
+                m_grbx.Get() * frc::RobotController::GetInputVoltage()));
+            m_elevatorClimbingSim.Update(GetDt());
+            m_encoderSim.SetDistance(
+                m_elevatorClimbingSim.GetPosition().to<double>());
+            // SimBattery estimates loaded battery voltages
+            frc::sim::RoboRioSim::SetVInVoltage(frc::sim::BatterySim::Calculate(
+                {m_elevatorClimbingSim.GetCurrentDraw()}));
+        } else {
+            m_elevatorScoringSim.SetInput(frc::MakeMatrix<1, 1>(
+                m_grbx.Get() * frc::RobotController::GetInputVoltage()));
+            m_elevatorScoringSim.Update(GetDt());
+            m_encoderSim.SetDistance(
+                m_elevatorScoringSim.GetPosition().to<double>());
+            // SimBattery estimates loaded battery voltages
+            frc::sim::RoboRioSim::SetVInVoltage(frc::sim::BatterySim::Calculate(
+                {m_elevatorClimbingSim.GetCurrentDraw()}));
+        }
+    }
 }
 
 void Elevator::TeleopPeriodic() {

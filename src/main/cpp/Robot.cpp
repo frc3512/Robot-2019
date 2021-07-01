@@ -103,9 +103,11 @@ void Robot::RobotPeriodic() {
                 m_elevator.SetClimbingIndex();
                 m_elevator.SetGoal(0);
                 if (m_thirdLevel) {
-                    m_climber.SetGoal(Constants::Climber::kClimb3Height);
+                    m_climber.SetGoal(
+                        units::meter_t{Constants::Climber::kClimb3Height});
                 } else {
-                    m_climber.SetGoal(Constants::Climber::kClimb2Height);
+                    m_climber.SetGoal(
+                        units::meter_t{Constants::Climber::kClimb2Height});
                 }
                 m_state = State::kDescend;
             }
@@ -120,11 +122,12 @@ void Robot::RobotPeriodic() {
         }
         case State::kDriveForward: {
             std::lock_guard lock(m_cacheMutex);
-            m_climber.SetDriveVoltage(appendageStick1.GetY());
+            m_climber.SetDriveVoltage(
+                units::volt_t{appendageStick1.GetY() * 12});
             if (appendageStick2.GetRawButtonPressed(9)) {
                 m_fourBarLift.SetClimbing(false);
                 m_fourBarLift.SetGoal(0);
-                m_climber.SetGoal(0);
+                m_climber.SetGoal(0_m);
                 m_state = State::kIdle;
             }
             break;
@@ -141,7 +144,7 @@ void Robot::DisabledPeriodic() {
 
     wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
     wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
-    wpi::outs() << "Climber: " << m_climber.GetHeight() << "\n";
+    wpi::outs() << "Climber: " << m_climber.GetHeight().to<double>() << "\n";
     wpi::outs() << "Drivetrain Left: "
                 << static_cast<double>(m_drivetrain.GetLeftDisplacement())
                 << "\n";

@@ -8,80 +8,57 @@
 
 using namespace frc3512;
 
-ClimberController::ClimberController() { m_y.setZero(); }
+ClimberController::ClimberController() { Reset(); }
 
-void ClimberController::Enable() { m_isEnabled = true; }
-
-void ClimberController::Disable() { m_isEnabled = false; }
-
-void ClimberController::SetGoal(double goal) {
-    m_positionProfile = frc::TrapezoidProfile<units::meters>{
-        constraints,
-        {units::meter_t{goal}, 0_mps},
-        {units::meter_t{EstimatedPosition()}, 0_mps}};
-    m_goal = {units::meter_t{goal}, 0_mps};
-}
-
-void ClimberController::SetReferences(units::meter_t position,
-                                      units::meters_per_second_t velocity) {
-    double positionRef = position.to<double>();
-    double velocityRef = velocity.to<double>();
-    Eigen::Matrix<double, 2, 1> nextR;
-    nextR << positionRef, velocityRef;
-    m_loop.SetNextR(nextR);
-}
-
-bool ClimberController::AtReferences() const { return m_atReferences; }
+void ClimberController::SetGoal(units::meter_t goal) { m_goal = {goal, 0_mps}; }
 
 bool ClimberController::AtGoal() const {
     return m_atReferences && m_goal == m_profiledReference;
 }
 
-void ClimberController::SetMeasuredPosition(double measuredPosition) {
-    m_y(0, 0) = measuredPosition;
-}
-
-double ClimberController::ControllerVoltage() { return m_loop.U(0); }
-
-double ClimberController::EstimatedPosition() const { return m_loop.Xhat(0); }
-
-double ClimberController::EstimatedVelocity() const { return m_loop.Xhat(1); }
-
-double ClimberController::PositionError() const { return m_loop.Error()(0, 0); }
-
-double ClimberController::VelocityError() const { return m_loop.Error()(1, 0); }
-
-double ClimberController::PositionReference() {
-    return m_profiledReference.position.to<double>();
-}
-
-double ClimberController::VelocityReference() {
-    return m_profiledReference.velocity.to<double>();
-}
-
-void ClimberController::Update() {
-    climberLogger.Log(EstimatedPosition(), PositionReference(),
-                      ControllerVoltage(), EstimatedVelocity(),
-                      VelocityReference());
-
-    frc::TrapezoidProfile<units::meters>::State references = {
-        units::meter_t(m_loop.NextR(0)),
-        units::meters_per_second_t(m_loop.NextR(1))};
-    frc::TrapezoidProfile<units::meters> profile{constraints, m_goal,
-                                                 references};
-    m_profiledReference = profile.Calculate(Constants::kDt);
-
-    SetReferences(m_profiledReference.position, m_profiledReference.velocity);
-
-    m_loop.Correct(m_y);
-
-    auto error = m_loop.Error();
-    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
-                     std::abs(error(1, 0)) < kVelocityTolerance;
-
-    m_loop.Predict(Constants::kDt);
+void ClimberController::SetReferences(units::meter_t position,
+                                      units::meters_per_second_t velocity) {
+    m_nextR << position.to<double>(), velocity.to<double>();
 }
 
 void ClimberController::Reset() {
-    m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+    m_r.setZero();
+    m_nextR.setZero();
+}
+
+Eigen::Matrix<double, 1, 1> ClimberController::Calculate(
+    const Eigen::Matrix<double, 2, 1>& x) {
+    frc::TrapezoidProfile<units::meters>::State references = {
+        units::meter_t(m_nextR(0)), units::meters_per_second_t(m_nextR(1))};
+    frc::TrapezoidProfile<units::meters> profile{constraints, m_goal,
+                                                 references};
+    m_profiledReference =
+        profile.Calculate(RealTimeRobot::kDefaultControllerPeriod);
+
+    SetReferences(m_profiledReference.position, m_profiledReference.velocity);
+
+    m_u = m_lqr.Calculate(x, m_r) + m_ff.Calculate(m_nextR);
+
+    m_u = frc::NormalizeInputVector<1>(m_u, 12.0);
+    m_r = m_nextR;
+
+    UpdateAtReferences(m_nextR - x);
+
+    return m_u;
+}
+
+frc::LinearSystem<2, 1, 1> ClimberController::GetPlant() {
+    // Radius of axle
+    constexpr auto r = 0.003175_m;
+
+    return frc::LinearSystemId::ElevatorSystem(
+        frc::DCMotor::Vex775Pro(),
+        units::kilogram_t{Constants::Climber::kRobotMass}, r,
+        Constants::Climber::kGearRatio);
+}
+
+void ClimberController::UpdateAtReferences(
+    const Eigen::Matrix<double, 2, 1>& error) {
+    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
+                     std::abs(error(1, 0)) < kVelocityTolerance;
 }

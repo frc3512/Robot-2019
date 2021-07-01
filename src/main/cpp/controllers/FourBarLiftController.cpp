@@ -9,10 +9,6 @@ using namespace frc3512::Constants::FourBarLift;
 
 FourBarLiftController::FourBarLiftController() { m_y.setZero(); }
 
-void FourBarLiftController::Enable() { m_isEnabled = true; }
-
-void FourBarLiftController::Disable() { m_isEnabled = false; }
-
 void FourBarLiftController::SetGoal(double goal) {
     m_angleProfile = frc::TrapezoidProfile<units::radians>{
         constraints,
@@ -85,7 +81,8 @@ void FourBarLiftController::Update() {
         units::radians_per_second_t(m_loop.NextR(1))};
     frc::TrapezoidProfile<units::radians> profile{constraints, m_goal,
                                                   references};
-    m_profiledReference = profile.Calculate(Constants::kDt);
+    m_profiledReference =
+        profile.Calculate(RealTimeRobot::kDefaultControllerPeriod);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 
@@ -95,9 +92,17 @@ void FourBarLiftController::Update() {
     m_atReferences = std::abs(error(0, 0)) < kAngleTolerance &&
                      std::abs(error(1, 0)) < kAngularVelocityTolerance;
 
-    m_loop.Predict(Constants::kDt);
+    m_loop.Predict(RealTimeRobot::kDefaultControllerPeriod);
 }
 
 void FourBarLiftController::Reset() {
     m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+}
+
+frc::LinearSystem<2, 1, 1> FourBarLiftController::GetPlant() {
+    // Arm moment of inertia
+    constexpr auto J = 0.6975_kg_sq_m;
+
+    return frc::LinearSystemId::SingleJointedArmSystem(
+        frc::DCMotor::NEO(), J, Constants::FourBarLift::kGearRatio);
 }

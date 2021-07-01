@@ -15,6 +15,7 @@
 #include <units/angular_velocity.h>
 
 #include "Constants.hpp"
+#include "RealTimeRobot.hpp"
 
 namespace frc3512 {
 
@@ -44,16 +45,6 @@ public:
 
     FourBarLiftController(const FourBarLiftController&) = delete;
     FourBarLiftController& operator=(const FourBarLiftController&) = delete;
-
-    /**
-     * Enables the control loop.
-     */
-    void Enable();
-
-    /**
-     * Disables the control loop.
-     */
-    void Disable();
 
     /**
      * Sets the end goal of the controller profile.
@@ -143,6 +134,11 @@ public:
      */
     void Reset();
 
+    /**
+     * Returns the four bar lift plant.
+     */
+    static frc::LinearSystem<2, 1, 1> GetPlant();
+
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_y;
@@ -155,26 +151,22 @@ private:
 
     frc::TrapezoidProfile<units::radians>::State m_profiledReference;
 
-    frc::LinearSystem<2, 1, 1> m_plant = [=] {
-        constexpr auto motor = frc::DCMotor::NEO();
-
-        // Arm moment of inertia
-        constexpr auto J = 0.6975_kg_sq_m;
-
-        // Gear ratio
-        constexpr double G = 302.22;
-
-        return frc::LinearSystemId::SingleJointedArmSystem(motor, J, G);
-    }();
+    frc::LinearSystem<2, 1, 1> m_plant = GetPlant();
     frc::LinearQuadraticRegulator<2, 1> m_controller{
-        m_plant, {0.01245, 0.109726}, {9.0}, Constants::kDt};
+        m_plant,
+        {0.01245, 0.109726},
+        {9.0},
+        RealTimeRobot::kDefaultControllerPeriod};
     frc::KalmanFilter<2, 1, 1> m_observer{
-        m_plant, {0.21745, 0.28726}, {0.01}, Constants::kDt};
-    frc::LinearSystemLoop<2, 1, 1> m_loop{m_plant, m_controller, m_observer,
-                                          12_V, Constants::kDt};
+        m_plant,
+        {0.21745, 0.28726},
+        {0.01},
+        RealTimeRobot::kDefaultControllerPeriod};
+    frc::LinearSystemLoop<2, 1, 1> m_loop{
+        m_plant, m_controller, m_observer, 12_V,
+        RealTimeRobot::kDefaultControllerPeriod};
 
     bool m_atReferences = false;
-    bool m_isEnabled = false;
     bool m_climbing = false;
 
     frc::CSVLogFile elevatorLogger{"FourBarLift",    "EstPos (rad)",

@@ -14,10 +14,12 @@
 #include <units/velocity.h>
 
 #include "Constants.hpp"
+#include "RealTimeRobot.hpp"
+#include "controllers/ControllerBase.hpp"
 
 namespace frc3512 {
 
-class ElevatorController {
+class ElevatorController : public ControllerBase<2, 1, 1> {
 public:
     // State tolerances in meters and meters/sec respectively.
     static constexpr double kPositionTolerance = 0.05;
@@ -44,12 +46,10 @@ public:
     ElevatorController(const ElevatorController&) = delete;
     ElevatorController& operator=(const ElevatorController&) = delete;
 
-    void Enable();
-    void Disable();
-    bool IsEnabled() const;
-
     void SetScoringIndex();
     void SetClimbingIndex();
+
+    bool IsClimbing() const;
 
     void SetGoal(double goal);
 
@@ -120,6 +120,16 @@ public:
      */
     void Reset();
 
+    Eigen::Matrix<double, 1, 1> Calculate(
+        const Eigen::Matrix<double, 2, 1>& x) override;
+
+    /**
+     * Returns the elevator plant.
+     *
+     * @param climbing Returns climbing plant if true and scoring plant if false
+     */
+    static frc::LinearSystem<2, 1, 1> GetPlant(bool climbing);
+
 private:
     // The current sensor measurement.
     Eigen::Matrix<double, 1, 1> m_y;
@@ -134,51 +144,32 @@ private:
 
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
-    frc::LinearSystem<2, 1, 1> m_scorePlant = [=] {
-        constexpr auto motor = frc::DCMotor::NEO();
-
-        // Carriage mass
-        constexpr auto m = 9.785262_kg;
-
-        // Radius of pulley
-        constexpr auto r = 0.0181864_m;
-
-        // Gear ratio
-        constexpr double G = 8.0;
-
-        return frc::LinearSystemId::ElevatorSystem(motor, m, r, G);
-    }();
-
-    frc::LinearSystem<2, 1, 1> m_climbPlant = [=] {
-        auto motor = frc::DCMotor::NEO();
-
-        // Carriage mass
-        constexpr auto m = 8.381376_kg;
-
-        // Radius of pulley
-        constexpr auto r = 0.0181864_m;
-
-        // Gear ratio
-        constexpr double G = 12.5;
-
-        return frc::LinearSystemId::ElevatorSystem(motor, m, r, G);
-    }();
+    frc::LinearSystem<2, 1, 1> m_scorePlant = GetPlant(false);
+    frc::LinearSystem<2, 1, 1> m_climbPlant = GetPlant(true);
 
     frc::LinearQuadraticRegulator<2, 1> m_scoreController{
-        m_scorePlant, {0.3, 3.0}, {12.0}, Constants::kDt};
+        m_scorePlant,
+        {0.3, 3.0},
+        {12.0},
+        RealTimeRobot::kDefaultControllerPeriod};
     frc::LinearQuadraticRegulator<2, 1> m_climbController{
-        m_climbPlant, {0.3, 3.0}, {12.0}, Constants::kDt};
+        m_climbPlant,
+        {0.3, 3.0},
+        {12.0},
+        RealTimeRobot::kDefaultControllerPeriod};
 
     frc::KalmanFilter<2, 1, 1> m_scoreObserver{
-        m_scorePlant, {0.05, 100.0}, {0.0001}, Constants::kDt};
+        m_scorePlant,
+        {0.05, 100.0},
+        {0.0001},
+        RealTimeRobot::kDefaultControllerPeriod};
     frc::KalmanFilter<2, 1, 1> m_climbObserver{
-        m_climbPlant, {0.05, 100.0}, {0.0001}, Constants::kDt};
+        m_climbPlant,
+        {0.05, 100.0},
+        {0.0001},
+        RealTimeRobot::kDefaultControllerPeriod};
 
-    bool m_isEnabled = false;
     bool m_climbing = false;
-
-    Eigen::Matrix<double, 2, 1> m_nextR;
-    Eigen::Matrix<double, 1, 1> m_u;
 
     bool m_atReferences = false;
 

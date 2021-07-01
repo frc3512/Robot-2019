@@ -155,6 +155,8 @@ constexpr auto kClimbMaxV = 0.25_mps;
 constexpr auto kClimbMaxA = 2.5_mps_sq;
 constexpr double kDrumRadius = 0.0363728 / 2.0;  // meters
 constexpr double kNumMotors = 1.0;
+constexpr double kScoringGearRatio = 8.0;
+constexpr double kClimbingGearRatio = 12.5;
 constexpr double kStallTorque = 2.41 * kNumMotors;    // N-m
 constexpr double kStallCurrent = 131.0 * kNumMotors;  // amps
 constexpr double kFreeSpeed = 5330.0;                 // no load rpm
@@ -162,6 +164,7 @@ constexpr double kFreeCurrent = 2.7 * kNumMotors;     // amps
 constexpr double kResistance = 12.0 / kStallCurrent;  // resistance of motor
 constexpr double kKt = kStallTorque / kStallCurrent;  // torque constant
 constexpr double kMin = 0.0;
+// TODO kMax needs to be updated
 constexpr double kMax = 0.8;
 
 // Distance per Pulse

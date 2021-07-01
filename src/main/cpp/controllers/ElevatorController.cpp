@@ -9,12 +9,6 @@ using namespace frc3512::Constants::Elevator;
 
 ElevatorController::ElevatorController() { m_y.setZero(); }
 
-void ElevatorController::Enable() { m_isEnabled = true; }
-
-void ElevatorController::Disable() { m_isEnabled = false; }
-
-bool ElevatorController::IsEnabled() const { return m_isEnabled; }
-
 void ElevatorController::SetScoringIndex() {
     m_activeConstraints = scoringConstraints;
     m_climbing = false;
@@ -24,6 +18,8 @@ void ElevatorController::SetClimbingIndex() {
     m_activeConstraints = climbingConstraints;
     m_climbing = true;
 }
+
+bool ElevatorController::IsClimbing() const { return m_climbing; }
 
 void ElevatorController::SetGoal(double goal) {
     m_goal = {units::meter_t{goal}, 0_mps};
@@ -98,7 +94,8 @@ void ElevatorController::Update() {
         units::meters_per_second_t(m_nextR(1, 0))};
     frc::TrapezoidProfile<units::meters> profile{m_activeConstraints, m_goal,
                                                  references};
-    m_profiledReference = profile.Calculate(Constants::kDt);
+    m_profiledReference =
+        profile.Calculate(RealTimeRobot::kDefaultControllerPeriod);
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 
@@ -112,7 +109,7 @@ void ElevatorController::Update() {
                      std::abs(error(1, 0)) < kVelocityTolerance;
 
     m_u = controller.Calculate(observer.Xhat(), m_nextR);
-    observer.Predict(m_u, Constants::kDt);
+    observer.Predict(m_u, RealTimeRobot::kDefaultControllerPeriod);
 }
 
 void ElevatorController::Reset() {
@@ -122,4 +119,28 @@ void ElevatorController::Reset() {
     m_climbObserver.Reset();
     m_nextR.setZero();
     m_u.setZero();
+}
+
+Eigen::Matrix<double, 1, 1> ElevatorController::Calculate(const Eigen::Matrix<double, 2, 1>& x) {
+    return Eigen::Matrix<double, 1, 1>::Zero();
+}
+
+frc::LinearSystem<2, 1, 1> ElevatorController::GetPlant(bool climbing) {
+    auto motor = frc::DCMotor::NEO();
+
+    // Radius of pulley
+    constexpr auto r = 0.0181864_m;
+    if (climbing) {
+        // Carriage mass
+        constexpr auto m = 8.381376_kg;
+
+        return frc::LinearSystemId::ElevatorSystem(
+            motor, m, r, Constants::Elevator::kClimbingGearRatio);
+    } else {
+        // Carriage mass
+        constexpr auto m = 9.785262_kg;
+
+        return frc::LinearSystemId::ElevatorSystem(
+            motor, m, r, Constants::Elevator::kScoringGearRatio);
+    }
 }

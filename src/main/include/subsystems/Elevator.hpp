@@ -8,7 +8,9 @@
 #include <frc/Notifier.h>
 #include <frc/Spark.h>
 #include <frc/SpeedControllerGroup.h>
-#include <frc/Timer.h>
+#include <frc/simulation/ElevatorSim.h>
+#include <frc/simulation/EncoderSim.h>
+#include <frc2/Timer.h>
 
 #include "Constants.hpp"
 #include "controllers/ElevatorController.hpp"
@@ -40,16 +42,6 @@ public:
      * @return height in inches
      */
     double GetHeight();
-
-    /**
-     * Runs the control loop every 0.005 seconds.
-     */
-    void Enable();
-
-    /**
-     * Disables the notifier running the control loop.
-     */
-    void Disable();
 
     /**
      * Changes the controller's profile constants to be faster.
@@ -88,19 +80,43 @@ public:
      */
     void Reset();
 
+    void DisabledInit() override { Disable(); };
+
+    void AutonomousInit() override { Enable(); };
+
+    void TeleopInit() override { Enable(); };
+
     void ControllerPeriodic() override;
 
     void TeleopPeriodic() override;
 
 private:
-    frc::Timer m_timer;
     rev::CANSparkMax m_grbx{9, rev::CANSparkMax::MotorType::kBrushless};
 
     ElevatorController m_controller;
     frc::Encoder m_encoder{Constants::Elevator::kEncoderA,
                            Constants::Elevator::kEncoderB};
 
-    std::atomic<bool> m_isEnabled{true};
+    Eigen::Matrix<double, 1, 1> m_u = Eigen::Matrix<double, 1, 1>::Zero();
+
+    // Simulation Variables
+    frc::sim::ElevatorSim m_elevatorScoringSim{
+        m_controller.GetPlant(false),
+        frc::DCMotor::NEO(),
+        Constants::Elevator::kScoringGearRatio,
+        units::meter_t{Constants::Elevator::kDrumRadius},
+        units::meter_t{Constants::Elevator::kMin},
+        units::meter_t{Constants::Elevator::kTopCargo},
+        {0.0001}};
+    frc::sim::ElevatorSim m_elevatorClimbingSim{
+        m_controller.GetPlant(true),
+        frc::DCMotor::NEO(),
+        Constants::Elevator::kClimbingGearRatio,
+        units::meter_t{Constants::Elevator::kDrumRadius},
+        units::meter_t{Constants::Elevator::kMin},
+        units::meter_t{Constants::Elevator::kTopCargo},
+        {0.0001}};
+    frc::sim::EncoderSim m_encoderSim{m_encoder};
 };
 
 }  // namespace frc3512

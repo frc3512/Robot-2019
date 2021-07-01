@@ -6,6 +6,9 @@
 #include <frc/Notifier.h>
 #include <frc/PWMSparkMax.h>
 #include <frc/SpeedControllerGroup.h>
+#include <frc/simulation/EncoderSim.h>
+#include <frc/simulation/SingleJointedArmSim.h>
+#include <frc/system/plant/DCMotor.h>
 
 #include "Constants.hpp"
 #include "controllers/FourBarLiftController.hpp"
@@ -45,16 +48,6 @@ public:
     double GetHeight();
 
     /**
-     * Runs the control loop every 0.005 seconds.
-     */
-    void Enable();
-
-    /**
-     * Disables the notifier running the control loop.
-     */
-    void Disable();
-
-    /**
      * Sets the goal of the controller.
      *
      * @param position The goal to pass to the controller in radians.
@@ -76,6 +69,12 @@ public:
      */
     void Reset();
 
+    void DisabledInit() override { Disable(); };
+
+    void AutonomousInit() override { Enable(); };
+
+    void TeleopInit() override { Enable(); };
+
     void ControllerPeriodic() override;
 
     void TeleopPeriodic() override;
@@ -87,6 +86,19 @@ private:
     FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,
                            Constants::FourBarLift::kEncoderB};
+
+    // Simulation variables
+    frc::sim::SingleJointedArmSim m_fourBarLiftSim{
+        m_controller.GetPlant(),
+        frc::DCMotor::NEO(),
+        Constants::FourBarLift::kGearRatio,
+        units::meter_t{Constants::FourBarLift::kLength},
+        units::radian_t{Constants::FourBarLift::kMin},
+        units::radian_t{Constants::FourBarLift::kMax},
+        units::kilogram_t{Constants::FourBarLift::kMass},
+        true,
+        {0.01}};
+    frc::sim::EncoderSim m_encoderSim{m_encoder};
 };
 
 }  // namespace frc3512
