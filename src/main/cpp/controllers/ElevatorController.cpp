@@ -121,7 +121,8 @@ void ElevatorController::Reset() {
     m_u.setZero();
 }
 
-Eigen::Matrix<double, 1, 1> ElevatorController::Calculate(const Eigen::Matrix<double, 2, 1>& x) {
+Eigen::Matrix<double, 1, 1> ElevatorController::Calculate(
+    const Eigen::Matrix<double, 2, 1>& x) {
     return Eigen::Matrix<double, 1, 1>::Zero();
 }
 
