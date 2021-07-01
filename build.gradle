@@ -4,20 +4,22 @@ plugins {
     id "cpp"
     id "google-test-test-suite"
     id "edu.wpi.first.GradleRIO" version "2021.3.1"
-    id "org.ysb33r.doxygen" version "0.5"
+    id "org.ysb33r.doxygen" version "0.6"
 }
 
-if (OperatingSystem.current().isWindows()) {
-    task pythonTask(type: Exec) {
-        workingDir '.'
-        commandLine 'python.exe', 'python/generate_messages.py', '--input', 'msgs', '--output', 'build/generated'
-    }
-} else {
-    task pythonTask(type: Exec) {
-        workingDir '.'
-        commandLine 'python3', 'python/generate_messages.py', '--input', 'msgs', '--output', 'build/generated'
-    }
-}
+// For testing development versions of WPILib
+// wpi.wpilibVersion = '2021.3.1'
+// wpi.wpimathVersion = '2021.3.1'
+
+// For automatically using the newest development version of WPILib
+// wpi.wpilibVersion = '2021.+'
+// wpi.wpimathVersion = '2021.+'
+
+// For using remote development artifacts
+// wpi.maven.useDevelopment = true
+
+// For using local development artifacts
+// wpi.maven.useFrcMavenLocalDevelopment = true
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project EmbeddedTools.
@@ -37,6 +39,11 @@ deploy {
             component = 'frcUserProgram'
             // Debug can be overridden by command line, for use with VSCode
             debug = frc.getDebugOrDefault(false)
+
+            postdeploy << { ctx ->
+                ctx.execute('chown admin /home/lvuser/frcUserProgram')
+                ctx.execute('chmod u+s /home/lvuser/frcUserProgram')
+            }
         }
         // Built in artifact to deploy arbitrary files to the roboRIO.
         fileTreeArtifact('frcStaticFileDeploy') {
@@ -55,12 +62,12 @@ def includeDesktopSupport = true
 // Enable simulation gui support. Must check the box in vscode to enable support
 // upon debugging
 dependencies {
-    simulation wpi.deps.sim.gui(wpi.platforms.desktop, true)
-    simulation wpi.deps.sim.driverstation(wpi.platforms.desktop, true)
+    simulation wpi.deps.sim.gui(wpi.platforms.desktop, false)
+    simulation wpi.deps.sim.driverstation(wpi.platforms.desktop, false)
 
     // Websocket extensions require additional configuration.
-    // simulation wpi.deps.sim.ws_server(wpi.platforms.desktop, true)
-    // simulation wpi.deps.sim.ws_client(wpi.platforms.desktop, true)
+    // simulation wpi.deps.sim.ws_server(wpi.platforms.desktop, false)
+    // simulation wpi.deps.sim.ws_client(wpi.platforms.desktop, false)
 }
 
 nativeUtils.platformConfigs.named("linuxathena").configure {
@@ -86,13 +93,13 @@ if (OperatingSystem.current().isWindows()) {
         it.cppCompiler.args.add('-pedantic')
         it.cppCompiler.args.add('-Werror')
         it.cppCompiler.args.add('-Wno-unused-parameter')
-        // Suppress warning from incorrect [[deprecated]] attribute usage in
-        // CANSparkMax.h
-        it.cppCompiler.args.add('-Wno-attributes')
     }
 }
 
 nativeUtils.platformConfigs.named("linuxx86-64").configure {
+    // GCC 11 gives false positives
+    it.cppCompiler.args.add('-Wno-error=maybe-uninitialized')
+
     it.linker.args.add('-lstdc++fs')
 }
 
@@ -101,6 +108,14 @@ if (project.hasProperty("asan")) {
         it.cppCompiler.args.add('-g3')
         it.cppCompiler.args.add('-fsanitize=address')
         it.linker.args.add('-fsanitize=address')
+    }
+}
+
+if (project.hasProperty("ubsan")) {
+    nativeUtils.platformConfigs.named("linuxx86-64").configure {
+        it.cppCompiler.args.add('-g3')
+        it.cppCompiler.args.add('-fsanitize=undefined')
+        it.linker.args.add('-fsanitize=undefined')
     }
 }
 
@@ -120,20 +135,13 @@ model {
               }
             }
 
-            binaries.all {
-                binary ->
-                binary.getTasks().withType(AbstractNativeSourceCompileTask) {
-                    it.dependsOn pythonTask
-                }
-            }
-
             sources.cpp {
                 source {
-                    srcDirs = ['src/main/cpp', 'build/generated/cpp']
+                    srcDir 'src/main/cpp'
                     include '**/*.cpp', '**/*.cc'
                 }
                 exportedHeaders {
-                    srcDirs = ['src/main/include', 'build/generated/include']
+                    srcDir 'src/main/include'
                 }
             }
 
@@ -153,14 +161,6 @@ model {
                 }
               }
             }
-
-            binaries.all {
-                binary ->
-                binary.getTasks().withType(AbstractNativeSourceCompileTask) {
-                    it.dependsOn pythonTask
-                }
-            }
-
 
             sources.cpp {
                 source {
@@ -196,17 +196,31 @@ task testRelease {
     dependsOn 'runFrcUserProgramTest' + wpi.platforms.desktop.capitalize() + 'ReleaseGoogleTestExe'
 }
 
-task simulate(type: Exec) {
-    dependsOn 'simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'DebugExecutable'
-    workingDir 'build/stdout'
-    commandLine 'tail', '-f', 'simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'DebugExecutable.log'
+task simulateCpp {
+    dependsOn 'simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'ReleaseExecutable'
+}
+
+if (!OperatingSystem.current().isWindows()) {
+    simulateCpp.doLast {
+        exec {
+            executable 'tail'
+            args '-f', 'build/stdout/simulateFrcUserProgram' + wpi.platforms.desktop.capitalize() + 'ReleaseExecutable.log'
+        }
+    }
+
+    task valgrind(type: Exec) {
+        dependsOn 'installFrcUserProgramTest' + wpi.platforms.desktop.capitalize() + 'ReleaseGoogleTestExe'
+        commandLine 'python3', './buildscripts/valgrind.py'
+    }
+}
+
+task intellisense(type: Exec) {
+    dependsOn 'generateCompileCommands'
+    commandLine 'python3', './buildscripts/copy_compile_commands.py'
 }
 
 doxygen {
-    executables {
-        doxygen version : '1.8.18',
-            baseURI : 'https://frcmaven.wpi.edu/artifactory/generic-release-mirror/doxygen'
-    }
+    exclude 'fmt/*'
 
     generate_html true
     extension_mapping 'inc=C++'
