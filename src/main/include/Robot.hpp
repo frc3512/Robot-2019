@@ -34,6 +34,11 @@ class Robot : public RealTimeRobot {
 public:
     Robot();
 
+    /**
+     * Returns true if currently climbing.
+     */
+    bool IsClimbing() const;
+
     void DisabledInit() override;
     void AutonomousInit() override;
     void TeleopInit() override;
@@ -43,6 +48,7 @@ public:
     void DisabledPeriodic() override;
     void AutonomousPeriodic() override;
     void TeleopPeriodic() override;
+    void TestPeriodic() override;
 
 private:
     Climber m_climber;
@@ -56,7 +62,7 @@ private:
 
     frc::Joystick m_driveStick1{kDriveStick1Port};
     frc::Joystick m_driveStick2{kDriveStick2Port};
-    frc::Joystick m_appendageStick{kAppendageStickPort};
+    frc::Joystick m_appendageStick{kAppendageStick1Port};
     frc::Joystick m_appendageStick2{kAppendageStick2Port};
 
     cs::UsbCamera camera{"Camera 1", 0};

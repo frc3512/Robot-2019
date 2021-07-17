@@ -28,11 +28,11 @@ Elevator::Elevator()
     m_encoder.SetDistancePerPulse(kDpP);
 }
 
-void Elevator::SetVoltage(double voltage) { m_grbx.Set(voltage); }
+void Elevator::SetVoltage(units::volt_t voltage) { m_grbx.SetVoltage(voltage); }
 
-void Elevator::ResetEncoder() { m_encoder.Reset(); }
-
-double Elevator::GetHeight() { return m_encoder.GetDistance(); }
+units::inch_t Elevator::GetHeight() {
+    return units::inch_t{m_encoder.GetDistance()};
+}
 
 void Elevator::SetScoringIndex() { m_controller.SetScoringIndex(); }
 
@@ -44,27 +44,29 @@ bool Elevator::AtReference() const { return m_controller.AtReferences(); }
 
 bool Elevator::AtGoal() { return m_controller.AtGoal(); }
 
-double Elevator::ControllerVoltage() const {
-    return m_controller.ControllerVoltage();
-}
-
 void Elevator::Reset() {
-    ResetEncoder();
+    m_scoreObserver.Reset();
+    m_climbObserver.Reset();
     m_controller.Reset();
+    m_u = Eigen::Matrix<double, 1, 1>::Zero();
+    m_encoder.Reset();
 }
 
 void Elevator::ControllerPeriodic() {
     UpdateDt();
 
-    m_controller.SetMeasuredPosition(m_encoder.GetDistance());
-    m_controller.Update();
+    auto& observer =
+        m_controller.IsClimbing() ? m_climbObserver : m_scoreObserver;
+    observer.Predict(m_u, GetDt());
+    Eigen::Matrix<double, 1, 1> y;
+    y << GetHeight().to<double>();
+    observer.Correct(m_u, y);
 
-    // Set motor input
-    double batteryVoltage =
-        frc::DriverStation::GetInstance().GetBatteryVoltage();
-    m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+    m_u = m_controller.Calculate(observer.Xhat());
 
-    // Log(m_controller.GetReferences(), )
+    SetVoltage(units::volt_t{m_u(0)});
+
+    Log(m_controller.GetReferences(), observer.Xhat(), m_u, y);
 
     if constexpr (frc::RobotBase::IsSimulation()) {
         if (m_controller.IsClimbing()) {

@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <Eigen/QR>
+#include <frc/MathUtil.h>
 #include <frc/RobotController.h>
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/geometry/Pose2d.h>
@@ -13,6 +14,7 @@
 #include <frc/system/plant/DCMotor.h>
 #include <frc/system/plant/LinearSystemId.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
+#include <frc/trajectory/constraint/CentripetalAccelerationConstraint.h>
 #include <frc/trajectory/constraint/DifferentialDriveVelocitySystemConstraint.h>
 #include <wpi/MathExtras.h>
 
@@ -25,10 +27,6 @@ frc::LinearSystem<2, 2, 2> DrivetrainController::m_plant{GetPlant()};
 DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
                                            const std::array<double, 2>& Relems,
                                            units::second_t dt) {
-    m_localY.setZero();
-    m_globalY.setZero();
-    Reset();
-
     Eigen::Matrix<double, 10, 1> x0;
     x0.setZero();
     x0(State::kLeftVelocity, 0) = 1e-9;
@@ -49,43 +47,121 @@ DrivetrainController::DrivetrainController(const std::array<double, 5>& Qelems,
 
     m_K0 = frc::LinearQuadraticRegulator<5, 2>(A0, m_B, Qelems, Relems, dt).K();
     m_K1 = frc::LinearQuadraticRegulator<5, 2>(A1, m_B, Qelems, Relems, dt).K();
+
+    m_trajectoryTimeElapsed.Start();
 }
 
-void DrivetrainController::SetWaypoints(
-    const std::vector<frc::Pose2d>& waypoints) {
-    frc::DifferentialDriveKinematics kinematics{kWidth};
-    frc::DifferentialDriveVelocitySystemConstraint constraint{m_plant,
-                                                              kinematics, 8_V};
-    frc::TrajectoryConfig config{kMaxV, kMaxA};
-    config.AddConstraint(constraint);
+void DrivetrainController::AddTrajectory(
+    const frc::Pose2d& start, const std::vector<frc::Translation2d>& interior,
+    const frc::Pose2d& end, const frc::TrajectoryConfig& config) {
+    bool hadTrajectory = HaveTrajectory();
 
-    std::lock_guard lock(m_trajectoryMutex);
-    m_goal = waypoints.back();
-    m_trajectory =
-        frc::TrajectoryGenerator::GenerateTrajectory(waypoints, config);
+    m_trajectory = m_trajectory + frc::TrajectoryGenerator::GenerateTrajectory(
+                                      start, interior, end, config);
+    m_goal = m_trajectory.States().back().pose;
+
+    // If a trajectory wasn't being tracked until now, reset the timer.
+    // Otherwise, let the timer continue on the current trajectory.
+    if (!hadTrajectory) {
+        m_trajectoryTimeElapsed.Reset();
+    }
+}
+
+void DrivetrainController::AddTrajectory(
+    const std::vector<frc::Pose2d>& waypoints,
+    const frc::TrajectoryConfig& config) {
+    bool hadTrajectory = HaveTrajectory();
+
+    m_trajectory = m_trajectory + frc::TrajectoryGenerator::GenerateTrajectory(
+                                      waypoints, config);
+    m_goal = m_trajectory.States().back().pose;
+
+    // If a trajectory wasn't being tracked until now, reset the timer.
+    // Otherwise, let the timer continue on the current trajectory.
+    if (!hadTrajectory) {
+        m_trajectoryTimeElapsed.Reset();
+    }
+}
+
+bool DrivetrainController::HaveTrajectory() const {
+    return m_trajectory.States().size() > 0;
+}
+
+void DrivetrainController::AbortTrajectories() {
+    m_trajectory = frc::Trajectory{};
 }
 
 bool DrivetrainController::AtGoal() const {
     frc::Pose2d ref{units::meter_t{m_r(State::kX, 0)},
                     units::meter_t{m_r(State::kY, 0)},
                     units::radian_t{m_r(State::kHeading, 0)}};
-    return m_goal == ref && m_atReferences;
+    return m_goal == ref &&
+           m_trajectoryTimeElapsed.Get() >= m_trajectory.TotalTime() &&
+           m_atReferences;
 }
 
-void DrivetrainController::SetMeasuredLocalOutputs(
-    units::radian_t heading, units::meter_t leftPosition,
-    units::meter_t rightPosition) {
-    m_localY << heading.to<double>(), leftPosition.to<double>(),
-        rightPosition.to<double>();
+void DrivetrainController::Reset(const frc::Pose2d& initialPose) {
+    Eigen::Matrix<double, 10, 1> xHat;
+    xHat(0) = initialPose.X().to<double>();
+    xHat(1) = initialPose.Y().to<double>();
+    xHat(2) = initialPose.Rotation().Radians().to<double>();
+    xHat.block<4, 1>(6, 0).setZero();
+
+    m_ff.Reset(xHat);
+    m_r = xHat;
+    m_nextR = xHat;
+    m_goal = initialPose;
+
+    UpdateAtReferences(Eigen::Matrix<double, 5, 1>::Zero());
 }
 
-void DrivetrainController::SetMeasuredGlobalOutputs(
-    units::meter_t x, units::meter_t y, units::radian_t heading,
-    units::meter_t leftPosition, units::meter_t rightPosition,
-    units::radians_per_second_t angularVelocity) {
-    m_globalY << x.to<double>(), y.to<double>(), heading.to<double>(),
-        leftPosition.to<double>(), rightPosition.to<double>(),
-        angularVelocity.to<double>();
+Eigen::Matrix<double, 2, 1> DrivetrainController::Calculate(
+    const Eigen::Matrix<double, 10, 1>& x) {
+    m_u << 0.0, 0.0;
+
+    if (HaveTrajectory()) {
+        frc::Trajectory::State ref =
+            m_trajectory.Sample(m_trajectoryTimeElapsed.Get());
+
+        auto [vlRef, vrRef] =
+            ToWheelVelocities(ref.velocity, ref.curvature, kWidth);
+
+        m_nextR << ref.pose.X().to<double>(), ref.pose.Y().to<double>(),
+            ref.pose.Rotation().Radians().to<double>(), vlRef.to<double>(),
+            vrRef.to<double>(), 0, 0, 0, 0, 0;
+
+        // Compute feedforward
+        /* Eigen::Matrix<double, 5, 1> rdot = (m_nextR - m_r) /
+        dt.to<double>(); Eigen::Matrix<double, 10, 1> rAugmented;
+        rAugmented.block<5, 1>(0, 0) = m_r;
+        rAugmented.block<5, 1>(5, 0).setZero();
+        Eigen::Matrix<double, 2, 1> uff = m_B.householderQr().solve(
+            rdot - Dynamics(rAugmented, Eigen::Matrix<double, 2,
+        1>::Zero()) .block<5, 1>(0, 0));
+        */
+
+        // Use built in feedforward and hope it works
+        Eigen::Matrix<double, 2, 1> u_fb = Controller(x, m_nextR);
+        u_fb = frc::NormalizeInputVector<2>(u_fb, 12.0);
+        m_u = u_fb + m_ff.Calculate(m_nextR);
+        m_u = frc::NormalizeInputVector<2>(m_u, 12.0);
+
+        Eigen::Matrix<double, 5, 1> error =
+            m_r.block<5, 1>(0, 0) - x.block<5, 1>(0, 0);
+        error(State::kHeading) =
+            frc::AngleModulus(units::radian_t{error(State::kHeading)})
+                .to<double>();
+        UpdateAtReferences(error);
+
+        m_r = m_nextR;
+    }
+
+    if (AtGoal() && HaveTrajectory()) {
+        m_trajectory = frc::Trajectory{};
+        m_trajectoryTimeElapsed.Reset();
+    }
+
+    return m_u;
 }
 
 frc::LinearSystem<2, 2, 2> DrivetrainController::GetPlant() {
@@ -94,120 +170,31 @@ frc::LinearSystem<2, 2, 2> DrivetrainController::GetPlant() {
         Constants::Drivetrain::kAngularV, Constants::Drivetrain::kAngularA);
 }
 
-const Eigen::Matrix<double, 5, 1>& DrivetrainController::GetReferences() const {
-    return m_nextR;
+frc::TrajectoryConfig DrivetrainController::MakeTrajectoryConfig() {
+    return MakeTrajectoryConfig(0_mps, 0_mps);
 }
 
-const Eigen::Matrix<double, 10, 1>& DrivetrainController::GetStates() const {
-    return m_observer.Xhat();
-}
+frc::TrajectoryConfig DrivetrainController::MakeTrajectoryConfig(
+    units::meters_per_second_t startVelocity,
+    units::meters_per_second_t endVelocity) {
+    frc::TrajectoryConfig config{kMaxV, kMaxA - 14.5_mps_sq};
 
-Eigen::Matrix<double, 2, 1> DrivetrainController::GetInputs() const {
-    return m_cappedU;
-}
+    config.AddConstraint(frc::DifferentialDriveVelocitySystemConstraint{
+        m_plant, frc::DifferentialDriveKinematics{kWidth}, 8_V});
 
-const Eigen::Matrix<double, 3, 1>& DrivetrainController::GetOutputs() const {
-    return m_localY;
-}
+    // Slows drivetrain down on curves to avoid understeer that
+    // introduces odometry errors
+    config.AddConstraint(frc::CentripetalAccelerationConstraint{3_mps_sq});
 
-Eigen::Matrix<double, 3, 1> DrivetrainController::EstimatedLocalOutputs()
-    const {
-    return LocalMeasurementModel(m_observer.Xhat(),
-                                 Eigen::Matrix<double, 2, 1>::Zero());
-}
+    config.SetStartVelocity(startVelocity);
+    config.SetEndVelocity(endVelocity);
 
-Eigen::Matrix<double, 6, 1> DrivetrainController::EstimatedGlobalOutputs()
-    const {
-    return GlobalMeasurementModel(m_observer.Xhat(),
-                                  Eigen::Matrix<double, 2, 1>::Zero());
-}
-
-void DrivetrainController::Update(units::second_t dt,
-                                  units::second_t elapsedTime) {
-    frc::Trajectory::State ref;
-    {
-        std::lock_guard lock(m_trajectoryMutex);
-        ref = m_trajectory.Sample(elapsedTime);
-    }
-
-    auto [vlRef, vrRef] =
-        ToWheelVelocities(ref.velocity, ref.curvature, kWidth);
-
-    m_odometer.Update(units::radian_t{m_localY(LocalOutput::kHeading)},
-                      units::meter_t{m_localY(LocalOutput::kLeftPosition)},
-                      units::meter_t{m_localY(LocalOutput::kRightPosition)});
-    m_observer.Correct(m_cappedU, m_localY);
-
-    m_nextR << ref.pose.Translation().X().to<double>(),
-        ref.pose.Translation().Y().to<double>(),
-        ref.pose.Rotation().Radians().to<double>(), vlRef.to<double>(),
-        vrRef.to<double>();
-
-    // Compute feedforward
-    Eigen::Matrix<double, 5, 1> rdot = (m_nextR - m_r) / dt.to<double>();
-    Eigen::Matrix<double, 10, 1> rAugmented;
-    rAugmented.block<5, 1>(0, 0) = m_r;
-    rAugmented.block<5, 1>(5, 0).setZero();
-    Eigen::Matrix<double, 2, 1> uff = m_B.householderQr().solve(
-        rdot - Dynamics(rAugmented, Eigen::Matrix<double, 2, 1>::Zero())
-                   .block<5, 1>(0, 0));
-
-    // TODO Move to ControllerPeriodic
-    // if (IsEnabled()) {
-    m_cappedU = Controller(m_observer.Xhat(), m_nextR) + uff;
-    // } else {
-    //     m_cappedU = Eigen::Matrix<double, 2, 1>::Zero();
-    // }
-    ScaleCapU(&m_cappedU);
-
-    Eigen::Matrix<double, 5, 1> error =
-        m_r - m_observer.Xhat().block<5, 1>(0, 0);
-    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
-                     std::abs(error(1, 0)) < kPositionTolerance &&
-                     std::abs(error(2, 0)) < kAngleTolerance &&
-                     std::abs(error(3, 0)) < kVelocityTolerance &&
-                     std::abs(error(4, 0)) < kVelocityTolerance;
-
-    m_r = m_nextR;
-    m_observer.Predict(m_cappedU, dt);
-
-    // if (ref.pose == m_goal) {
-    //     Disable();
-    // } else {
-    //     Enable();
-    // }
-}
-
-void DrivetrainController::Reset() {
-    m_observer.Reset();
-    m_r.setZero();
-    m_nextR.setZero();
-    m_cappedU.setZero();
-}
-
-void DrivetrainController::Reset(const frc::Pose2d& initialPose) {
-    m_observer.Reset();
-
-    Eigen::Matrix<double, 10, 1> xHat;
-    xHat(0, 0) = initialPose.Translation().X().to<double>();
-    xHat(1, 0) = initialPose.Translation().Y().to<double>();
-    xHat(2, 0) = initialPose.Rotation().Radians().to<double>();
-    xHat.block<7, 1>(3, 0).setZero();
-    m_observer.SetXhat(xHat);
-
-    m_r.setZero();
-    m_nextR.setZero();
-    m_cappedU.setZero();
-}
-
-Eigen::Matrix<double, 2, 1> DrivetrainController::Calculate(
-    const Eigen::Matrix<double, 10, 1>& x) {
-    return m_u;
+    return config;
 }
 
 Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
     const Eigen::Matrix<double, 10, 1>& x,
-    const Eigen::Matrix<double, 5, 1>& r) {
+    const Eigen::Matrix<double, 10, 1>& r) {
     double kx = m_K0(0, 0);
     double ky0 = m_K0(0, 1);
     double kvpos0 = m_K0(0, 3);
@@ -241,7 +228,8 @@ Eigen::Matrix<double, 2, 1> DrivetrainController::Controller(
     inRobotFrame(1, 0) = -std::sin(x(2, 0));
     inRobotFrame(1, 1) = std::cos(x(2, 0));
 
-    Eigen::Matrix<double, 5, 1> error = r - x.block<5, 1>(0, 0);
+    Eigen::Matrix<double, 5, 1> error =
+        r.block<5, 1>(0, 0) - x.block<5, 1>(0, 0);
     error(State::kHeading, 0) = NormalizeAngle(error(State::kHeading, 0));
     return K * inRobotFrame * error;
 }
@@ -252,14 +240,15 @@ Eigen::Matrix<double, 10, 1> DrivetrainController::Dynamics(
     // constexpr auto motors = frc::DCMotor::MiniCIM(3);
 
     // constexpr units::dimensionless_t Glow = 15.32;  // Low gear ratio
-    // constexpr units::dimensionless_t Ghigh = 7.08;  // High gear ratio
-    // constexpr auto r = 0.0746125_m;                 // Wheel radius
-    // constexpr auto m = 63.503_kg;                   // Robot mass
-    // constexpr auto J = 5.6_kg_sq_m;                 // Robot moment of
-    // inertia
+    // constexpr units::dimensionless_t Ghigh = 7.08;  // High gear
+    // ratio constexpr auto r = 0.0746125_m;                 // Wheel
+    // radius constexpr auto m = 63.503_kg;                   // Robot
+    // mass constexpr auto J = 5.6_kg_sq_m;                 // Robot
+    // moment of inertia
 
     // constexpr auto C1 =
-    //     -1.0 * Ghigh * Ghigh * motors.Kt / (motors.Kv * motors.R * r * r);
+    //     -1.0 * Ghigh * Ghigh * motors.Kt / (motors.Kv * motors.R * r
+    //     * r);
     // constexpr auto C2 = Ghigh * motors.Kt / (motors.R * r);
     // constexpr auto k1 = (1 / m + rb * rb / J);
     // constexpr auto k2 = (1 / m - rb * rb / J);
@@ -313,11 +302,11 @@ Eigen::Matrix<double, 6, 1> DrivetrainController::GlobalMeasurementModel(
     return y;
 }
 
-void DrivetrainController::ScaleCapU(Eigen::Matrix<double, 2, 1>* u) {
-    bool outputCapped =
-        std::abs((*u)(0, 0)) > 12.0 || std::abs((*u)(1, 0)) > 12.0;
-
-    if (outputCapped) {
-        *u *= 12.0 / u->lpNorm<Eigen::Infinity>();
-    }
+void DrivetrainController::UpdateAtReferences(
+    const Eigen::Matrix<double, 5, 1>& error) {
+    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
+                     std::abs(error(1, 0)) < kPositionTolerance &&
+                     std::abs(error(2, 0)) < kAngleTolerance &&
+                     std::abs(error(3, 0)) < kVelocityTolerance &&
+                     std::abs(error(4, 0)) < kVelocityTolerance;
 }

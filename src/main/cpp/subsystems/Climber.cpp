@@ -22,6 +22,7 @@ Climber::Climber()
     m_encoder.SetReverseDirection(true);
     m_encoder.SetDistancePerPulse(kDpP);
     m_lift.SetInverted(true);
+    Reset();
 }
 
 void Climber::SetDriveVoltage(units::volt_t voltage) {
@@ -66,12 +67,12 @@ void Climber::ControllerPeriodic() {
 
 void Climber::AutonomousInit() {
     Enable();
-    SetGoal(0.02_m);
+    SetGoal(units::meter_t{kRaisedUp});
 }
 
 void Climber::TeleopInit() {
     Enable();
-    SetGoal(0.02_m);
+    SetGoal(units::meter_t{kRaisedUp});
 }
 
 void Climber::SetGoal(units::meter_t position) {
@@ -81,6 +82,8 @@ void Climber::SetGoal(units::meter_t position) {
 bool Climber::AtGoal() const { return m_controller.AtGoal(); }
 
 void Climber::Reset() {
-    ResetEncoder();
+    m_observer.Reset();
     m_controller.Reset();
+    m_u = Eigen::Matrix<double, 1, 1>::Zero();
+    m_encoder.Reset();
 }

@@ -7,78 +7,34 @@
 using namespace frc3512;
 using namespace frc3512::Constants::FourBarLift;
 
-FourBarLiftController::FourBarLiftController() { m_y.setZero(); }
+FourBarLiftController::FourBarLiftController() { Reset(); }
 
-void FourBarLiftController::SetGoal(double goal) {
-    m_angleProfile = frc::TrapezoidProfile<units::radians>{
-        constraints,
-        {units::radian_t{goal}, 0_rad_per_s},
-        {units::radian_t{EstimatedAngle()}, 0_rad_per_s}};
-    m_goal = {units::radian_t{goal}, 0_rad_per_s};
+void FourBarLiftController::SetGoal(units::radian_t goal) {
+    m_goal = {goal, 0_rad_per_s};
 }
 
 void FourBarLiftController::SetReferences(
     units::radian_t angle, units::radians_per_second_t velocity) {
-    double angleRef = units::unit_cast<double>(angle);
-    double velocityRef = units::unit_cast<double>(velocity);
-    Eigen::Matrix<double, 2, 1> nextR;
-    nextR << angleRef, velocityRef;
-    m_loop.SetNextR(nextR);
+    m_nextR << angle.to<double>(), velocity.to<double>();
 }
-
-bool FourBarLiftController::AtReferences() const { return m_atReferences; }
 
 bool FourBarLiftController::AtGoal() const {
     return m_atReferences && m_goal == m_profiledReference;
-}
-
-void FourBarLiftController::SetMeasuredAngle(double measuredAngle) {
-    m_y(0, 0) = measuredAngle;
-}
-
-double FourBarLiftController::ControllerVoltage() const {
-    if (!m_climbing) {
-        return m_loop.U(0);
-    } else {
-        // Feedforward compensates for unmodeled extra weight from lifting robot
-        // while climbing
-        return m_loop.U(0) - 2.0;
-    }
 }
 
 void FourBarLiftController::SetClimbing(bool climbing) {
     m_climbing = climbing;
 }
 
-double FourBarLiftController::EstimatedAngle() const { return m_loop.Xhat(0); }
-
-double FourBarLiftController::EstimatedAngularVelocity() const {
-    return m_loop.Xhat(1);
+void FourBarLiftController::Reset() {
+    m_r.setZero();
+    m_nextR.setZero();
 }
 
-double FourBarLiftController::AngleError() const {
-    return m_loop.Error()(0, 0);
-}
-
-double FourBarLiftController::AngularVelocityError() const {
-    return m_loop.Error()(1, 0);
-}
-
-double FourBarLiftController::AngleReference() {
-    return m_profiledReference.position.to<double>();
-}
-
-double FourBarLiftController::AngularVelocityReference() {
-    return m_profiledReference.velocity.to<double>();
-}
-
-void FourBarLiftController::Update() {
-    elevatorLogger.Log(EstimatedAngle(), AngleReference(), ControllerVoltage(),
-                       EstimatedAngularVelocity(), AngularVelocityReference());
-
+Eigen::Matrix<double, 1, 1> FourBarLiftController::Calculate(
+    const Eigen::Matrix<double, 2, 1>& x) {
     frc::TrapezoidProfile<units::radians>::State references = {
-        units::radian_t(m_loop.NextR(0)),
-        units::radians_per_second_t(m_loop.NextR(1))};
+        units::radian_t(m_nextR(0)), units::radians_per_second_t(m_nextR(1))};
     frc::TrapezoidProfile<units::radians> profile{constraints, m_goal,
                                                   references};
     m_profiledReference =
@@ -86,17 +42,21 @@ void FourBarLiftController::Update() {
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 
-    m_loop.Correct(m_y);
+    m_u = m_lqr.Calculate(x, m_r) + m_ff.Calculate(m_nextR);
 
-    auto error = m_loop.Error();
-    m_atReferences = std::abs(error(0, 0)) < kAngleTolerance &&
-                     std::abs(error(1, 0)) < kAngularVelocityTolerance;
+    m_u = frc::NormalizeInputVector<1>(m_u, 12.0);
+    m_r = m_nextR;
 
-    m_loop.Predict(RealTimeRobot::kDefaultControllerPeriod);
-}
+    UpdateAtReferences(m_nextR - x);
 
-void FourBarLiftController::Reset() {
-    m_loop.Reset(Eigen::Matrix<double, 2, 1>::Zero());
+    // Feedforward compensates for unmodeled extra weight from lifting robot
+    // while climbing
+    if (m_climbing) {
+        Eigen::Matrix<double, 1, 1> extraWeight{2.0};
+        return m_u -= extraWeight;
+    } else {
+        return m_u;
+    }
 }
 
 frc::LinearSystem<2, 1, 1> FourBarLiftController::GetPlant() {
@@ -105,4 +65,12 @@ frc::LinearSystem<2, 1, 1> FourBarLiftController::GetPlant() {
 
     return frc::LinearSystemId::SingleJointedArmSystem(
         frc::DCMotor::NEO(), J, Constants::FourBarLift::kGearRatio);
+}
+
+void FourBarLiftController::UpdateAtReferences(
+    const Eigen::Matrix<double, 2, 1>& error) {
+    m_atReferences =
+        std::abs(error(0, 0)) < FourBarLiftController::kAngleTolerance &&
+        std::abs(error(1, 0)) <
+            FourBarLiftController::kAngularVelocityTolerance;
 }

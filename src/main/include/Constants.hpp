@@ -28,7 +28,7 @@ constexpr int kMjpegServerPort = 1180;
 // Joystick Ports
 constexpr int kDriveStick1Port = 0;
 constexpr int kDriveStick2Port = 1;
-constexpr int kAppendageStickPort = 2;
+constexpr int kAppendageStick1Port = 2;
 constexpr int kAppendageStick2Port = 3;
 
 // Joystick axis deadband range
@@ -94,6 +94,7 @@ constexpr double kDpP = (2.0 * wpi::math::pi * kSprocketRadius) / 2048.0;
 constexpr double kRobotMass = 63.503;  // kg
 
 // Setpoints
+constexpr double kRaisedUp = 0.02;
 constexpr double kClimb3Height = -0.4826 - 0.0254;
 constexpr double kClimb2Height = -0.1498 - 0.0254;
 }  // namespace Climber
@@ -109,6 +110,7 @@ constexpr int kEncoderB = 7;
 // Four-bar Lift Physical Constants
 constexpr auto kMaxV = 1.477996_rad_per_s;
 constexpr auto kMaxA = 7.782482_rad_per_s_sq;
+// TODO Update gear ratio
 constexpr double kGearRatio = 302.22 / 1;
 constexpr double kMin = -1.495867;
 constexpr double kMax = 0.0;

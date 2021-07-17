@@ -42,11 +42,13 @@ Robot::Robot() {
         0.6_ms);
 }
 
+bool Robot::IsClimbing() const { return m_state != State::kIdle; }
+
 void Robot::DisabledInit() { SubsystemBase::RunAllDisabledInit(); }
 
 void Robot::AutonomousInit() {
     SubsystemBase::RunAllAutonomousInit();
-    m_drivetrain.SetWaypoints(
+    m_drivetrain.AddTrajectory(
         {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
 }
 
@@ -57,7 +59,8 @@ void Robot::TestInit() { SubsystemBase::RunAllTestInit(); }
 void Robot::RobotPeriodic() {
     SubsystemBase::RunAllRobotPeriodic();
 
-    static frc::Joystick appendageStick1{Constants::Robot::kAppendageStickPort};
+    static frc::Joystick appendageStick1{
+        Constants::Robot::kAppendageStick1Port};
     static frc::Joystick appendageStick2{
         Constants::Robot::kAppendageStick2Port};
 
@@ -79,10 +82,10 @@ void Robot::RobotPeriodic() {
         case State::kThirdLevel: {
             std::lock_guard lock(m_cacheMutex);
             wpi::outs() << "ThirdLevel\n";
-            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.3) {
+            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.3_m) {
                 // Hardcoded number from who knows where
                 m_fourBarLift.SetClimbing(true);
-                m_fourBarLift.SetGoal(-1.35);
+                m_fourBarLift.SetGoal(-1.35_rad);
                 m_state = State::kFourBarDescend;
             }
             break;
@@ -90,16 +93,16 @@ void Robot::RobotPeriodic() {
         case State::kSecondLevel: {
             std::lock_guard lock(m_cacheMutex);
             wpi::outs() << "SecondLevel\n";
-            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.1) {
+            if (m_elevator.AtGoal() && m_elevator.GetHeight() > 0.1_m) {
                 m_fourBarLift.SetClimbing(true);
-                m_fourBarLift.SetGoal(-1.35);
+                m_fourBarLift.SetGoal(-1.35_rad);
                 m_state = State::kFourBarDescend;
             }
             break;
         }
         case State::kFourBarDescend: {
             std::lock_guard lock(m_cacheMutex);
-            if (m_fourBarLift.AtGoal() && m_fourBarLift.GetHeight() > -0.7) {
+            if (m_fourBarLift.AtGoal() && m_fourBarLift.GetHeight() > -0.7_m) {
                 m_elevator.SetClimbingIndex();
                 m_elevator.SetGoal(0);
                 if (m_thirdLevel) {
@@ -126,7 +129,7 @@ void Robot::RobotPeriodic() {
                 units::volt_t{appendageStick1.GetY() * 12});
             if (appendageStick2.GetRawButtonPressed(9)) {
                 m_fourBarLift.SetClimbing(false);
-                m_fourBarLift.SetGoal(0);
+                m_fourBarLift.SetGoal(0_rad);
                 m_climber.SetGoal(0_m);
                 m_state = State::kIdle;
             }
@@ -142,23 +145,38 @@ void Robot::RobotPeriodic() {
 void Robot::DisabledPeriodic() {
     SubsystemBase::RunAllDisabledPeriodic();
 
-    wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight() << "\n";
-    wpi::outs() << "Elevator: " << m_elevator.GetHeight() << "\n";
+    wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight().to<double>()
+                << "\n";
+    wpi::outs() << "Elevator: " << m_elevator.GetHeight().to<double>() << "\n";
     wpi::outs() << "Climber: " << m_climber.GetHeight().to<double>() << "\n";
     wpi::outs() << "Drivetrain Left: "
-                << static_cast<double>(m_drivetrain.GetLeftDisplacement())
-                << "\n";
+                << m_drivetrain.GetLeftPosition().to<double>() << "\n";
     wpi::outs() << "Drivetrain Right: "
-                << static_cast<double>(m_drivetrain.GetRightDisplacement())
+                << m_drivetrain.GetRightPosition().to<double>() << "\n";
+    wpi::outs() << "Drivetrain Gyro: " << m_drivetrain.GetAngle().to<double>()
                 << "\n";
-    wpi::outs() << "Drivetrain Gyro: "
-                << static_cast<double>(m_drivetrain.GetAngle()) << "\n";
     wpi::outs().flush();
 }
 
 void Robot::AutonomousPeriodic() { SubsystemBase::RunAllAutonomousPeriodic(); }
 
 void Robot::TeleopPeriodic() { SubsystemBase::RunAllTeleopPeriodic(); }
+
+void Robot::TestPeriodic() {
+    SubsystemBase::RunAllTestPeriodic();
+
+    wpi::outs() << "FourBar: " << m_fourBarLift.GetHeight().to<double>()
+                << "\n";
+    wpi::outs() << "Elevator: " << m_elevator.GetHeight().to<double>() << "\n";
+    wpi::outs() << "Climber: " << m_climber.GetHeight().to<double>() << "\n";
+    wpi::outs() << "Drivetrain Left: "
+                << m_drivetrain.GetLeftPosition().to<double>() << "\n";
+    wpi::outs() << "Drivetrain Right: "
+                << m_drivetrain.GetRightPosition().to<double>() << "\n";
+    wpi::outs() << "Drivetrain Gyro: " << m_drivetrain.GetAngle().to<double>()
+                << "\n";
+    wpi::outs().flush();
+}
 
 }  // namespace frc3512
 

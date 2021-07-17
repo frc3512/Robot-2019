@@ -22,36 +22,46 @@ FourBarLift::FourBarLift()
     m_grbx.Set(0.0);
     m_encoder.SetDistancePerPulse(kDpP);
     m_grbx.SetInverted(true);
-    SetGoal(0.0);
+    Reset();
+    SetGoal(0.0_rad);
 }
 
-void FourBarLift::SetVoltage(double voltage) { m_grbx.Set(voltage); }
+void FourBarLift::SetVoltage(units::volt_t voltage) {
+    m_grbx.SetVoltage(voltage);
+}
 
 void FourBarLift::SetClimbing(bool on) { m_controller.SetClimbing(on); }
 
-void FourBarLift::ResetEncoder() { m_encoder.Reset(); }
+units::inch_t FourBarLift::GetHeight() {
+    return units::inch_t{m_encoder.GetDistance()};
+}
 
-double FourBarLift::GetHeight() { return m_encoder.GetDistance(); }
-
-void FourBarLift::SetGoal(double position) { m_controller.SetGoal(position); }
-
-bool FourBarLift::AtReference() const { return m_controller.AtReferences(); }
+void FourBarLift::SetGoal(units::radian_t position) {
+    m_controller.SetGoal(position);
+}
 
 bool FourBarLift::AtGoal() { return m_controller.AtGoal(); }
 
 void FourBarLift::Reset() {
-    ResetEncoder();
+    m_observer.Reset();
     m_controller.Reset();
+    m_u = Eigen::Matrix<double, 1, 1>::Zero();
+    m_encoder.Reset();
 }
 
 void FourBarLift::ControllerPeriodic() {
-    m_controller.SetMeasuredAngle(m_encoder.GetDistance());
-    m_controller.Update();
+    UpdateDt();
 
-    // Set motor input
-    double batteryVoltage =
-        frc::DriverStation::GetInstance().GetBatteryVoltage();
-    m_grbx.Set(m_controller.ControllerVoltage() / batteryVoltage);
+    m_observer.Predict(m_u, GetDt());
+    Eigen::Matrix<double, 1, 1> y;
+    y << GetHeight().to<double>();
+    m_observer.Correct(m_u, y);
+
+    m_u = m_controller.Calculate(m_observer.Xhat());
+
+    SetVoltage(units::volt_t{m_u(0)});
+
+    Log(m_controller.GetReferences(), m_observer.Xhat(), m_u, y);
 
     if constexpr (frc::RobotBase::IsSimulation()) {
         m_fourBarLiftSim.SetInput(frc::MakeMatrix<1, 1>(
@@ -63,16 +73,17 @@ void FourBarLift::ControllerPeriodic() {
 
 void FourBarLift::TeleopPeriodic() {
     static frc::Joystick driveStick2{Constants::Robot::kDriveStick2Port};
-    static frc::Joystick appendageStick1{Constants::Robot::kAppendageStickPort};
+    static frc::Joystick appendageStick1{
+        Constants::Robot::kAppendageStick1Port};
     static frc::Joystick appendageStick2{
         Constants::Robot::kAppendageStick2Port};
 
     if (appendageStick2.GetRawButtonPressed(3)) {
-        SetGoal(kMin);
+        SetGoal(units::radian_t{kMin});
     } else if (appendageStick2.GetRawButtonPressed(2)) {
-        SetGoal(kMax);
+        SetGoal(units::radian_t{kMax});
     } else if (appendageStick1.GetRawButtonPressed(11)) {
-        SetGoal(kBottomHatch);
+        SetGoal(units::radian_t{kBottomHatch});
     } else if (driveStick2.GetRawButtonPressed(7)) {
         m_controller.SetClimbing(true);
     } else if (driveStick2.GetRawButtonPressed(8)) {
@@ -82,6 +93,6 @@ void FourBarLift::TeleopPeriodic() {
                appendageStick1.GetRawButtonPressed(9) ||
                appendageStick1.GetRawButtonPressed(10) ||
                appendageStick1.GetRawButtonPressed(12)) {
-        SetGoal(kMax);
+        SetGoal(units::radian_t{kMax});
     }
 }

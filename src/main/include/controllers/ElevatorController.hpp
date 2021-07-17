@@ -3,6 +3,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <frc/controller/LinearPlantInversionFeedforward.h>
 #include <frc/controller/LinearQuadraticRegulator.h>
 #include <frc/estimator/KalmanFilter.h>
 #include <frc/logging/CSVLogFile.h>
@@ -67,55 +68,6 @@ public:
     bool AtGoal() const;
 
     /**
-     * Sets the current encoder measurement.
-     *
-     * @param measuredPosition Position of the carriage in meters.
-     */
-    void SetMeasuredPosition(double measuredPosition);
-
-    /**
-     * Returns the control loop calculated voltage.
-     */
-    double ControllerVoltage() const;
-
-    /**
-     * Returns the estimated position.
-     */
-    double EstimatedPosition() const;
-
-    /**
-     * Returns the estimated velocity.
-     */
-    double EstimatedVelocity() const;
-
-    /**
-     * Returns the error between the position reference and the position
-     * estimate.
-     */
-    double PositionError() const;
-
-    /**
-     * Returns the error between the velocity reference and the velocity
-     * estimate.
-     */
-    double VelocityError() const;
-
-    /**
-     * Returns the current position reference set by the profile.
-     */
-    double PositionReference();
-
-    /**
-     * Returns the current velocity reference set by the profile.
-     */
-    double VelocityReference();
-
-    /**
-     * Executes the control loop for a cycle.
-     */
-    void Update();
-
-    /**
      * Resets any internal state.
      */
     void Reset();
@@ -124,15 +76,16 @@ public:
         const Eigen::Matrix<double, 2, 1>& x) override;
 
     /**
-     * Returns the elevator plant.
-     *
-     * @param climbing Returns climbing plant if true and scoring plant if false
+     * Returns the elevator score plant.
      */
-    static frc::LinearSystem<2, 1, 1> GetPlant(bool climbing);
+    static frc::LinearSystem<2, 1, 1> GetScorePlant();
+
+    /**
+     * Returns the elevator climb plant.
+     */
+    static frc::LinearSystem<2, 1, 1> GetClimbPlant();
 
 private:
-    // The current sensor measurement.
-    Eigen::Matrix<double, 1, 1> m_y;
     frc::TrapezoidProfile<units::meters>::State m_goal;
 
     frc::TrapezoidProfile<units::meters>::Constraints scoringConstraints{
@@ -144,37 +97,29 @@ private:
 
     frc::TrapezoidProfile<units::meters>::State m_profiledReference;
 
-    frc::LinearSystem<2, 1, 1> m_scorePlant = GetPlant(false);
-    frc::LinearSystem<2, 1, 1> m_climbPlant = GetPlant(true);
+    frc::LinearSystem<2, 1, 1> m_scorePlant = GetScorePlant();
+    frc::LinearSystem<2, 1, 1> m_climbPlant = GetClimbPlant();
 
-    frc::LinearQuadraticRegulator<2, 1> m_scoreController{
+    frc::LinearQuadraticRegulator<2, 1> m_scoreLQR{
         m_scorePlant,
         {0.3, 3.0},
         {12.0},
         RealTimeRobot::kDefaultControllerPeriod};
-    frc::LinearQuadraticRegulator<2, 1> m_climbController{
+    frc::LinearQuadraticRegulator<2, 1> m_climbLQR{
         m_climbPlant,
         {0.3, 3.0},
         {12.0},
         RealTimeRobot::kDefaultControllerPeriod};
-
-    frc::KalmanFilter<2, 1, 1> m_scoreObserver{
-        m_scorePlant,
-        {0.05, 100.0},
-        {0.0001},
-        RealTimeRobot::kDefaultControllerPeriod};
-    frc::KalmanFilter<2, 1, 1> m_climbObserver{
-        m_climbPlant,
-        {0.05, 100.0},
-        {0.0001},
-        RealTimeRobot::kDefaultControllerPeriod};
+    frc::LinearPlantInversionFeedforward<2, 1> m_scoreFF{
+        m_scorePlant, RealTimeRobot::kDefaultControllerPeriod};
+    frc::LinearPlantInversionFeedforward<2, 1> m_climbFF{
+        m_climbPlant, RealTimeRobot::kDefaultControllerPeriod};
 
     bool m_climbing = false;
 
     bool m_atReferences = false;
 
-    frc::CSVLogFile elevatorLogger{"Elevator",   "EstPos (m)",  "EstVel (m/s)",
-                                   "RefPos (m)", "Voltage (V)", "RefVel (m/s)"};
+    void UpdateAtReferences(const Eigen::Matrix<double, 2, 1>& error);
 };
 
 }  // namespace frc3512
