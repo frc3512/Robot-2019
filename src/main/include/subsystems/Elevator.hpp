@@ -27,21 +27,16 @@ public:
     /**
      * Sets the velocity of the elevator.
      *
-     * @param velocity in [-1..1]
+     * @param velocity in [-12..12]
      */
-    void SetVoltage(double voltage);
-
-    /**
-     * Resets the encoder.
-     */
-    void ResetEncoder();
+    void SetVoltage(units::volt_t voltage);
 
     /**
      * Returns height of the elevator.
      *
      * @return height in inches
      */
-    double GetHeight();
+    units::inch_t GetHeight();
 
     /**
      * Changes the controller's profile constants to be faster.
@@ -92,16 +87,28 @@ public:
 
 private:
     rev::CANSparkMax m_grbx{9, rev::CANSparkMax::MotorType::kBrushless};
-
-    ElevatorController m_controller;
     frc::Encoder m_encoder{Constants::Elevator::kEncoderA,
                            Constants::Elevator::kEncoderB};
+
+    ElevatorController m_controller;
+    frc::LinearSystem<2, 1, 1> m_scorePlant = m_controller.GetScorePlant();
+    frc::LinearSystem<2, 1, 1> m_climbPlant = m_controller.GetClimbPlant();
+    frc::KalmanFilter<2, 1, 1> m_scoreObserver{
+        m_scorePlant,
+        {0.05, 100.0},
+        {0.0001},
+        RealTimeRobot::kDefaultControllerPeriod};
+    frc::KalmanFilter<2, 1, 1> m_climbObserver{
+        m_climbPlant,
+        {0.05, 100.0},
+        {0.0001},
+        RealTimeRobot::kDefaultControllerPeriod};
 
     Eigen::Matrix<double, 1, 1> m_u = Eigen::Matrix<double, 1, 1>::Zero();
 
     // Simulation Variables
     frc::sim::ElevatorSim m_elevatorScoringSim{
-        m_controller.GetPlant(false),
+        m_controller.GetScorePlant(),
         frc::DCMotor::NEO(),
         Constants::Elevator::kScoringGearRatio,
         units::meter_t{Constants::Elevator::kDrumRadius},
@@ -109,7 +116,7 @@ private:
         units::meter_t{Constants::Elevator::kTopCargo},
         {0.0001}};
     frc::sim::ElevatorSim m_elevatorClimbingSim{
-        m_controller.GetPlant(true),
+        m_controller.GetClimbPlant(),
         frc::DCMotor::NEO(),
         Constants::Elevator::kClimbingGearRatio,
         units::meter_t{Constants::Elevator::kDrumRadius},

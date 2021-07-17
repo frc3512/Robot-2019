@@ -2,59 +2,105 @@
 
 #include <cmath>
 
-#include <frc/RobotController.h>
-#include <frc/simulation/BatterySim.h>
-#include <frc/simulation/DifferentialDrivetrainSim.h>
-#include <frc/simulation/RoboRioSim.h>
-#include <frc/system/plant/DCMotor.h>
+#include <frc/Notifier.h>
+#include <frc/simulation/SimHooks.h>
+#include <frc/trajectory/constraint/MaxVelocityConstraint.h>
+#include <frc/trajectory/constraint/RectangularRegionConstraint.h>
 #include <gtest/gtest.h>
-#include <units/angle.h>
-#include <units/length.h>
-#include <units/voltage.h>
 
 #include "Constants.hpp"
 #include "RealTimeRobot.hpp"
-#include "controllers/DrivetrainController.hpp"
+#include "SimulatorTest.hpp"
+#include "subsystems/Drivetrain.hpp"
 
-TEST(DrivetrainControllerTest, ReachesReference) {
-    using namespace frc3512::Constants::Drivetrain;
-    using namespace frc3512;
+class DrivetrainTest : public frc3512::SimulatorTest {
+public:
+    frc3512::Drivetrain drivetrain;
+    frc::Notifier controllerPeriodic{[&] {
+        drivetrain.AutonomousPeriodic();
+        drivetrain.ControllerPeriodic();
+    }};
 
-    frc3512::DrivetrainController controller{
-        {0.0625, 0.125, 10.0, 0.95, 0.95},
-        {12.0, 12.0},
-        RealTimeRobot::kDefaultControllerPeriod};
-    controller.Reset(frc::Pose2d{0_m, 0_m, 0_rad});
-
-    controller.SetMeasuredLocalOutputs(0_rad, 0_m, 0_m);
-    controller.SetWaypoints(
-        {frc::Pose2d(0_m, 0_m, 0_rad), frc::Pose2d(4.8768_m, 2.7432_m, 0_rad)});
-
-    frc::sim::DifferentialDrivetrainSim drivetrainSim{
-        controller.GetPlant(),
-        kWidth,
-        frc::DCMotor::MiniCIM(3),
-        kDriveGearRatio,
-        kWheelRadius,
-        {0.0, 0.0, 0.0001, 0.0, 0.0, 0.005, 0.005}};
-
-    auto currentTime = 0_s;
-    while (currentTime < 10_s) {
-        controller.SetMeasuredLocalOutputs(drivetrainSim.GetHeading().Radians(),
-                                           drivetrainSim.GetLeftPosition(),
-                                           drivetrainSim.GetRightPosition());
-        controller.Update(RealTimeRobot::kDefaultControllerPeriod, currentTime);
-        currentTime += RealTimeRobot::kDefaultControllerPeriod;
-
-        Eigen::Matrix<double, 2, 1> u = controller.GetInputs();
-
-        // frc::sim::RoboRioSim::SetVInVoltage(
-        //     frc::sim::BatterySim::Calculate({drivetrainSim.GetCurrentDraw()}));
-
-        u *= frc::RobotController::GetInputVoltage() / 12.0;
-
-        drivetrainSim.SetInputs(units::volt_t{u(0)}, units::volt_t{u(1)});
-        drivetrainSim.Update(RealTimeRobot::kDefaultControllerPeriod);
+    DrivetrainTest() {
+        frc3512::SubsystemBase::RunAllAutonomousInit();
+        controllerPeriodic.StartPeriodic(
+            frc3512::RealTimeRobot::kDefaultControllerPeriod);
     }
-    EXPECT_TRUE(controller.AtGoal());
+};
+
+TEST_F(DrivetrainTest, ReachesReferenceStraight) {
+    const frc::Pose2d kInitialPose{12.65_m, 5.800_m - 0.343_m,
+                                   units::radian_t{wpi::math::pi}};
+
+    drivetrain.Reset(kInitialPose);
+    drivetrain.AddTrajectory(
+        kInitialPose, {},
+        frc::Pose2d(12.65_m - 0.9398_m - 0.5_m, 5.800_m - 0.343_m,
+                    units::radian_t{wpi::math::pi}));
+
+    frc::sim::StepTiming(10_s);
+
+    EXPECT_TRUE(drivetrain.AtGoal());
+}
+
+TEST_F(DrivetrainTest, ReachesReferenceCurve) {
+    const frc::Pose2d kInitialPose{0_m, 0_m, 0_rad};
+
+    drivetrain.Reset(kInitialPose);
+    drivetrain.AddTrajectory(kInitialPose, {},
+                             frc::Pose2d(4.8768_m, 2.7432_m, 0_rad));
+
+    frc::sim::StepTiming(10_s);
+
+    EXPECT_TRUE(drivetrain.AtGoal());
+}
+
+TEST_F(DrivetrainTest, ReachesReferenceOffsetCurve) {
+    const frc::Pose2d kInitialPose{5_m, 2_m, 0_rad};
+
+    drivetrain.Reset(kInitialPose);
+    drivetrain.AddTrajectory(kInitialPose, {},
+                             frc::Pose2d(9.8768_m, 4.7432_m, 0_rad));
+
+    frc::sim::StepTiming(10_s);
+
+    EXPECT_TRUE(drivetrain.AtGoal());
+}
+
+TEST_F(DrivetrainTest, TrajectoryQueue) {
+    // Initial Pose - Right in line with the Target Zone
+    const frc::Pose2d kInitialPose{12.89_m, 2.41_m,
+                                   units::radian_t{wpi::math::pi}};
+    // Mid Pose - Right before first/closest ball in the Trench Run
+    const frc::Pose2d kMidPose{9.82_m + 0.5 * frc3512::Constants::Drivetrain::kLength,
+                               0.705_m, units::radian_t{wpi::math::pi}};
+    // End Pose - Third/Farthest ball in the Trench Run
+    const frc::Pose2d kEndPose{8_m, 0.71_m, units::radian_t{wpi::math::pi}};
+
+    drivetrain.Reset(kInitialPose);
+
+    frc::RectangularRegionConstraint regionConstraint{
+        // X: Leftmost ball on trench run
+        frc::Translation2d{kEndPose.X(),
+                           0.71_m - 0.5 * frc3512::Constants::Drivetrain::kLength},
+        // X: Rightmost ball on trench run
+        frc::Translation2d{9.82_m + 0.5 * frc3512::Constants::Drivetrain::kLength,
+                           0.71_m + 0.5 * frc3512::Constants::Drivetrain::kLength},
+        frc::MaxVelocityConstraint{1.6_mps}};
+
+    // Add a constraint to slow down the drivetrain while it's
+    // approaching the balls. Interior translation is first/closest ball in
+    // trench run.
+    auto config = frc3512::Drivetrain::MakeTrajectoryConfig();
+    config.AddConstraint(regionConstraint);
+    drivetrain.AddTrajectory({kInitialPose, kMidPose, kEndPose}, config);
+
+    // Drive back
+    auto config2 = frc3512::Drivetrain::MakeTrajectoryConfig();
+    config2.SetReversed(true);
+    drivetrain.AddTrajectory(kEndPose, {}, kMidPose, config2);
+
+    frc::sim::StepTiming(10_s);
+
+    EXPECT_TRUE(drivetrain.AtGoal());
 }

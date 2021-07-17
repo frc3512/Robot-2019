@@ -25,9 +25,9 @@ public:
     /**
      * Sets the voltage of the elevator.
      *
-     * @param voltage in [-1..1]
+     * @param voltage in [-12..12] volts
      */
-    void SetVoltage(double voltage);
+    void SetVoltage(units::volt_t voltage);
 
     /**
      * Sets the controller to climbing mode
@@ -36,28 +36,18 @@ public:
     void SetClimbing(bool on);
 
     /**
-     * Resets the encoder.
-     */
-    void ResetEncoder();
-
-    /**
      * Returns height of the elevator.
      *
      * @return height in inches
      */
-    double GetHeight();
+    units::inch_t GetHeight();
 
     /**
      * Sets the goal of the controller.
      *
-     * @param position The goal to pass to the controller in radians.
+     * @param position The goal to pass to the controller.
      */
-    void SetGoal(double position);
-
-    /**
-     * Returns whether or not the controller is at its references..
-     */
-    bool AtReference() const;
+    void SetGoal(units::radian_t position);
 
     /**
      * Returns whether or not the controller has reached its goal.
@@ -82,10 +72,18 @@ public:
 private:
     rev::CANSparkMax m_grbx{Constants::FourBarLift::kPort,
                             rev::CANSparkMax::MotorType::kBrushless};
-
-    FourBarLiftController m_controller;
     frc::Encoder m_encoder{Constants::FourBarLift::kEncoderA,
                            Constants::FourBarLift::kEncoderB};
+
+    FourBarLiftController m_controller;
+    Eigen::Matrix<double, 1, 1> m_u = Eigen::Matrix<double, 1, 1>::Zero();
+
+    frc::LinearSystem<2, 1, 1> m_plant = m_controller.GetPlant();
+    frc::KalmanFilter<2, 1, 1> m_observer{
+        m_plant,
+        {0.21745, 0.28726},
+        {0.01},
+        RealTimeRobot::kDefaultControllerPeriod};
 
     // Simulation variables
     frc::sim::SingleJointedArmSim m_fourBarLiftSim{

@@ -28,14 +28,14 @@ public:
     /**
      * Sets the voltage to pass into the drive motor.
      *
-     * @param voltage Voltage on [-1..1]
+     * @param voltage Voltage on [-12..12]
      */
     void SetDriveVoltage(units::volt_t voltage);
 
     /**
      * Sets the voltage to pass into the lift motor.
      *
-     * @param voltage Voltage on [-1..1]
+     * @param voltage Voltage on [-12..12]
      */
     void SetVoltage(units::volt_t voltage);
 

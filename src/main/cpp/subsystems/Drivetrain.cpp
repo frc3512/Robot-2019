@@ -7,6 +7,7 @@
 #include <string>
 
 #include <frc/Joystick.h>
+#include <frc/MathUtil.h>
 #include <frc/RobotController.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
@@ -57,10 +58,6 @@ Drivetrain::Drivetrain()
     frc::SmartDashboard::PutData(&m_field);
 }
 
-void Drivetrain::SetLeftManual(double value) { m_leftGrbx.Set(value); }
-
-void Drivetrain::SetRightManual(double value) { m_rightGrbx.Set(value); }
-
 void Drivetrain::ShiftUp() { m_shifter.Set(true); }
 
 void Drivetrain::ShiftDown() { m_shifter.Set(false); }
@@ -71,17 +68,13 @@ units::radian_t Drivetrain::GetAngle() const {
     return units::degree_t{-m_gyro.GetAngle()};
 }
 
-units::radians_per_second_t Drivetrain::GetAngularRate() const {
-    return units::degrees_per_second_t{m_gyro.GetRate()};
-}
-
 void Drivetrain::CalibrateGyro() { m_gyro.Calibrate(); }
 
-units::meter_t Drivetrain::GetLeftDisplacement() const {
+units::meter_t Drivetrain::GetLeftPosition() const {
     return units::meter_t{m_leftEncoder.GetDistance()};
 }
 
-units::meter_t Drivetrain::GetRightDisplacement() const {
+units::meter_t Drivetrain::GetRightPosition() const {
     return units::meter_t{m_rightEncoder.GetDistance()};
 }
 
@@ -93,11 +86,20 @@ units::meters_per_second_t Drivetrain::GetRightRate() const {
     return units::meters_per_second_t{m_rightEncoder.GetRate()};
 }
 
-void Drivetrain::Reset() {
-    m_controller.Reset();
+void Drivetrain::Reset(frc::Pose2d initialPose) {
+    m_observer.Reset();
+    m_odometer.ResetPosition(initialPose, GetAngle());
+    m_controller.Reset(initialPose);
     m_leftEncoder.Reset();
     m_rightEncoder.Reset();
     m_gyro.Reset();
+
+    Eigen::Matrix<double, 10, 1> xHat;
+    xHat(0, 0) = initialPose.Translation().X().to<double>();
+    xHat(1, 0) = initialPose.Translation().Y().to<double>();
+    xHat(2, 0) = initialPose.Rotation().Radians().to<double>();
+    xHat.block<7, 1>(3, 0).setZero();
+    m_observer.SetXhat(xHat);
 
     if constexpr (frc::RobotBase::IsSimulation()) {
         m_drivetrainSim.SetState(Eigen::Matrix<double, 7, 1>::Zero());
@@ -105,33 +107,87 @@ void Drivetrain::Reset() {
     }
 }
 
-void Drivetrain::SetWaypoints(const std::vector<frc::Pose2d>& waypoints) {
-    m_controller.SetWaypoints(waypoints);
+void Drivetrain::AddTrajectory(const frc::Pose2d& start,
+                               const std::vector<frc::Translation2d>& interior,
+                               const frc::Pose2d& end) {
+    m_controller.AddTrajectory(start, interior, end);
+}
+
+void Drivetrain::AddTrajectory(const frc::Pose2d& start,
+                               const std::vector<frc::Translation2d>& interior,
+                               const frc::Pose2d& end,
+                               const frc::TrajectoryConfig& config) {
+    m_controller.AddTrajectory(start, interior, end, config);
+}
+
+void Drivetrain::AddTrajectory(const std::vector<frc::Pose2d>& waypoints) {
+    m_controller.AddTrajectory(waypoints);
+}
+
+void Drivetrain::AddTrajectory(const std::vector<frc::Pose2d>& waypoints,
+                               const frc::TrajectoryConfig& config) {
+    m_controller.AddTrajectory(waypoints, config);
+}
+
+frc::TrajectoryConfig Drivetrain::MakeTrajectoryConfig() {
+    return DrivetrainController::MakeTrajectoryConfig();
+}
+
+frc::TrajectoryConfig Drivetrain::MakeTrajectoryConfig(
+    units::meters_per_second_t startVelocity,
+    units::meters_per_second_t endVelocity) {
+    return DrivetrainController::MakeTrajectoryConfig(startVelocity,
+                                                      endVelocity);
 }
 
 bool Drivetrain::AtGoal() const { return m_controller.AtGoal(); }
 
-void Drivetrain::AutonomousInit() {
-    Reset();
+void Drivetrain::TeleopInit() {
+    // If the robot was disabled while still following a trajectory in
+    // autonomous, it will continue to do so in teleop. This aborts any
+    // trajectories so teleop driving can occur.
+    m_controller.AbortTrajectories();
+
     Enable();
-    m_startTime = std::chrono::steady_clock::now();
 }
 
 void Drivetrain::ControllerPeriodic() {
     UpdateDt();
 
-    m_controller.SetMeasuredLocalOutputs(GetAngle(), GetLeftDisplacement(),
-                                         GetRightDisplacement());
-    auto now = std::chrono::steady_clock::now();
-    m_controller.Update(GetDt(), now - m_startTime);
+    m_observer.Predict(m_u, GetDt());
 
-    // Set motor inputs
-    auto u = m_controller.GetInputs();
-    SetLeftManual(u(0, 0) / 12.0);
-    SetRightManual(u(1, 0) / 12.0);
+    Eigen::Matrix<double, 3, 1> y;
+    y << frc::AngleModulus(GetAngle()).to<double>(),
+        GetLeftPosition().to<double>(), GetRightPosition().to<double>();
+    m_observer.Correct(m_controller.GetInputs(), y);
+    m_odometer.Update(
+        units::radian_t{y(DrivetrainController::LocalOutput::kHeading)},
+        units::meter_t{y(DrivetrainController::LocalOutput::kLeftPosition)},
+        units::meter_t{y(DrivetrainController::LocalOutput::kRightPosition)});
 
-    // Log(m_controller.GetReferences(), m_observer.Xhat(), u,
-    //     m_controller.GetOutputs());
+    if (m_controller.HaveTrajectory()) {
+        m_u = m_controller.Calculate(m_observer.Xhat());
+
+        if (!AtGoal()) {
+            m_leftGrbx.SetVoltage(units::volt_t{m_u(0)});
+            m_rightGrbx.SetVoltage(units::volt_t{m_u(1)});
+        } else {
+            m_leftGrbx.SetVoltage(0_V);
+            m_rightGrbx.SetVoltage(0_V);
+        }
+    } else {
+        // Update previous u stored in the controller. We don't care what the
+        // return value is.
+        static_cast<void>(m_controller.Calculate(m_observer.Xhat()));
+
+        // Run observer predict with inputs from teleop
+        m_u << std::clamp(m_leftGrbx.Get(), -1.0, 1.0) *
+                   frc::RobotController::GetInputVoltage(),
+            std::clamp(m_rightGrbx.Get(), -1.0, 1.0) *
+                frc::RobotController::GetInputVoltage();
+    }
+
+    Log(m_controller.GetReferences(), m_observer.Xhat(), m_u, y);
 
     if constexpr (frc::RobotBase::IsSimulation()) {
         auto batteryVoltage = frc::RobotController::GetInputVoltage();
@@ -168,6 +224,26 @@ void Drivetrain::TeleopPeriodic() {
         Shift();
     }
 
+    auto [left, right] = CurvatureDrive(y, x, driveStick2.GetRawButton(2));
+
+    Eigen::Matrix<double, 2, 1> u =
+        frc::MakeMatrix<2, 1>(left * 12.0, right * 12.0);
+
+    m_leftGrbx.SetVoltage(units::volt_t{u(0)});
+    m_rightGrbx.SetVoltage(units::volt_t{u(1)});
+}
+
+void Drivetrain::TestPeriodic() {
+    static frc::Joystick driveStick1{kDriveStick1Port};
+    static frc::Joystick driveStick2{kDriveStick2Port};
+
+    double y = ApplyDeadband(-driveStick1.GetY(), kJoystickDeadband);
+    double x = ApplyDeadband(driveStick2.GetX(), kJoystickDeadband);
+
+    if (driveStick1.GetRawButton(1)) {
+        y *= 0.5;
+        x *= 0.5;
+    }
     auto [left, right] = CurvatureDrive(y, x, driveStick2.GetRawButton(2));
 
     Eigen::Matrix<double, 2, 1> u =

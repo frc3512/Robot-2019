@@ -16,10 +16,11 @@
 
 #include "Constants.hpp"
 #include "RealTimeRobot.hpp"
+#include "controllers/ControllerBase.hpp"
 
 namespace frc3512 {
 
-class FourBarLiftController {
+class FourBarLiftController : public ControllerBase<2, 1, 1> {
 public:
     // State tolerances in radians and radians/sec respectively.
     static constexpr double kAngleTolerance = 0.05;
@@ -49,9 +50,9 @@ public:
     /**
      * Sets the end goal of the controller profile.
      *
-     * @param goal Position in meters to set the goal to.
+     * @param goal Position in radians to set the goal to.
      */
-    void SetGoal(double goal);
+    void SetGoal(units::radian_t goal);
 
     /**
      * Sets the references.
@@ -64,26 +65,9 @@ public:
                        units::radians_per_second_t angularVelocity);
 
     /**
-     * Returns whether or not position and velocity are tracking the profile.
-     */
-    bool AtReferences() const;
-
-    /**
      * Returns whether or not the goal has been reached.
      */
     bool AtGoal() const;
-
-    /**
-     * Sets the current encoder measurement.
-     *
-     * @param measuredAngle Angle of the carriage in radians.
-     */
-    void SetMeasuredAngle(double measuredAngle);
-
-    /**
-     * Returns the control loop calculated voltage.
-     */
-    double ControllerVoltage() const;
 
     /**
      * Informs the controller if to use the climbing feedforward.
@@ -93,46 +77,12 @@ public:
     void SetClimbing(bool climbing);
 
     /**
-     * Returns the estimated angle.
-     */
-    double EstimatedAngle() const;
-
-    /**
-     * Returns the estimated angular velocity.
-     */
-    double EstimatedAngularVelocity() const;
-
-    /**
-     * Returns the error between the angle reference and the angle
-     * estimate.
-     */
-    double AngleError() const;
-
-    /**
-     * Returns the error between the angular velocity reference and the angular
-     * velocity estimate.
-     */
-    double AngularVelocityError() const;
-
-    /**
-     * Returns the current angle reference.
-     */
-    double AngleReference();
-
-    /**
-     * Returns the current angular velocity reference.
-     */
-    double AngularVelocityReference();
-
-    /**
-     * Executes the control loop for a cycle.
-     */
-    void Update();
-
-    /**
      * Resets any internal state.
      */
     void Reset();
+
+    Eigen::Matrix<double, 1, 1> Calculate(
+        const Eigen::Matrix<double, 2, 1>& x) override;
 
     /**
      * Returns the four bar lift plant.
@@ -140,8 +90,6 @@ public:
     static frc::LinearSystem<2, 1, 1> GetPlant();
 
 private:
-    // The current sensor measurement.
-    Eigen::Matrix<double, 1, 1> m_y;
     frc::TrapezoidProfile<units::radians>::State m_goal;
 
     frc::TrapezoidProfile<units::radians>::Constraints constraints{
@@ -152,26 +100,18 @@ private:
     frc::TrapezoidProfile<units::radians>::State m_profiledReference;
 
     frc::LinearSystem<2, 1, 1> m_plant = GetPlant();
-    frc::LinearQuadraticRegulator<2, 1> m_controller{
+    frc::LinearQuadraticRegulator<2, 1> m_lqr{
         m_plant,
         {0.01245, 0.109726},
         {9.0},
         RealTimeRobot::kDefaultControllerPeriod};
-    frc::KalmanFilter<2, 1, 1> m_observer{
-        m_plant,
-        {0.21745, 0.28726},
-        {0.01},
-        RealTimeRobot::kDefaultControllerPeriod};
-    frc::LinearSystemLoop<2, 1, 1> m_loop{
-        m_plant, m_controller, m_observer, 12_V,
-        RealTimeRobot::kDefaultControllerPeriod};
+    frc::LinearPlantInversionFeedforward<2, 1> m_ff{
+        m_plant, RealTimeRobot::kDefaultControllerPeriod};
 
     bool m_atReferences = false;
     bool m_climbing = false;
 
-    frc::CSVLogFile elevatorLogger{"FourBarLift",    "EstPos (rad)",
-                                   "RefPos (rad)",   "Voltage (V)",
-                                   "EstVel (rad/s)", "RefVel (rad/s)"};
+    void UpdateAtReferences(const Eigen::Matrix<double, 2, 1>& error);
 };
 
 }  // namespace frc3512

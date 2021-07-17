@@ -7,7 +7,7 @@
 using namespace frc3512;
 using namespace frc3512::Constants::Elevator;
 
-ElevatorController::ElevatorController() { m_y.setZero(); }
+ElevatorController::ElevatorController() { Reset(); }
 
 void ElevatorController::SetScoringIndex() {
     m_activeConstraints = scoringConstraints;
@@ -40,55 +40,15 @@ bool ElevatorController::AtGoal() const {
     return m_atReferences && m_goal == m_profiledReference;
 }
 
-void ElevatorController::SetMeasuredPosition(double measuredPosition) {
-    m_y(0, 0) = measuredPosition;
+void ElevatorController::Reset() {
+    m_scoreLQR.Reset();
+    m_climbLQR.Reset();
+    m_nextR.setZero();
+    m_u.setZero();
 }
 
-double ElevatorController::ControllerVoltage() const {
-    if (m_climbing) {
-        // Feedforward compensates for unmodeled extra weight from lifting robot
-        // while climbing
-        return m_climbController.U(0) - 1.0;
-    } else {
-        return m_scoreController.U(0);
-    }
-}
-
-double ElevatorController::EstimatedPosition() const {
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return observer.Xhat(0);
-}
-
-double ElevatorController::EstimatedVelocity() const {
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return observer.Xhat(1);
-}
-
-double ElevatorController::PositionError() const {
-    const auto& controller = m_climbing ? m_climbController : m_scoreController;
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return controller.R(0) - observer.Xhat(0);
-}
-
-double ElevatorController::VelocityError() const {
-    const auto& controller = m_climbing ? m_climbController : m_scoreController;
-    const auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
-    return controller.R(1) - observer.Xhat(1);
-}
-
-double ElevatorController::PositionReference() {
-    return m_profiledReference.position.to<double>();
-}
-
-double ElevatorController::VelocityReference() {
-    return m_profiledReference.velocity.to<double>();
-}
-
-void ElevatorController::Update() {
-    elevatorLogger.Log(EstimatedPosition(), EstimatedVelocity(),
-                       PositionReference(), ControllerVoltage(),
-                       VelocityReference());
-
+Eigen::Matrix<double, 1, 1> ElevatorController::Calculate(
+    const Eigen::Matrix<double, 2, 1>& x) {
     frc::TrapezoidProfile<units::meters>::State references = {
         units::meter_t(m_nextR(0, 0)),
         units::meters_per_second_t(m_nextR(1, 0))};
@@ -99,49 +59,41 @@ void ElevatorController::Update() {
 
     SetReferences(m_profiledReference.position, m_profiledReference.velocity);
 
-    auto& controller = m_climbing ? m_climbController : m_scoreController;
-    auto& observer = m_climbing ? m_climbObserver : m_scoreObserver;
+    auto& lqr = m_climbing ? m_climbLQR : m_scoreLQR;
+    auto& ff = m_climbing ? m_climbFF : m_scoreFF;
 
-    observer.Correct(m_u, m_y);
+    m_u = lqr.Calculate(x, m_r) + ff.Calculate(m_nextR);
 
-    auto error = controller.R() - observer.Xhat();
-    m_atReferences = std::abs(error(0, 0)) < kPositionTolerance &&
-                     std::abs(error(1, 0)) < kVelocityTolerance;
-
-    m_u = controller.Calculate(observer.Xhat(), m_nextR);
-    observer.Predict(m_u, RealTimeRobot::kDefaultControllerPeriod);
+    // Feedforward compensates for unmodeled extra weight from lifting robot
+    // while climbing
+    if (m_climbing) {
+        Eigen::Matrix<double, 1, 1> extraWeight{1.0};
+        return m_u -= extraWeight;
+    } else {
+        return m_u;
+    }
 }
 
-void ElevatorController::Reset() {
-    m_scoreController.Reset();
-    m_climbController.Reset();
-    m_scoreObserver.Reset();
-    m_climbObserver.Reset();
-    m_nextR.setZero();
-    m_u.setZero();
+frc::LinearSystem<2, 1, 1> ElevatorController::GetScorePlant() {
+    // Radius of pulley
+    constexpr auto r = 0.0181864_m;
+    // Carriage mass
+    constexpr auto m = 9.785262_kg;
+
+    return frc::LinearSystemId::ElevatorSystem(
+        frc::DCMotor::NEO(), m, r, Constants::Elevator::kScoringGearRatio);
 }
 
-Eigen::Matrix<double, 1, 1> ElevatorController::Calculate(
-    const Eigen::Matrix<double, 2, 1>& x) {
-    return Eigen::Matrix<double, 1, 1>::Zero();
-}
-
-frc::LinearSystem<2, 1, 1> ElevatorController::GetPlant(bool climbing) {
-    auto motor = frc::DCMotor::NEO();
+frc::LinearSystem<2, 1, 1> ElevatorController::GetClimbPlant() {
+    // Carriage mass
+    constexpr auto m = 8.381376_kg;
 
     // Radius of pulley
     constexpr auto r = 0.0181864_m;
-    if (climbing) {
-        // Carriage mass
-        constexpr auto m = 8.381376_kg;
 
-        return frc::LinearSystemId::ElevatorSystem(
-            motor, m, r, Constants::Elevator::kClimbingGearRatio);
-    } else {
-        // Carriage mass
-        constexpr auto m = 9.785262_kg;
-
-        return frc::LinearSystemId::ElevatorSystem(
-            motor, m, r, Constants::Elevator::kScoringGearRatio);
-    }
+    return frc::LinearSystemId::ElevatorSystem(
+        frc::DCMotor::NEO(), m, r, Constants::Elevator::kClimbingGearRatio);
 }
+
+void ElevatorController::UpdateAtReferences(
+    const Eigen::Matrix<double, 2, 1>& error) {}
